@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/*
+  ============================================================================
+  Brand design tokens — الأستاذ علي العباد
+  ============================================================================
+  Every value here is intentional. Premium feel comes from the neutral ramp,
+  generous spacing and Tajawal type — brand colour is used deliberately, never
+  as decoration. See CLAUDE.md for the full token → utility mapping and the
+  dark-section rule. Do NOT invent colours outside this palette.
+*/
+
+@theme {
+  /* --- Brand ----------------------------------------------------------- */
+  --color-plum: #583b66; /* primary    — buttons, active nav, links, emphasis */
+  --color-teal: #0d678b; /* secondary  — supporting accents, icons, variety   */
+  --color-coral: #e04f64; /* accent/CTA — promo bar + the single key CTA       */
+  --color-violet: #a551fc; /* highlight — AI section + "new / قريباً" badges    */
+  --color-lilac: #ebe3f7; /* surface tint — alternating sections, soft fills   */
+  --color-ink: #3a363d; /* primary text, dark sections, footer                */
+
+  /* --- Neutral ramp (purple-tuned) ------------------------------------ */
+  --color-neutral-50: #f8f6fb;
+  --color-neutral-100: #f1eef6;
+  --color-neutral-200: #e6e1ee;
+  --color-neutral-300: #d3cdde;
+  --color-neutral-400: #a79fb4;
+  --color-neutral-500: #7d7488;
+  --color-neutral-600: #5f566a;
+  --color-neutral-700: #4a434f;
+  --color-neutral-800: #3a363d;
+  --color-neutral-900: #29262d;
+
+  /* --- Semantic surfaces / text / borders (light theme) --------------- */
+  --color-background: #ffffff;
+  --color-surface: #f8f6fb;
+  --color-surface-strong: #ebe3f7;
+
+  --color-foreground: #3a363d; /* brief: text-primary   */
+  --color-foreground-muted: #5f566a; /* brief: text-secondary */
+  --color-foreground-subtle: #8b8392; /* brief: text-tertiary  */
+
+  --color-border: #e6e1ee;
+  --color-border-strong: #d3cdde;
+
+  /* --- Action roles --------------------------------------------------- */
+  --color-primary: #583b66;
+  --color-on-primary: #ffffff;
+  --color-primary-hover: #4a3156;
+
+  --color-secondary: #0d678b;
+  --color-on-secondary: #ffffff;
+  --color-secondary-hover: #0b5775;
+
+  --color-accent: #e04f64;
+  --color-on-accent: #ffffff;
+  --color-accent-hover: #cf3f54;
+
+  --color-highlight: #a551fc;
+  --color-on-highlight: #ffffff;
+  --color-highlight-hover: #9540ec;
+
+  --color-focus: #a551fc;
+
+  /* --- Modular type scale (Arabic-friendly line-heights) -------------- */
+  --text-xs: 0.8rem;
+  --text-xs--line-height: 1.7;
+  --text-sm: 0.9rem;
+  --text-sm--line-height: 1.75;
+  --text-base: 1rem;
+  --text-base--line-height: 1.8; /* generous for Arabic body */
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.8;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.7;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.45;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.35;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.25;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1.18;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1.1;
+  --text-display: 4.5rem;
+  --text-display--line-height: 1.06;
+
+  /* --- Radii (soft, no harsh corners) -------------------------------- */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+
+  /* --- Shadows (soft, plum/ink-tinted; never harsh) ------------------ */
+  --shadow-sm: 0 1px 2px 0 rgb(58 54 61 / 0.05);
+  --shadow-md: 0 4px 16px -4px rgb(58 54 61 / 0.08);
+  --shadow-lg: 0 12px 32px -8px rgb(58 54 61 / 0.12);
+  --shadow-xl: 0 24px 56px -12px rgb(88 59 102 / 0.18);
+}
+
+/* Tajawal is injected on <html> by next/font as --font-tajawal. `inline` keeps
+   the utility referencing the live CSS variable rather than baking a value. */
+@theme inline {
+  --font-sans: var(--font-tajawal), system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    direction: rtl;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Arabic should never carry letter-spacing — it breaks letter joining. */
+  * {
+    letter-spacing: normal;
+  }
+
+  /* Headings lead with weight, not size alone. */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Visible, on-brand focus ring for keyboard users. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-surface-strong);
+    color: var(--color-ink);
+  }
+}
