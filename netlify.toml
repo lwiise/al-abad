@@ -1,0 +1,15 @@
+# Netlify deploy config.
+# The Next.js runtime (@netlify/plugin-nextjs / OpenNext adapter) is installed
+# automatically at build — do NOT add it under [[plugins]] or pin its version.
+# Next 16 (Turbopack, proxy.ts, React Compiler) is supported with zero config.
+
+[build]
+  command = "pnpm build"
+  # publish dir is managed by the Next.js runtime — leave unset.
+
+[build.environment]
+  NODE_VERSION = "22"
+  # The Supabase URL + anon key are PUBLIC by design (inlined into client JS).
+  # Tell Netlify's secret scanner not to fail the build over them.
+  # NEVER add SUPABASE_SERVICE_ROLE_KEY here — it must never reach the client.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY"

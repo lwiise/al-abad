@@ -65,5 +65,14 @@ Each action role has `-hover` and `on-*` (label) variants, e.g. `bg-primary hove
    - **CLI:** `npx supabase link --project-ref <ref>` then `npx supabase db push` (migrations) and run the seed.
 3. Create the owner: `node scripts/create-admin.mjs <email> <password>` (reads service-role env). Then sign in at `/admin/login`.
 
+### Deploying to Netlify
+
+Hosting is **Netlify**. The Next.js runtime (`@netlify/plugin-nextjs` / OpenNext adapter) installs automatically — Next 16 (Turbopack, `proxy.ts`, React Compiler) is supported with zero config. Do **not** pin or manually add the adapter.
+
+- `netlify.toml` sets the build command (`pnpm build`), Node 22, and tells the secret scanner to ignore the public Supabase keys.
+- Set env vars in **Netlify → Site configuration → Environment variables** (not just `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. The `NEXT_PUBLIC_*` ones are inlined at build, so they must exist **before** the build runs; the service-role key is used only server-side.
+- The migration/seed still run against Supabase (dashboard SQL editor or CLI) — that's independent of Netlify.
+- `.env.local` remains for local `pnpm dev` only.
+
 ## Commands
 - `pnpm dev` — dev server · `pnpm build` — build · `pnpm lint` — eslint · `pnpm type-check` — tsc
