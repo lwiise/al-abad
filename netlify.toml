@@ -5,7 +5,13 @@
 
 [build]
   command = "pnpm build"
-  # publish dir is managed by the Next.js runtime — leave unset.
+  publish = ".next"
+
+# Force the Next.js runtime. Normally auto-detected, but this site was first
+# connected when the repo had no Next app, so detection cached "static" —
+# declaring it explicitly guarantees the runtime (functions) is built.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NODE_VERSION = "22"
