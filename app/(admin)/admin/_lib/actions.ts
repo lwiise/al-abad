@@ -18,6 +18,27 @@ function db(): SupabaseClient {
   return createAdminClient() as unknown as SupabaseClient;
 }
 
+// Revalidate the PUBLIC marketing routes affected by a content change so admin
+// edits show up on the live site immediately (300s ISR is the fallback).
+// Public routes live in English folders (Arabic URLs are rewritten to them in
+// proxy.ts), so revalidate the ascii route paths.
+const PUBLIC_PATHS: Record<string, string[]> = {
+  courses: ["/", "/courses"],
+  blog: ["/", "/blog"],
+  testimonials: ["/"],
+  faqs: ["/"],
+  stats: ["/"],
+  "how-it-works": ["/"],
+};
+
+function revalidatePublic(resourceKey: string, slug?: unknown) {
+  for (const p of PUBLIC_PATHS[resourceKey] ?? []) revalidatePath(p);
+  if (typeof slug === "string" && slug) {
+    if (resourceKey === "courses") revalidatePath(`/courses/${slug}`);
+    if (resourceKey === "blog") revalidatePath(`/blog/${slug}`);
+  }
+}
+
 async function uploadImage(file: File, folder: string): Promise<string> {
   const client = db();
   const ext = (file.name.split(".").pop() || "bin").toLowerCase();
@@ -104,6 +125,7 @@ export async function saveResource(
 
   revalidatePath(`/admin/${resource.key}`);
   revalidatePath("/admin");
+  revalidatePublic(resource.key, payload.slug);
   redirect(`/admin/${resource.key}`);
 }
 
@@ -115,6 +137,7 @@ export async function deleteResource(resourceKey: string, id: string) {
   if (error) throw error;
   revalidatePath(`/admin/${resource.key}`);
   revalidatePath("/admin");
+  revalidatePublic(resource.key);
 }
 
 export async function togglePublish(resourceKey: string, id: string, current: boolean) {
@@ -127,6 +150,7 @@ export async function togglePublish(resourceKey: string, id: string, current: bo
     .eq("id", id);
   if (error) throw error;
   revalidatePath(`/admin/${resource.key}`);
+  revalidatePublic(resource.key);
 }
 
 export async function reorderResource(
@@ -153,6 +177,7 @@ export async function reorderResource(
   await client.from(resource.table).update({ sort_order: b.sort_order }).eq("id", a.id);
   await client.from(resource.table).update({ sort_order: a.sort_order }).eq("id", b.id);
   revalidatePath(`/admin/${resource.key}`);
+  revalidatePublic(resource.key);
 }
 
 // ---------------------------------------------------------------------------
@@ -237,7 +262,7 @@ export async function saveSettings(formData: FormData) {
   }
 
   revalidatePath("/admin/settings");
-  revalidatePath("/");
+  revalidatePath("/", "layout"); // settings drive header/footer/promo site-wide
   redirect("/admin/settings?saved=1");
 }
 
