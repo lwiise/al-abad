@@ -32,6 +32,16 @@ export const SOCIAL_KEYS = [
 
 export type SocialKey = (typeof SOCIAL_KEYS)[number];
 
+export const SOCIAL_LABELS: Record<SocialKey, string> = {
+  facebook: "فيسبوك",
+  instagram: "إنستجرام",
+  youtube: "يوتيوب",
+  twitter: "تويتر / X",
+  telegram: "تيليجرام",
+  tiktok: "تيك توك",
+  snapchat: "سناب شات",
+};
+
 export function SocialIcon({ name, className }: { name: string; className?: string }) {
   const d = paths[name];
   if (!d) return null;

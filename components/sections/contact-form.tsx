@@ -14,7 +14,11 @@ export function ContactForm() {
 
   if (state.status === "success") {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-secondary/30 bg-secondary/5 p-6 text-secondary">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex items-center gap-3 rounded-xl border border-secondary/30 bg-secondary/5 p-6 text-secondary"
+      >
         <Check className="size-6 shrink-0" />
         <p>{state.message}</p>
       </div>
@@ -30,11 +34,19 @@ export function ContactForm() {
         <Label htmlFor="name" required>
           الاسم
         </Label>
-        <Input id="name" name="name" required />
+        <Input id="name" name="name" autoComplete="name" required />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="email">البريد الإلكتروني</Label>
-        <Input id="email" name="email" type="email" dir="ltr" />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          dir="ltr"
+          autoComplete="email"
+          inputMode="email"
+          spellCheck={false}
+        />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="message" required>
@@ -44,7 +56,9 @@ export function ContactForm() {
       </div>
 
       {state.status === "error" && (
-        <p className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">{state.message}</p>
+        <p role="status" aria-live="polite" className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">
+          {state.message}
+        </p>
       )}
 
       <Button type="submit" disabled={pending}>

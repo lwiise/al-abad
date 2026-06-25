@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { SiteSettingsRow } from "@/lib/database.types";
 import { waLink } from "@/lib/data";
 import { NAV, LMS_URL } from "./nav";
-import { SocialIcon, SOCIAL_KEYS, WhatsappGlyph } from "./icons";
+import { SocialIcon, SOCIAL_KEYS, SOCIAL_LABELS, WhatsappGlyph } from "./icons";
 
 export function Footer({ settings }: { settings: SiteSettingsRow | null }) {
   const social = (settings?.social_links ?? {}) as Record<string, string>;
@@ -28,7 +28,7 @@ export function Footer({ settings }: { settings: SiteSettingsRow | null }) {
                     href={social[key]}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={key}
+                    aria-label={SOCIAL_LABELS[key]}
                     className="flex size-9 items-center justify-center rounded-full bg-white/10 text-neutral-200 transition-colors hover:bg-highlight hover:text-on-highlight"
                   >
                     <SocialIcon name={key} className="size-4" />

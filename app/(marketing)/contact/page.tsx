@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getSettings, waLink } from "@/lib/data";
 import { ContactForm } from "@/components/sections/contact-form";
-import { SocialIcon, SOCIAL_KEYS, WhatsappGlyph } from "@/components/site/icons";
+import { SocialIcon, SOCIAL_KEYS, SOCIAL_LABELS, WhatsappGlyph } from "@/components/site/icons";
 
 export const revalidate = 300;
 
@@ -72,7 +72,7 @@ export default async function ContactPage() {
                       href={social[k]}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={k}
+                      aria-label={SOCIAL_LABELS[k]}
                       className="flex size-10 items-center justify-center rounded-full bg-background text-foreground-muted transition-colors hover:bg-primary hover:text-on-primary"
                     >
                       <SocialIcon name={k} className="size-4" />

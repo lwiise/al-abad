@@ -11,7 +11,11 @@ export function AiWaitlistForm() {
 
   if (state.status === "success") {
     return (
-      <p className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-5 py-3 text-on-highlight">
+      <p
+        role="status"
+        aria-live="polite"
+        className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-5 py-3 text-on-highlight"
+      >
         <Check className="size-5" />
         {state.message}
       </p>
@@ -35,6 +39,10 @@ export function AiWaitlistForm() {
           name="email"
           required
           dir="ltr"
+          aria-label="بريدك الإلكتروني"
+          autoComplete="email"
+          inputMode="email"
+          spellCheck={false}
           placeholder="بريدك الإلكتروني"
           className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-start text-white placeholder:text-white/60 focus:border-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
         />
@@ -47,7 +55,9 @@ export function AiWaitlistForm() {
         </button>
       </div>
       {state.status === "error" && (
-        <p className="mt-2 text-sm text-white/90">{state.message}</p>
+        <p role="status" aria-live="polite" className="mt-2 text-sm text-white/90">
+          {state.message}
+        </p>
       )}
     </form>
   );

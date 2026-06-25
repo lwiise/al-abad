@@ -10,13 +10,21 @@ export default async function MarketingLayout({ children }: { children: ReactNod
 
   return (
     <>
+      <a
+        href="#main"
+        className="sr-only z-[60] rounded-lg bg-primary px-4 py-2 text-on-primary focus:not-sr-only focus:fixed focus:start-4 focus:top-4"
+      >
+        تخطَّ إلى المحتوى
+      </a>
       <AnnouncementBar
         enabled={settings?.promo_enabled}
         text={settings?.promo_bar_text}
         code={settings?.promo_code}
       />
       <Header />
-      <main>{children}</main>
+      <main id="main" tabIndex={-1}>
+        {children}
+      </main>
       <Footer settings={settings} />
       <WhatsappFloat
         href={waLink(settings?.whatsapp_number, "السلام عليكم، لدي استفسار عن الدورات")}

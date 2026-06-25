@@ -109,6 +109,12 @@
 @layer base {
   html {
     direction: rtl;
+    color-scheme: light;
+  }
+
+  /* Anchor jumps (e.g. #courses) clear the sticky header. */
+  [id] {
+    scroll-margin-top: 5rem;
   }
 
   body {
