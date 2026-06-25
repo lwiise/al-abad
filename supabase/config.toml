@@ -1,0 +1,26 @@
+# Supabase CLI config. Optional — you can also apply migrations/seed via the
+# dashboard SQL editor. For CLI: `npx supabase link --project-ref <ref>` then
+# `npx supabase db push`.
+project_id = "al-abad"
+
+[db]
+port = 54322
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+# Single-owner panel — public sign-ups are disabled; the owner is created via
+# scripts/create-admin.mjs.
+enable_signup = false
+
+[auth.email]
+enable_signup = false
+enable_confirmations = false
