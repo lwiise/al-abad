@@ -1,28 +1,57 @@
-import ReactMarkdown from "react-markdown";
-import { Plus } from "lucide-react";
+import Link from "next/link";
 import type { FaqRow } from "@/lib/database.types";
-import { Section, SectionHeading } from "./section";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import { Markdown } from "@/components/ui/markdown";
+import { Reveal } from "@/components/motion/reveal";
+import { Section } from "./section";
 
 export function Faq({ faqs }: { faqs: FaqRow[] }) {
   if (faqs.length === 0) return null;
 
   return (
     <Section bg="background">
-      <SectionHeading title="الأسئلة الشائعة" />
-      <div className="mx-auto mt-10 max-w-3xl divide-y divide-border overflow-hidden rounded-2xl border border-border">
-        {faqs.map((f) => (
-          <details key={f.id} className="group bg-background open:bg-surface">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 font-medium text-foreground [&::-webkit-details-marker]:hidden">
-              {f.question}
-              <Plus className="size-5 shrink-0 text-foreground-subtle transition-transform group-open:rotate-45" />
-            </summary>
-            {f.answer && (
-              <div className="px-6 pb-6 leading-loose text-foreground-muted [&_a]:text-primary [&_blockquote]:border-s-2 [&_blockquote]:border-border-strong [&_blockquote]:ps-3 [&_ul]:list-disc [&_ul]:pe-5">
-                <ReactMarkdown>{f.answer}</ReactMarkdown>
-              </div>
-            )}
-          </details>
-        ))}
+      <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+        <Reveal>
+          <div className="lg:sticky lg:top-24">
+            <p className="text-sm font-medium text-secondary">الأسئلة الشائعة</p>
+            <h2 className="mt-2 text-3xl font-bold text-foreground md:text-4xl">
+              إجاباتٌ عن أكثر ما يُسأل
+            </h2>
+            <p className="mt-4 text-foreground-muted">
+              لم تجد إجابتك؟{" "}
+              <Link href="/تواصل" className="font-medium text-primary hover:text-primary-hover">
+                تواصل معنا
+              </Link>
+              .
+            </p>
+          </div>
+        </Reveal>
+
+        <Reveal>
+          <Accordion
+            type="single"
+            collapsible
+            className="rounded-2xl border border-border bg-background px-5"
+          >
+            {faqs.map((f) => (
+              <AccordionItem key={f.id} value={f.id}>
+                <AccordionTrigger>{f.question}</AccordionTrigger>
+                {f.answer && (
+                  <AccordionContent>
+                    <div className="[&_a]:text-primary [&_blockquote]:border-s-2 [&_blockquote]:border-border-strong [&_blockquote]:ps-3 [&_ul]:list-disc [&_ul]:pe-5">
+                      <Markdown>{f.answer}</Markdown>
+                    </div>
+                  </AccordionContent>
+                )}
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </Reveal>
       </div>
     </Section>
   );

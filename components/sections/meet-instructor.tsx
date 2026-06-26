@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
+import { Reveal } from "@/components/motion/reveal";
+import { MediaFallback } from "./media-fallback";
 import { Section } from "./section";
 
 const FALLBACK =
@@ -8,10 +11,7 @@ const FALLBACK =
 
 function excerpt(md: string | null | undefined, n = 340): string {
   if (!md) return FALLBACK;
-  const text = md
-    .replace(/[#*_>`[\]()-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const text = md.replace(/[#*_>`[\]()-]/g, " ").replace(/\s+/g, " ").trim();
   if (!text) return FALLBACK;
   return text.length > n ? text.slice(0, n).trim() + "…" : text;
 }
@@ -28,9 +28,9 @@ export function MeetInstructor({
   return (
     <Section bg="background">
       <div className="grid items-center gap-10 lg:grid-cols-2">
-        {/* Portrait */}
-        <div className="relative mx-auto w-full max-w-sm lg:order-2">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-surface-strong shadow-lg">
+        <Reveal className="relative mx-auto w-full max-w-sm lg:order-2">
+          <div className="absolute -bottom-5 -end-5 -z-10 size-28 rounded-3xl bg-secondary/10" aria-hidden="true" />
+          <div className="relative aspect-[4/5] overflow-hidden rounded-t-[6rem] rounded-b-3xl border border-border shadow-lg">
             {imageUrl ? (
               <Image
                 src={imageUrl}
@@ -40,36 +40,28 @@ export function MeetInstructor({
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full items-center justify-center">
-                <span className="text-7xl font-extrabold text-primary/30">ع</span>
-              </div>
+              <MediaFallback title="الأستاذ علي العباد" seed={4} />
             )}
           </div>
-        </div>
+        </Reveal>
 
-        {/* Text */}
-        <div className="lg:order-1">
+        <Reveal className="lg:order-1">
           <p className="text-sm font-medium text-secondary">تعرّف على مدرّبك</p>
           <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">الأستاذ علي العباد</h2>
           <p className="mt-5 text-lg leading-loose text-foreground-muted">{excerpt(aboutBody)}</p>
 
           <div className="mt-6 flex flex-wrap gap-2">
             {MARKERS.map((m) => (
-              <span
-                key={m}
-                className="rounded-full bg-surface-strong px-3 py-1 text-sm text-primary"
-              >
+              <span key={m} className="rounded-full bg-surface-strong px-3 py-1 text-sm text-primary">
                 {m}
               </span>
             ))}
           </div>
 
-          <p className="mt-6 text-lg font-medium text-foreground">— أ. علي العباد</p>
-
-          <Link href="/نبذة" className={buttonClasses("outline", "md") + " mt-6"}>
+          <Link href="/نبذة" className={cn(buttonClasses("outline", "md"), "mt-7 rounded-full")}>
             نبذة عن الأستاذ
           </Link>
-        </div>
+        </Reveal>
       </div>
     </Section>
   );

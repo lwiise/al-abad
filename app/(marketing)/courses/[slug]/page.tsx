@@ -89,14 +89,14 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
                 href={course.cta_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 flex w-full items-center justify-center rounded-lg bg-accent px-6 py-3 font-medium text-on-accent transition-colors hover:bg-accent-hover"
+                className="mt-5 flex w-full items-center justify-center rounded-full bg-accent px-6 py-3 font-medium text-on-accent transition-colors hover:bg-accent-hover"
               >
                 اشترك الآن
               </a>
             ) : (
               <Link
                 href="/تواصل"
-                className="mt-5 flex w-full items-center justify-center rounded-lg bg-accent px-6 py-3 font-medium text-on-accent transition-colors hover:bg-accent-hover"
+                className="mt-5 flex w-full items-center justify-center rounded-full bg-accent px-6 py-3 font-medium text-on-accent transition-colors hover:bg-accent-hover"
               >
                 للتسجيل تواصل معنا
               </Link>

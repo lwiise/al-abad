@@ -5,6 +5,7 @@ import { getSettings } from "@/lib/data";
 import { Markdown } from "@/components/ui/markdown";
 import { Vision } from "@/components/sections/vision";
 import { buttonClasses } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 300;
 
@@ -55,7 +56,7 @@ export default async function AboutPage() {
             <div className="mt-6">
               <Markdown>{about}</Markdown>
             </div>
-            <Link href="/الدورات" className={buttonClasses("primary", "md") + " mt-8"}>
+            <Link href="/الدورات" className={cn(buttonClasses("primary", "md"), "mt-8 rounded-full")}>
               تصفّح الدورات
             </Link>
           </div>

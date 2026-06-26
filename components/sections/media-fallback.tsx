@@ -14,10 +14,12 @@ const GRADIENTS = [
 export function MediaFallback({
   title,
   seed = 0,
+  showTitle = true,
   className,
 }: {
   title: string;
   seed?: number;
+  showTitle?: boolean;
   className?: string;
 }) {
   const gradient = GRADIENTS[Math.abs(seed) % GRADIENTS.length];
@@ -39,9 +41,11 @@ export function MediaFallback({
           backgroundSize: "22px 22px",
         }}
       />
-      <span className="relative font-display text-lg font-bold leading-snug text-white/95 [text-wrap:balance] line-clamp-3">
-        {title}
-      </span>
+      {showTitle && (
+        <span className="relative font-display text-lg font-bold leading-snug text-white/95 [text-wrap:balance] line-clamp-3">
+          {title}
+        </span>
+      )}
     </div>
   );
 }

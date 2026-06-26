@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { CourseRow } from "@/lib/database.types";
 import { CourseCard } from "./course-card";
 
-/** Filterable course grid. Chips only show when categories exist. */
+/** Filterable grid of image-overlay course cards. Pills only show when categories exist. */
 export function CourseExplorer({
   courses,
   categories,
@@ -28,8 +28,8 @@ export function CourseExplorer({
       )}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((course) => (
-          <CourseCard key={course.id} course={course} />
+        {shown.map((course, i) => (
+          <CourseCard key={course.id} course={course} index={i + 1} />
         ))}
       </div>
     </div>
