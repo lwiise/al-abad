@@ -1,11 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useRef, type ReactNode } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 /**
- * Scroll-triggered entrance: fade + gentle rise, once. Honors reduced-motion
- * (renders children unanimated). Safe to use inside server sections.
+ * Scroll-triggered entrance (fade + gentle rise, once) powered by GSAP
+ * ScrollTrigger. Same API as before so all section usages are unchanged.
+ * Honors prefers-reduced-motion via gsap.matchMedia (content stays visible).
  */
 export function Reveal({
   children,
@@ -16,18 +17,29 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(ref.current, {
+          opacity: 0,
+          y: 16,
+          duration: 0.7,
+          ease: "power3.out",
+          delay,
+          scrollTrigger: { trigger: ref.current, start: "top 85%", once: true },
+        });
+      });
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
 
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay }}
-    >
+    <div ref={ref} className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 }
