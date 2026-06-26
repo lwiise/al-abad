@@ -20,7 +20,7 @@ export function ConnectionArt({ className }: { className?: string }) {
           duration: 1.4,
           ease: "power2.inOut",
           stagger: 0.25,
-          scrollTrigger: { trigger: ref.current, start: "top 80%", once: true },
+          scrollTrigger: { trigger: ref.current, start: "clamp(top 80%)", once: true },
         });
         gsap.to("[data-float]", {
           y: "-=12",

@@ -41,7 +41,7 @@ export function Stagger({
           duration: 0.75,
           ease: "power3.out",
           stagger: amount,
-          scrollTrigger: { trigger: el, start: "top 82%", once: true },
+          scrollTrigger: { trigger: el, start: "clamp(top 82%)", once: true },
         });
       });
       return () => mm.revert();

@@ -29,7 +29,7 @@ export function Reveal({
           duration: 0.7,
           ease: "power3.out",
           delay,
-          scrollTrigger: { trigger: ref.current, start: "top 85%", once: true },
+          scrollTrigger: { trigger: ref.current, start: "clamp(top 85%)", once: true },
         });
       });
       return () => mm.revert();

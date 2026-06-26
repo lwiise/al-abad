@@ -31,7 +31,7 @@ export function SvgDraw({
           duration: 1.3,
           ease: "power2.inOut",
           stagger: 0.2,
-          scrollTrigger: { trigger: ref.current, start: "top 80%", once: true },
+          scrollTrigger: { trigger: ref.current, start: "clamp(top 80%)", once: true },
         });
       });
       return () => mm.revert();
