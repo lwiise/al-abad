@@ -31,8 +31,7 @@ export function CourseCard({
     <Link
       href={href}
       className={cn(
-        "group relative block overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
-        featured ? "aspect-[16/11] sm:col-span-2 md:aspect-[2/1]" : "aspect-[4/5]",
+        "group relative block aspect-video overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
       )}
     >
       <div className="absolute inset-0">
