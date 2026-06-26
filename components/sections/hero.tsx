@@ -21,6 +21,7 @@ export function Hero({
   secondaryLabel,
   secondaryUrl,
   imageUrl,
+  trustBadge,
   stats = [],
 }: {
   headline?: string | null;
@@ -30,6 +31,7 @@ export function Hero({
   secondaryLabel?: string | null;
   secondaryUrl?: string | null;
   imageUrl?: string | null;
+  trustBadge?: string | null;
   stats?: StatRow[];
 }) {
   const root = useRef<HTMLElement>(null);
@@ -127,7 +129,7 @@ export function Hero({
                   />
                 ))}
               </div>
-              <span className="text-sm text-foreground-muted">موثوق من آلاف المتدربين</span>
+              <span className="text-sm text-foreground-muted">{trustBadge || "موثوق من آلاف المتدربين"}</span>
             </div>
 
             <div className="max-w-md space-y-5 text-start">

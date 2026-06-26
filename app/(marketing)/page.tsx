@@ -46,20 +46,58 @@ export default async function HomePage() {
         secondaryLabel={settings?.hero_secondary_cta_label}
         secondaryUrl={settings?.hero_secondary_cta_url}
         imageUrl={settings?.hero_image_url}
+        trustBadge={settings?.hero_trust_badge}
         stats={stats}
       />
-      <ProblemEmpathy points={asList(settings?.problem_points)} />
-      <MeetInstructor aboutBody={settings?.about_body} imageUrl={settings?.hero_image_url} />
-      <CourseShowcase courses={courses} />
-      <HowItWorks steps={steps} />
-      <Outcomes points={asList(settings?.outcome_points)} />
+      <ProblemEmpathy
+        points={asList(settings?.problem_points)}
+        heading={settings?.problem_heading}
+        subhead={settings?.problem_subhead}
+      />
+      <MeetInstructor
+        aboutBody={settings?.about_body}
+        imageUrl={settings?.hero_image_url}
+        eyebrow={settings?.instructor_eyebrow}
+        name={settings?.instructor_name}
+        markers={asList(settings?.instructor_markers)}
+        ctaLabel={settings?.instructor_cta_label}
+      />
+      <CourseShowcase
+        courses={courses}
+        eyebrow={settings?.courses_eyebrow}
+        heading={settings?.courses_heading}
+        subhead={settings?.courses_subhead}
+        viewAllLabel={settings?.courses_view_all_label}
+      />
+      <HowItWorks
+        steps={steps}
+        heading={settings?.how_heading}
+        subhead={settings?.how_subhead}
+      />
+      <Outcomes
+        points={asList(settings?.outcome_points)}
+        heading={settings?.outcomes_heading}
+        subhead={settings?.outcomes_subhead}
+      />
       <AiTeaser
         headline={settings?.ai_headline}
         subhead={settings?.ai_subhead}
         points={asList(settings?.ai_points)}
+        badge={settings?.ai_badge}
       />
-      <Testimonials testimonials={testimonials} />
-      <Faq faqs={faqs} />
+      <Testimonials
+        testimonials={testimonials}
+        ribbon={settings?.testimonials_ribbon}
+        eyebrow={settings?.testimonials_eyebrow}
+        heading={settings?.testimonials_heading}
+      />
+      <Faq
+        faqs={faqs}
+        eyebrow={settings?.faq_eyebrow}
+        heading={settings?.faq_heading}
+        helpText={settings?.faq_help_text}
+        helpCtaLabel={settings?.faq_help_cta_label}
+      />
       <FinalCta
         heading={settings?.final_cta_heading}
         primaryLabel={settings?.final_cta_primary_label}
@@ -67,7 +105,12 @@ export default async function HomePage() {
         secondaryLabel={settings?.final_cta_secondary_label}
         waHref={wa}
       />
-      <BlogTeaser posts={posts} />
+      <BlogTeaser
+        posts={posts}
+        heading={settings?.blog_heading}
+        subhead={settings?.blog_subhead}
+        viewAllLabel={settings?.blog_view_all_label}
+      />
     </>
   );
 }

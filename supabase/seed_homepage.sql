@@ -25,6 +25,36 @@ update public.site_settings set
   final_cta_primary_url   = '/الدورات',
   final_cta_secondary_label = 'تحدث معنا على واتساب';
 
+-- Section framing copy (eyebrows / titles / subheads / labels). Requires
+-- migration 0002. Re-running resets these to the locked copy below.
+update public.site_settings set
+  hero_trust_badge        = 'موثوق من آلاف المتدربين',
+  problem_heading         = 'هل تواجه أياً من هذه التحديات؟',
+  problem_subhead         = 'معظم العلاقات لا تتعثّر لقلة الحب، بل لغياب الأدوات. أنت لست وحدك — وهذه نقطة البداية.',
+  instructor_eyebrow      = 'تعرّف على مدرّبك',
+  instructor_name         = 'الأستاذ علي العباد',
+  instructor_markers      = '["منهج علميّ","أدوات عملية","خبرة ميدانية"]'::jsonb,
+  instructor_cta_label    = 'نبذة عن الأستاذ',
+  courses_eyebrow         = 'الدورات',
+  courses_heading         = 'دوراتٌ تأخذ بيدك خطوة بخطوة',
+  courses_subhead         = 'محتوى عمليّ مصمّم لتطبّقه في حياتك — اختر ما يناسب وضعك وابدأ اليوم.',
+  courses_view_all_label  = 'عرض جميع الدورات',
+  how_heading             = 'كيف تبدأ؟',
+  how_subhead             = 'ثلاث خطوات بسيطة من التصفّح إلى التطبيق.',
+  outcomes_heading        = 'ماذا ستكتسب؟',
+  outcomes_subhead        = 'ليست معلومات تُنسى، بل تغييرٌ تعيشه في علاقتك.',
+  ai_badge                = 'قريباً',
+  testimonials_ribbon     = 'قصص نجاح حقيقية',
+  testimonials_eyebrow    = 'آراء المتدربين',
+  testimonials_heading    = 'بعضٌ مما قاله الأحباب',
+  faq_eyebrow             = 'الأسئلة الشائعة',
+  faq_heading             = 'إجاباتٌ عن أكثر ما يُسأل',
+  faq_help_text           = 'لم تجد إجابتك؟',
+  faq_help_cta_label      = 'تواصل معنا',
+  blog_heading            = 'أحدث المقالات',
+  blog_subhead            = 'مقالاتٌ تثري وعيك حول العلاقة الزوجية.',
+  blog_view_all_label     = 'عرض جميع المقالات';
+
 -- Trust-strip stats (الدورات/+15 already seeded in seed.sql).
 insert into public.stats (label, value, sort_order, is_published)
 select 'متدربون', 'آلاف', 2, true

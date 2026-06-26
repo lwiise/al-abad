@@ -121,6 +121,33 @@ export interface SiteSettingsRow extends Timestamps {
   whatsapp_number: string | null;
   contact_email: string | null;
   social_links: Json | null;
+  // homepage section labels (eyebrows / titles / subheads / labels)
+  hero_trust_badge: string | null;
+  problem_heading: string | null;
+  problem_subhead: string | null;
+  instructor_eyebrow: string | null;
+  instructor_name: string | null;
+  instructor_markers: Json | null;
+  instructor_cta_label: string | null;
+  courses_eyebrow: string | null;
+  courses_heading: string | null;
+  courses_subhead: string | null;
+  courses_view_all_label: string | null;
+  how_heading: string | null;
+  how_subhead: string | null;
+  outcomes_heading: string | null;
+  outcomes_subhead: string | null;
+  ai_badge: string | null;
+  testimonials_ribbon: string | null;
+  testimonials_eyebrow: string | null;
+  testimonials_heading: string | null;
+  faq_eyebrow: string | null;
+  faq_heading: string | null;
+  faq_help_text: string | null;
+  faq_help_cta_label: string | null;
+  blog_heading: string | null;
+  blog_subhead: string | null;
+  blog_view_all_label: string | null;
 }
 
 export interface ContactSubmissionRow extends Timestamps {

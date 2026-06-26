@@ -14,13 +14,24 @@ const FALLBACK: Pick<HowItWorksStepRow, "title" | "description">[] = [
 
 const ICONS = [Compass, GraduationCap, Sparkles];
 
-export function HowItWorks({ steps }: { steps: HowItWorksStepRow[] }) {
+export function HowItWorks({
+  steps,
+  heading,
+  subhead,
+}: {
+  steps: HowItWorksStepRow[];
+  heading?: string | null;
+  subhead?: string | null;
+}) {
   const items = steps.length ? steps : FALLBACK;
 
   return (
     <Section bg="surface">
       <Reveal>
-        <SectionHeading title="كيف تبدأ؟" sub="ثلاث خطوات بسيطة من التصفّح إلى التطبيق." />
+        <SectionHeading
+          title={heading || "كيف تبدأ؟"}
+          sub={subhead || "ثلاث خطوات بسيطة من التصفّح إلى التطبيق."}
+        />
       </Reveal>
 
       <div className="relative mt-14">

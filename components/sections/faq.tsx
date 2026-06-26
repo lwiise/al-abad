@@ -10,7 +10,19 @@ import { Markdown } from "@/components/ui/markdown";
 import { Reveal } from "@/components/motion/reveal";
 import { Section } from "./section";
 
-export function Faq({ faqs }: { faqs: FaqRow[] }) {
+export function Faq({
+  faqs,
+  eyebrow,
+  heading,
+  helpText,
+  helpCtaLabel,
+}: {
+  faqs: FaqRow[];
+  eyebrow?: string | null;
+  heading?: string | null;
+  helpText?: string | null;
+  helpCtaLabel?: string | null;
+}) {
   if (faqs.length === 0) return null;
 
   return (
@@ -18,14 +30,14 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
       <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
         <Reveal>
           <div className="lg:sticky lg:top-24">
-            <p className="text-sm font-medium text-secondary">الأسئلة الشائعة</p>
+            <p className="text-sm font-medium text-secondary">{eyebrow || "الأسئلة الشائعة"}</p>
             <h2 className="mt-2 text-3xl font-bold text-foreground md:text-4xl">
-              إجاباتٌ عن أكثر ما يُسأل
+              {heading || "إجاباتٌ عن أكثر ما يُسأل"}
             </h2>
             <p className="mt-4 text-foreground-muted">
-              لم تجد إجابتك؟{" "}
+              {helpText || "لم تجد إجابتك؟"}{" "}
               <Link href="/تواصل" className="font-medium text-primary hover:text-primary-hover">
-                تواصل معنا
+                {helpCtaLabel || "تواصل معنا"}
               </Link>
               .
             </p>

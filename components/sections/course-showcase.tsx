@@ -7,7 +7,19 @@ import { Stagger } from "@/components/motion/stagger";
 import { Section, SectionHeading } from "./section";
 import { CourseCard } from "./course-card";
 
-export function CourseShowcase({ courses }: { courses: CourseRow[] }) {
+export function CourseShowcase({
+  courses,
+  eyebrow,
+  heading,
+  subhead,
+  viewAllLabel,
+}: {
+  courses: CourseRow[];
+  eyebrow?: string | null;
+  heading?: string | null;
+  subhead?: string | null;
+  viewAllLabel?: string | null;
+}) {
   if (courses.length === 0) return null;
 
   const [featured, ...rest] = courses;
@@ -17,9 +29,9 @@ export function CourseShowcase({ courses }: { courses: CourseRow[] }) {
     <Section id="courses" bg="background">
       <Reveal>
         <SectionHeading
-          eyebrow="الدورات"
-          title="دوراتٌ تأخذ بيدك خطوة بخطوة"
-          sub="محتوى عمليّ مصمّم لتطبّقه في حياتك — اختر ما يناسب وضعك وابدأ اليوم."
+          eyebrow={eyebrow || "الدورات"}
+          title={heading || "دوراتٌ تأخذ بيدك خطوة بخطوة"}
+          sub={subhead || "محتوى عمليّ مصمّم لتطبّقه في حياتك — اختر ما يناسب وضعك وابدأ اليوم."}
         />
       </Reveal>
 
@@ -38,7 +50,7 @@ export function CourseShowcase({ courses }: { courses: CourseRow[] }) {
 
       <div className="mt-12 text-center">
         <Link href="/الدورات" className={cn(buttonClasses("outline", "md"), "rounded-full")}>
-          عرض جميع الدورات
+          {viewAllLabel || "عرض جميع الدورات"}
         </Link>
       </div>
     </Section>

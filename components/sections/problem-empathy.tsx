@@ -15,7 +15,15 @@ const FALLBACK = [
 
 const ICONS = [MessagesSquare, Flame, Compass, HeartCrack, CloudRain];
 
-export function ProblemEmpathy({ points }: { points: string[] }) {
+export function ProblemEmpathy({
+  points,
+  heading,
+  subhead,
+}: {
+  points: string[];
+  heading?: string | null;
+  subhead?: string | null;
+}) {
   const items = points.length ? points : FALLBACK;
 
   return (
@@ -26,8 +34,11 @@ export function ProblemEmpathy({ points }: { points: string[] }) {
           <Reveal>
             <SectionHeading
               align="start"
-              title="هل تواجه أياً من هذه التحديات؟"
-              sub="معظم العلاقات لا تتعثّر لقلة الحب، بل لغياب الأدوات. أنت لست وحدك — وهذه نقطة البداية."
+              title={heading || "هل تواجه أياً من هذه التحديات؟"}
+              sub={
+                subhead ||
+                "معظم العلاقات لا تتعثّر لقلة الحب، بل لغياب الأدوات. أنت لست وحدك — وهذه نقطة البداية."
+              }
             />
           </Reveal>
           <Stagger as="ul" preset="flip" className="mt-8 grid gap-3 sm:grid-cols-2">

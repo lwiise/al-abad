@@ -13,13 +13,24 @@ const FALLBACK = [
 
 const ICONS = [MessagesSquare, Brain, Wrench, ShieldCheck];
 
-export function Outcomes({ points }: { points: string[] }) {
+export function Outcomes({
+  points,
+  heading,
+  subhead,
+}: {
+  points: string[];
+  heading?: string | null;
+  subhead?: string | null;
+}) {
   const items = points.length ? points : FALLBACK;
 
   return (
     <Section bg="background">
       <Reveal>
-        <SectionHeading title="ماذا ستكتسب؟" sub="ليست معلومات تُنسى، بل تغييرٌ تعيشه في علاقتك." />
+        <SectionHeading
+          title={heading || "ماذا ستكتسب؟"}
+          sub={subhead || "ليست معلومات تُنسى، بل تغييرٌ تعيشه في علاقتك."}
+        />
       </Reveal>
       <Stagger as="ul" preset="flip" className="mx-auto mt-10 grid max-w-4xl gap-5 sm:grid-cols-2">
         {items.map((p, i) => {

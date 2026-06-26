@@ -10,10 +10,12 @@ export function AiTeaser({
   headline,
   subhead,
   points,
+  badge,
 }: {
   headline?: string | null;
   subhead?: string | null;
   points: string[];
+  badge?: string | null;
 }) {
   const items = points.length ? points : FALLBACK_POINTS;
 
@@ -25,7 +27,7 @@ export function AiTeaser({
           <AiOrbit className="pointer-events-none absolute -end-10 -top-12 size-56 text-white/25" />
           <div className="relative z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium backdrop-blur">
-            <Sparkles className="size-4" /> قريباً
+            <Sparkles className="size-4" /> {badge || "قريباً"}
           </span>
           <h2 className="mx-auto mt-5 max-w-2xl text-3xl font-bold md:text-4xl">
             {headline || "مساعدك الذكي للتعلّم"}

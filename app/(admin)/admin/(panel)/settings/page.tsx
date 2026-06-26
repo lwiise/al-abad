@@ -111,9 +111,11 @@ export default async function SettingsPage(props: {
             <TextField name="hero_secondary_cta_url" label="زر ثانوي — الرابط" defaultValue={str("hero_secondary_cta_url")} dir="ltr" />
           </div>
           <TextField name="hero_microproof" label="إثبات سريع (micro-proof)" defaultValue={str("hero_microproof")} />
+          <TextField name="hero_trust_badge" label="شارة الثقة" defaultValue={str("hero_trust_badge")} help="النص بجانب صور المتدربين أعلى القسم" />
         </Section>
 
         <Section title="قسم الذكاء الاصطناعي">
+          <TextField name="ai_badge" label="شارة القسم" defaultValue={str("ai_badge")} placeholder="قريباً" />
           <TextField name="ai_headline" label="العنوان" defaultValue={str("ai_headline")} />
           <AreaField name="ai_subhead" label="العنوان الفرعي" defaultValue={str("ai_subhead")} rows={2} />
           <AreaField name="ai_points" label="النقاط" defaultValue={listVal("ai_points")} help="سطر واحد لكل نقطة" rows={4} />
@@ -122,6 +124,54 @@ export default async function SettingsPage(props: {
         <Section title="القوائم">
           <AreaField name="problem_points" label="نقاط المشكلة" defaultValue={listVal("problem_points")} help="سطر واحد لكل نقطة" rows={4} />
           <AreaField name="outcome_points" label="نقاط النتائج" defaultValue={listVal("outcome_points")} help="سطر واحد لكل نقطة" rows={4} />
+        </Section>
+
+        <Section title="قسم التحديات">
+          <TextField name="problem_heading" label="العنوان" defaultValue={str("problem_heading")} />
+          <AreaField name="problem_subhead" label="العنوان الفرعي" defaultValue={str("problem_subhead")} rows={2} />
+        </Section>
+
+        <Section title="قسم المدرّب">
+          <TextField name="instructor_eyebrow" label="السطر التمهيدي" defaultValue={str("instructor_eyebrow")} />
+          <TextField name="instructor_name" label="الاسم / العنوان" defaultValue={str("instructor_name")} />
+          <AreaField name="instructor_markers" label="الوسوم" defaultValue={listVal("instructor_markers")} help="سطر واحد لكل وسم" rows={3} />
+          <TextField name="instructor_cta_label" label="نص زر النبذة" defaultValue={str("instructor_cta_label")} />
+        </Section>
+
+        <Section title="قسم الدورات">
+          <TextField name="courses_eyebrow" label="السطر التمهيدي" defaultValue={str("courses_eyebrow")} />
+          <TextField name="courses_heading" label="العنوان" defaultValue={str("courses_heading")} />
+          <AreaField name="courses_subhead" label="العنوان الفرعي" defaultValue={str("courses_subhead")} rows={2} />
+          <TextField name="courses_view_all_label" label="نص زر «عرض الكل»" defaultValue={str("courses_view_all_label")} />
+        </Section>
+
+        <Section title="قسم كيف تبدأ">
+          <TextField name="how_heading" label="العنوان" defaultValue={str("how_heading")} />
+          <AreaField name="how_subhead" label="العنوان الفرعي" defaultValue={str("how_subhead")} rows={2} />
+        </Section>
+
+        <Section title="قسم المكتسبات">
+          <TextField name="outcomes_heading" label="العنوان" defaultValue={str("outcomes_heading")} />
+          <AreaField name="outcomes_subhead" label="العنوان الفرعي" defaultValue={str("outcomes_subhead")} rows={2} />
+        </Section>
+
+        <Section title="قسم آراء المتدربين">
+          <TextField name="testimonials_ribbon" label="الشريط العلوي" defaultValue={str("testimonials_ribbon")} />
+          <TextField name="testimonials_eyebrow" label="السطر التمهيدي" defaultValue={str("testimonials_eyebrow")} />
+          <TextField name="testimonials_heading" label="العنوان" defaultValue={str("testimonials_heading")} />
+        </Section>
+
+        <Section title="قسم الأسئلة الشائعة">
+          <TextField name="faq_eyebrow" label="السطر التمهيدي" defaultValue={str("faq_eyebrow")} />
+          <TextField name="faq_heading" label="العنوان" defaultValue={str("faq_heading")} />
+          <TextField name="faq_help_text" label="نص المساعدة" defaultValue={str("faq_help_text")} help="يظهر قبل رابط «تواصل معنا»" />
+          <TextField name="faq_help_cta_label" label="نص رابط التواصل" defaultValue={str("faq_help_cta_label")} />
+        </Section>
+
+        <Section title="قسم المدونة">
+          <TextField name="blog_heading" label="العنوان" defaultValue={str("blog_heading")} />
+          <AreaField name="blog_subhead" label="العنوان الفرعي" defaultValue={str("blog_subhead")} rows={2} />
+          <TextField name="blog_view_all_label" label="نص زر «عرض الكل»" defaultValue={str("blog_view_all_label")} />
         </Section>
 
         <Section title="الرؤية">
