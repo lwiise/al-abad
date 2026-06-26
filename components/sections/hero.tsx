@@ -131,7 +131,7 @@ export function Hero({
                 ref={headlineRef}
                 className="pb-1 text-4xl font-extrabold leading-[1.28] text-foreground [text-wrap:normal] sm:text-5xl lg:text-6xl"
               >
-                {headline || "زواجٌ أكثر وعياً… وعلاقةٌ تدوم"}
+                {headline || "زواج أكثر وعياً… وعلاقة تدوم"}
               </h1>
               <p data-hero-rise className="leading-relaxed text-foreground-muted">
                 {subhead ||
