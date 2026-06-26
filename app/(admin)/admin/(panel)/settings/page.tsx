@@ -65,9 +65,9 @@ function AreaField({
 }
 
 export default async function SettingsPage(props: {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
-  const { saved } = await props.searchParams;
+  const { saved, error } = await props.searchParams;
   const { data } = await adminDb().from("site_settings").select("*").limit(1).maybeSingle();
   const s = (data ?? {}) as Record<string, unknown>;
   const social = (s.social_links ?? {}) as Record<string, string>;
@@ -81,6 +81,11 @@ export default async function SettingsPage(props: {
         {saved && (
           <span className="rounded-full bg-secondary/10 px-3 py-1 text-sm text-secondary">
             تم الحفظ
+          </span>
+        )}
+        {error && (
+          <span className="rounded-full bg-accent/10 px-3 py-1 text-sm text-accent">
+            تعذّر الحفظ: {error}
           </span>
         )}
       </header>

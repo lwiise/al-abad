@@ -204,7 +204,12 @@ export async function saveSettings(formData: FormData) {
   let heroImage = text("hero_image_url");
   const heroFile = formData.get("hero_image_url__file");
   if (heroFile instanceof File && heroFile.size > 0) {
-    heroImage = await uploadImage(heroFile, "site");
+    try {
+      heroImage = await uploadImage(heroFile, "site");
+    } catch (e) {
+      console.error("hero image upload failed:", e);
+      redirect(`/admin/settings?error=${encodeURIComponent("تعذّر رفع الصورة. جرّب صورة أصغر.")}`);
+    }
   }
 
   const socialEntries: Record<string, string> = {};
@@ -278,13 +283,19 @@ export async function saveSettings(formData: FormData) {
     blog_view_all_label: text("blog_view_all_label"),
   };
 
-  const { data: existing } = await client.from("site_settings").select("id").limit(1).maybeSingle();
-  if (existing?.id) {
-    const { error } = await client.from("site_settings").update(payload).eq("id", existing.id);
-    if (error) throw error;
-  } else {
-    const { error } = await client.from("site_settings").insert(payload);
-    if (error) throw error;
+  try {
+    const { data: existing } = await client.from("site_settings").select("id").limit(1).maybeSingle();
+    if (existing?.id) {
+      const { error } = await client.from("site_settings").update(payload).eq("id", existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await client.from("site_settings").insert(payload);
+      if (error) throw error;
+    }
+  } catch (e) {
+    console.error("saveSettings failed:", e);
+    const msg = e instanceof Error ? e.message : "تعذّر حفظ الإعدادات";
+    redirect(`/admin/settings?error=${encodeURIComponent(msg.slice(0, 200))}`);
   }
 
   revalidatePath("/admin/settings");
