@@ -13,7 +13,7 @@ Next.js (App Router) + TypeScript + Tailwind v4 + Supabase (Postgres, Auth, Stor
 
 ## Design language — no AI-slop defaults
 
-**Every choice is intentional.** The premium feel comes from the neutral ramp, generous spacing, and Tajawal type — brand colour is used deliberately, never as decoration. Specifically avoid the generic "purple-gradient-on-white" look (our palette is plum/violet, so this is a real trap).
+**Every choice is intentional.** The premium feel comes from the neutral ramp, generous spacing, and the type pairing — brand colour is used deliberately, never as decoration. Specifically avoid the generic "purple-gradient-on-white" look (our palette is plum/violet, so this is a real trap).
 
 ### Brand tokens → Tailwind utilities (defined in `app/globals.css` `@theme`)
 
@@ -35,11 +35,11 @@ Each action role has `-hover` and `on-*` (label) variants, e.g. `bg-primary hove
 - **Dark sections (ink background):** plum is too close to the background — use **lilac or white** for primary actions there, and let **coral / violet / teal** carry accents.
 - **Never pure black** — use `ink` / the `neutral-*` ramp.
 - Use `bg-surface` and `bg-surface-strong` (lilac) for alternating section backgrounds — rhythm without harsh dividers.
-- **Type:** Tajawal everywhere. Headings weight 500–700 at display sizes; body 400 with generous line-height (~1.8 for Arabic). Modular scale + soft radii/shadows are tokenised in `@theme`.
+- **Type:** **Readex Pro** for display/headings (`--font-display`, applied to `h1–h6`) + **IBM Plex Sans Arabic** for body (`--font-sans`); both via `next/font/google`. Body 400 with generous line-height (~1.8 for Arabic). Modular scale + soft radii/shadows are tokenised in `@theme`. (Replaced the original Tajawal in Phase 2.1.)
 
 ## RTL / Arabic conventions
 
-- Root layout is `<html lang="ar" dir="rtl">` with Tajawal as the default sans (`next/font/google`, arabic+latin subsets).
+- Root layout is `<html lang="ar" dir="rtl">` with IBM Plex Sans Arabic as the default sans + Readex Pro for headings (`next/font/google`, arabic+latin subsets).
 - **Never** apply letter-spacing to Arabic (it breaks letter joining) — nulled globally in `globals.css`.
 - Use **logical** Tailwind utilities: `ps-*`/`pe-*`, `ms-*`/`me-*`, `start-*`/`end-*` — **never** `left/right`, `ml/mr`, `pl/pr`.
 - Default voice/copy is Arabic.
