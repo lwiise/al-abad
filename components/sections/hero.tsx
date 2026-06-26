@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { useMagnetic } from "@/components/motion/use-magnetic";
-import { CountUp } from "@/components/motion/count-up";
 import type { StatRow } from "@/lib/database.types";
 import { MediaFallback } from "./media-fallback";
 
@@ -192,10 +191,9 @@ export function Hero({
                         <Icon className="size-5" />
                       </span>
                       <span>
-                        <CountUp
-                          value={s.value}
-                          className="block text-2xl font-extrabold tabular-nums text-foreground"
-                        />
+                        <span className="block text-2xl font-extrabold tabular-nums text-foreground">
+                          {s.value}
+                        </span>
                         <span className="block text-xs text-foreground-subtle">{s.label}</span>
                       </span>
                     </li>
