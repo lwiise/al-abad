@@ -129,7 +129,8 @@ export function Hero({
             <div className="max-w-md space-y-5 text-start">
               <h1
                 ref={headlineRef}
-                className="pb-1 text-4xl font-extrabold leading-[1.28] text-foreground [text-wrap:normal] sm:text-5xl lg:text-6xl"
+                style={{ lineHeight: 1.5 }}
+                className="pb-1 text-4xl font-extrabold text-foreground [text-wrap:normal] sm:text-5xl lg:text-6xl"
               >
                 {headline || "زواج أكثر وعياً… وعلاقة تدوم"}
               </h1>
