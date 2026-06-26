@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { useRef, type CSSProperties, type ReactNode } from "react";
+import { useReveal } from "./use-reveal";
 
 /**
- * Scroll-triggered entrance (fade + gentle rise, once) powered by GSAP
- * ScrollTrigger. Same API as before so all section usages are unchanged.
- * Honors prefers-reduced-motion via gsap.matchMedia (content stays visible).
+ * Scroll-triggered entrance (fade + gentle rise, once) via IntersectionObserver
+ * + CSS transitions. Same API as before so all section usages are unchanged.
+ * Content is visible by default and only hidden once JS confirms it can reveal
+ * it again — honors prefers-reduced-motion and degrades to fully visible.
  */
 export function Reveal({
   children,
@@ -18,27 +19,13 @@ export function Reveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  useReveal(ref);
 
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(ref.current, {
-          opacity: 0,
-          y: 16,
-          duration: 0.7,
-          ease: "power3.out",
-          delay,
-          scrollTrigger: { trigger: ref.current, start: "clamp(top 85%)", once: true },
-        });
-      });
-      return () => mm.revert();
-    },
-    { scope: ref },
-  );
+  // delay is render-time + deterministic → no hydration mismatch.
+  const style = delay ? ({ "--reveal-delay": `${delay}s` } as CSSProperties) : undefined;
 
   return (
-    <div ref={ref} className={className}>
+    <div ref={ref} className={className} style={style}>
       {children}
     </div>
   );

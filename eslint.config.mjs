@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Local build artifacts (gitignored, but ESLint flat config ignores .gitignore).
     ".netlify/**",
     ".agents/**",
+    ".claude/**",
   ]),
 ]);
 

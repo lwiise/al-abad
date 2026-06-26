@@ -195,6 +195,53 @@
   }
 }
 
+/* --- Scroll reveal: IntersectionObserver + CSS transitions ---------------
+   Content renders VISIBLE; JS adds data-reveal / data-stagger="hidden" only
+   when it can reveal it, then "shown" on intersect. The transition lives on the
+   "shown" state only, so the client's visible→hidden flip is instant (no flash)
+   while hidden→shown animates. Transforms only → RTL-safe. */
+@layer utilities {
+  [data-reveal="hidden"] {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  [data-reveal="shown"] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s);
+  }
+
+  [data-stagger="hidden"][data-stagger-preset="rise"] > * {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  [data-stagger="hidden"][data-stagger-preset="flip"] > * {
+    opacity: 0;
+    transform: perspective(900px) rotateX(-35deg) translateY(28px);
+    transform-origin: center top;
+  }
+  [data-stagger="shown"] > * {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s),
+      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal="hidden"],
+  [data-reveal="shown"],
+  [data-stagger="hidden"] > *,
+  [data-stagger="shown"] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 /* --- AI section: soft moving sheen (the "future" moment) ----------------- */
 @keyframes shimmer {
   0% {
