@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
+import { AiOrbit } from "@/components/motion/ai-orbit";
 import { Section } from "./section";
 import { AiWaitlistForm } from "./ai-waitlist-form";
 
@@ -21,6 +22,8 @@ export function AiTeaser({
       <Reveal>
         {/* Violet "future" moment — soft animated sheen. */}
         <div className="ai-shimmer relative overflow-hidden rounded-[2rem] px-6 py-14 text-center text-on-highlight md:px-12">
+          <AiOrbit className="pointer-events-none absolute -end-10 -top-12 size-56 text-white/25" />
+          <div className="relative z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium backdrop-blur">
             <Sparkles className="size-4" /> قريباً
           </span>
@@ -43,6 +46,7 @@ export function AiTeaser({
 
           <div className="mt-9 flex justify-center">
             <AiWaitlistForm />
+          </div>
           </div>
         </div>
       </Reveal>

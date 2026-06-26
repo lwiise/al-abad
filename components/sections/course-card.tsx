@@ -1,8 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CourseRow } from "@/lib/database.types";
+import { useTilt } from "@/components/motion/use-tilt";
 import { MediaFallback } from "./media-fallback";
 
 function price(course: CourseRow): string | null {
@@ -26,12 +29,14 @@ export function CourseCard({
 }) {
   const href = `/الدورات/${course.slug}`;
   const p = price(course);
+  const tilt = useTilt<HTMLAnchorElement>();
 
   return (
     <Link
+      ref={tilt}
       href={href}
       className={cn(
-        "group relative block aspect-video overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
+        "group relative block aspect-video overflow-hidden rounded-3xl shadow-md transition-shadow duration-300 hover:shadow-xl",
       )}
     >
       <div className="absolute inset-0">

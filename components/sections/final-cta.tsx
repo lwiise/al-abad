@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { WhatsappGlyph } from "@/components/site/icons";
 import { Reveal } from "@/components/motion/reveal";
+import { MagneticLink } from "@/components/motion/magnetic-link";
 import { Ribbon } from "@/components/ui/ribbon";
 import { Section } from "./section";
 
@@ -30,12 +30,12 @@ export function FinalCta({
               {heading || "ابدأ رحلتك نحو علاقةٍ أفضل اليوم"}
             </h2>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
+              <MagneticLink
                 href={primaryUrl || "/الدورات"}
-                className="rounded-full bg-accent px-7 py-3 font-medium text-on-accent shadow-md transition-all hover:-translate-y-0.5 hover:bg-accent-hover hover:shadow-lg"
+                className="rounded-full bg-accent px-7 py-3 font-medium text-on-accent shadow-md transition-colors hover:bg-accent-hover"
               >
                 {primaryLabel || "تصفح الدورات"}
-              </Link>
+              </MagneticLink>
               {waHref && (
                 <a
                   href={waHref}
