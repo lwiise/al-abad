@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import type { CourseRow } from "@/lib/database.types";
 import { Reveal } from "@/components/motion/reveal";
+import { Stagger } from "@/components/motion/stagger";
 import { Section, SectionHeading } from "./section";
 import { CourseCard } from "./course-card";
 
@@ -27,13 +28,11 @@ export function CourseShowcase({ courses }: { courses: CourseRow[] }) {
           <CourseCard course={featured} index={0} featured />
         </Reveal>
         {grid.length > 0 && (
-          <Reveal>
-            <div className="grid gap-6 sm:grid-cols-2">
-              {grid.map((course, i) => (
-                <CourseCard key={course.id} course={course} index={i + 1} />
-              ))}
-            </div>
-          </Reveal>
+          <Stagger className="grid gap-6 sm:grid-cols-2">
+            {grid.map((course, i) => (
+              <CourseCard key={course.id} course={course} index={i + 1} />
+            ))}
+          </Stagger>
         )}
       </div>
 

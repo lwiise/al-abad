@@ -1,5 +1,6 @@
 import type { HowItWorksStepRow } from "@/lib/database.types";
 import { Reveal } from "@/components/motion/reveal";
+import { Stagger } from "@/components/motion/stagger";
 import { Section, SectionHeading } from "./section";
 
 const FALLBACK: Pick<HowItWorksStepRow, "title" | "description">[] = [
@@ -16,9 +17,8 @@ export function HowItWorks({ steps }: { steps: HowItWorksStepRow[] }) {
       <Reveal>
         <SectionHeading title="كيف تبدأ؟" sub="ثلاث خطوات بسيطة من التصفّح إلى التطبيق." />
       </Reveal>
-      <Reveal>
-        <ol className="mt-12 grid gap-6 md:grid-cols-3">
-          {items.map((step, i) => (
+      <Stagger as="ol" className="mt-12 grid gap-6 md:grid-cols-3">
+        {items.map((step, i) => (
             <li
               key={i}
               className="rounded-3xl border border-border bg-background p-7 text-center transition-shadow hover:shadow-md"
@@ -30,8 +30,7 @@ export function HowItWorks({ steps }: { steps: HowItWorksStepRow[] }) {
               {step.description && <p className="mt-2 text-foreground-muted">{step.description}</p>}
             </li>
           ))}
-        </ol>
-      </Reveal>
+      </Stagger>
     </Section>
   );
 }

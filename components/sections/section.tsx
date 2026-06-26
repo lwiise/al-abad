@@ -67,6 +67,13 @@ export function SectionHeading({
       >
         {title}
       </h2>
+      <span
+        className={cn(
+          "mt-5 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-secondary",
+          align === "center" && "mx-auto",
+        )}
+        aria-hidden="true"
+      />
       {sub && (
         <p
           className={cn(

@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/motion/reveal";
+import { Stagger } from "@/components/motion/stagger";
 import { Section, SectionHeading } from "./section";
 
 const FALLBACK = [
@@ -20,9 +21,8 @@ export function ProblemEmpathy({ points }: { points: string[] }) {
           sub="معظم العلاقات لا تتعثّر لقلة الحب، بل لغياب الأدوات. أنت لست وحدك — وهذه نقطة البداية."
         />
       </Reveal>
-      <Reveal>
-        <ul className="mx-auto mt-10 grid max-w-4xl gap-3 sm:grid-cols-2">
-          {items.map((p, i) => (
+      <Stagger as="ul" className="mx-auto mt-10 grid max-w-4xl gap-3 sm:grid-cols-2">
+        {items.map((p, i) => (
             <li
               key={i}
               className="flex items-center gap-3 rounded-2xl border border-border bg-background px-5 py-4 text-foreground transition-colors hover:border-border-strong"
@@ -31,8 +31,7 @@ export function ProblemEmpathy({ points }: { points: string[] }) {
               <span>{p}</span>
             </li>
           ))}
-        </ul>
-      </Reveal>
+      </Stagger>
     </Section>
   );
 }
