@@ -1,6 +1,6 @@
 import type { TestimonialRow } from "@/lib/database.types";
 import { Reveal } from "@/components/motion/reveal";
-import { Ribbon } from "@/components/ui/ribbon";
+import { QuoteMark } from "@/components/ui/quote-mark";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Carousel,
@@ -14,12 +14,10 @@ import { TestimonialCard } from "./testimonial-card";
 
 export function Testimonials({
   testimonials,
-  ribbon,
   eyebrow,
   heading,
 }: {
   testimonials: TestimonialRow[];
-  ribbon?: string | null;
   eyebrow?: string | null;
   heading?: string | null;
 }) {
@@ -27,12 +25,10 @@ export function Testimonials({
 
   return (
     <Section bg="surface" className="overflow-hidden">
-      {/* ribbon flourish */}
-      <div className="mx-auto mb-2 max-w-4xl opacity-90">
-        <Ribbon id="testi" text={ribbon || "قصص نجاح حقيقية"} tone="coral" />
-      </div>
-
       <Reveal>
+        {/* decorative quote flourish */}
+        <QuoteMark className="mx-auto mb-4 text-center" />
+
         {/* overlapping avatar cluster */}
         <div className="flex justify-center">
           <div className="flex flex-row-reverse">

@@ -156,7 +156,6 @@ export default async function SettingsPage(props: {
         </Section>
 
         <Section title="قسم آراء المتدربين">
-          <TextField name="testimonials_ribbon" label="الشريط العلوي" defaultValue={str("testimonials_ribbon")} />
           <TextField name="testimonials_eyebrow" label="السطر التمهيدي" defaultValue={str("testimonials_eyebrow")} />
           <TextField name="testimonials_heading" label="العنوان" defaultValue={str("testimonials_heading")} />
         </Section>

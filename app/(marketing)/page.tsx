@@ -87,7 +87,6 @@ export default async function HomePage() {
       />
       <Testimonials
         testimonials={testimonials}
-        ribbon={settings?.testimonials_ribbon}
         eyebrow={settings?.testimonials_eyebrow}
         heading={settings?.testimonials_heading}
       />

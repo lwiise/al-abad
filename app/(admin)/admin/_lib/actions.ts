@@ -267,7 +267,6 @@ export async function saveSettings(formData: FormData) {
     outcomes_heading: text("outcomes_heading"),
     outcomes_subhead: text("outcomes_subhead"),
     ai_badge: text("ai_badge"),
-    testimonials_ribbon: text("testimonials_ribbon"),
     testimonials_eyebrow: text("testimonials_eyebrow"),
     testimonials_heading: text("testimonials_heading"),
     faq_eyebrow: text("faq_eyebrow"),
