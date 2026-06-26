@@ -15,7 +15,6 @@ import { MeetInstructor } from "@/components/sections/meet-instructor";
 import { CourseShowcase } from "@/components/sections/course-showcase";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { Outcomes } from "@/components/sections/outcomes";
-import { Vision } from "@/components/sections/vision";
 import { AiTeaser } from "@/components/sections/ai-teaser";
 import { Testimonials } from "@/components/sections/testimonials";
 import { Faq } from "@/components/sections/faq";
@@ -54,11 +53,6 @@ export default async function HomePage() {
       <CourseShowcase courses={courses} />
       <HowItWorks steps={steps} />
       <Outcomes points={asList(settings?.outcome_points)} />
-      <Vision
-        text={settings?.vision_text}
-        ctaLabel={settings?.vision_cta_label}
-        ctaUrl={settings?.vision_cta_url}
-      />
       <AiTeaser
         headline={settings?.ai_headline}
         subhead={settings?.ai_subhead}
