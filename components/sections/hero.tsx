@@ -43,13 +43,13 @@ export function Hero({
       const mm = gsap.matchMedia();
 
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // No mask: masking clips Arabic diacritics/descenders. Plain fade-rise.
         const split = SplitText.create(headlineRef.current, {
           type: "words",
-          mask: "words",
           autoSplit: true,
           onSplit: (self) =>
             gsap.from(self.words, {
-              yPercent: 115,
+              y: 28,
               opacity: 0,
               duration: 0.85,
               ease: "power3.out",
@@ -129,7 +129,7 @@ export function Hero({
             <div className="max-w-md space-y-5 text-start">
               <h1
                 ref={headlineRef}
-                className="text-4xl font-extrabold leading-[1.1] text-foreground [text-wrap:normal] sm:text-5xl lg:text-6xl"
+                className="pb-1 text-4xl font-extrabold leading-[1.28] text-foreground [text-wrap:normal] sm:text-5xl lg:text-6xl"
               >
                 {headline || "زواجٌ أكثر وعياً… وعلاقةٌ تدوم"}
               </h1>
