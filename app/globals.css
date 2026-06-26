@@ -242,6 +242,33 @@
   }
 }
 
+/* Hero aurora — controlled, art-directed brand wash (not muddy WebGL). */
+@layer utilities {
+  .hero-aurora {
+    background:
+      radial-gradient(
+        38% 50% at 22% 18%,
+        color-mix(in oklab, var(--color-violet) 24%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        42% 52% at 82% 16%,
+        color-mix(in oklab, var(--color-teal) 20%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        50% 55% at 60% 92%,
+        color-mix(in oklab, var(--color-primary) 22%, transparent),
+        transparent 72%
+      ),
+      radial-gradient(
+        40% 45% at 35% 70%,
+        color-mix(in oklab, var(--color-lilac) 55%, transparent),
+        transparent 70%
+      );
+  }
+}
+
 /* Radix accordion expand/collapse */
 @keyframes accordion-down {
   from {
