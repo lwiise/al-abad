@@ -10,7 +10,6 @@ import {
   waLink,
 } from "@/lib/data";
 import { Hero } from "@/components/sections/hero";
-import { TrustStrip } from "@/components/sections/trust-strip";
 import { ProblemEmpathy } from "@/components/sections/problem-empathy";
 import { MeetInstructor } from "@/components/sections/meet-instructor";
 import { CourseShowcase } from "@/components/sections/course-showcase";
@@ -50,7 +49,6 @@ export default async function HomePage() {
         imageUrl={settings?.hero_image_url}
         stats={stats}
       />
-      <TrustStrip stats={stats} />
       <ProblemEmpathy points={asList(settings?.problem_points)} />
       <MeetInstructor aboutBody={settings?.about_body} imageUrl={settings?.hero_image_url} />
       <CourseShowcase courses={courses} />
