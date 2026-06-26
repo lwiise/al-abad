@@ -46,12 +46,12 @@ export default async function HomePage() {
       <Hero
         headline={settings?.hero_headline}
         subhead={settings?.hero_subhead}
-        microproof={settings?.hero_microproof}
         primaryLabel={settings?.hero_primary_cta_label}
         primaryUrl={settings?.hero_primary_cta_url}
         secondaryLabel={settings?.hero_secondary_cta_label}
         secondaryUrl={settings?.hero_secondary_cta_url}
         imageUrl={settings?.hero_image_url}
+        stats={stats}
       />
       <TrustStrip stats={stats} />
       <ProblemEmpathy points={asList(settings?.problem_points)} />
