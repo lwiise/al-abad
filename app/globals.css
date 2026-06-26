@@ -98,12 +98,17 @@
   --shadow-md: 0 4px 16px -4px rgb(58 54 61 / 0.08);
   --shadow-lg: 0 12px 32px -8px rgb(58 54 61 / 0.12);
   --shadow-xl: 0 24px 56px -12px rgb(88 59 102 / 0.18);
+
+  /* --- Animations (Radix accordion) ---------------------------------- */
+  --animate-accordion-down: accordion-down 0.22s ease-out;
+  --animate-accordion-up: accordion-up 0.22s ease-out;
 }
 
 /* Tajawal is injected on <html> by next/font as --font-tajawal. `inline` keeps
    the utility referencing the live CSS variable rather than baking a value. */
 @theme inline {
-  --font-sans: var(--font-tajawal), system-ui, sans-serif;
+  --font-sans: var(--font-plex), system-ui, sans-serif;
+  --font-display: var(--font-readex), var(--font-plex), system-ui, sans-serif;
 }
 
 @layer base {
@@ -132,6 +137,7 @@
 
   /* Headings lead with weight, not size alone. */
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
     font-weight: 700;
     text-wrap: balance;
   }
@@ -186,5 +192,70 @@
   .reveal {
     animation: none;
     opacity: 1;
+  }
+}
+
+/* --- AI section: soft moving sheen (the "future" moment) ----------------- */
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@layer utilities {
+  /* Animated violet→indigo gradient for the AI band. */
+  .ai-shimmer {
+    background-image: linear-gradient(
+      110deg,
+      var(--color-highlight) 0%,
+      #7c3aed 25%,
+      var(--color-highlight) 50%,
+      #6d28d9 75%,
+      var(--color-highlight) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 9s linear infinite;
+  }
+
+  /* Depth for rich dark (plum/ink) bands — soft brand-tone glows, not flat. */
+  .dark-depth {
+    background-image:
+      radial-gradient(
+        75% 90% at 12% 0%,
+        color-mix(in oklab, var(--color-primary) 60%, transparent) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        60% 80% at 100% 100%,
+        color-mix(in oklab, var(--color-secondary) 38%, transparent) 0%,
+        transparent 55%
+      );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-shimmer {
+    animation: none;
+  }
+}
+
+/* Radix accordion expand/collapse */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
   }
 }

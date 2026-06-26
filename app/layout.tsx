@@ -1,11 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Tajawal } from "next/font/google";
+import { Readex_Pro, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 
-const tajawal = Tajawal({
-  variable: "--font-tajawal",
+// Display face — distinctive, warm, editorial Arabic for headings.
+const readex = Readex_Pro({
+  variable: "--font-readex",
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "700", "800"],
+  display: "swap",
+});
+
+// Body face — clean, highly readable modern Arabic.
+const plex = IBM_Plex_Sans_Arabic({
+  variable: "--font-plex",
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -29,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={tajawal.variable}>
+    <html lang="ar" dir="rtl" className={`${readex.variable} ${plex.variable}`}>
       <body className="min-h-dvh bg-background text-foreground font-sans">
         {children}
       </body>

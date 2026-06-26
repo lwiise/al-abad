@@ -44,12 +44,12 @@ export function AiWaitlistForm() {
           inputMode="email"
           spellCheck={false}
           placeholder="بريدك الإلكتروني"
-          className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-start text-white placeholder:text-white/60 focus:border-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+          className="w-full rounded-full border border-white/20 bg-white/10 px-5 py-3 text-start text-white placeholder:text-white/60 focus:border-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
         />
         <button
           type="submit"
           disabled={pending}
-          className="shrink-0 rounded-lg bg-white px-6 py-3 font-medium text-highlight transition-colors hover:bg-white/90 disabled:opacity-60"
+          className="shrink-0 rounded-full bg-white px-6 py-3 font-medium text-highlight transition-colors hover:bg-white/90 disabled:opacity-60"
         >
           {pending ? "جارٍ…" : "انضم لقائمة الانتظار"}
         </button>

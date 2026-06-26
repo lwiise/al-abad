@@ -61,7 +61,7 @@ export function ContactForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="rounded-full">
         {pending ? "جارٍ الإرسال…" : "إرسال"}
       </Button>
     </form>

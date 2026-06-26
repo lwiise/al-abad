@@ -72,7 +72,10 @@ export function Header() {
           >
             تسجيل الدخول
           </a>
-          <Link href="/#courses" className={cn(buttonClasses("primary", "sm"), "hidden sm:inline-flex")}>
+          <Link
+            href="/#courses"
+            className={cn(buttonClasses("primary", "sm"), "hidden rounded-full sm:inline-flex")}
+          >
             ابدأ الآن
           </Link>
           <button
@@ -117,7 +120,7 @@ export function Header() {
             <Link
               href="/#courses"
               onClick={() => setOpen(false)}
-              className={cn(buttonClasses("primary", "md"), "mt-2 w-full")}
+              className={cn(buttonClasses("primary", "md"), "mt-2 w-full rounded-full")}
             >
               ابدأ الآن
             </Link>
