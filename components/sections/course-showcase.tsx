@@ -5,18 +5,12 @@ import type { CourseRow } from "@/lib/database.types";
 import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeading } from "./section";
 import { CourseCard } from "./course-card";
-import { CourseExplorer } from "./course-explorer";
 
-export function CourseShowcase({
-  courses,
-  categories,
-}: {
-  courses: CourseRow[];
-  categories: string[];
-}) {
+export function CourseShowcase({ courses }: { courses: CourseRow[] }) {
   if (courses.length === 0) return null;
 
   const [featured, ...rest] = courses;
+  const grid = rest.slice(0, 4); // featured + 4 = 5 shown on the homepage
 
   return (
     <Section id="courses" bg="background">
@@ -28,13 +22,17 @@ export function CourseShowcase({
         />
       </Reveal>
 
-      <div className="mt-12 space-y-8">
+      <div className="mt-12 space-y-6">
         <Reveal>
           <CourseCard course={featured} index={0} featured />
         </Reveal>
-        {rest.length > 0 && (
+        {grid.length > 0 && (
           <Reveal>
-            <CourseExplorer courses={rest} categories={categories} />
+            <div className="grid gap-6 sm:grid-cols-2">
+              {grid.map((course, i) => (
+                <CourseCard key={course.id} course={course} index={i + 1} />
+              ))}
+            </div>
           </Reveal>
         )}
       </div>

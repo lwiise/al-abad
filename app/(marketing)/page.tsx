@@ -1,6 +1,5 @@
 import {
   asList,
-  getCourseCategories,
   getPublishedCourses,
   getPublishedFaqs,
   getPublishedPosts,
@@ -27,17 +26,15 @@ import { BlogTeaser } from "@/components/sections/blog-teaser";
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [settings, courses, categories, testimonials, faqs, stats, steps, posts] =
-    await Promise.all([
-      getSettings(),
-      getPublishedCourses(),
-      getCourseCategories(),
-      getPublishedTestimonials(),
-      getPublishedFaqs(),
-      getPublishedStats(),
-      getPublishedSteps(),
-      getPublishedPosts(3),
-    ]);
+  const [settings, courses, testimonials, faqs, stats, steps, posts] = await Promise.all([
+    getSettings(),
+    getPublishedCourses(),
+    getPublishedTestimonials(),
+    getPublishedFaqs(),
+    getPublishedStats(),
+    getPublishedSteps(),
+    getPublishedPosts(3),
+  ]);
 
   const wa = waLink(settings?.whatsapp_number, "السلام عليكم، لدي استفسار عن الدورات");
 
@@ -56,7 +53,7 @@ export default async function HomePage() {
       <TrustStrip stats={stats} />
       <ProblemEmpathy points={asList(settings?.problem_points)} />
       <MeetInstructor aboutBody={settings?.about_body} imageUrl={settings?.hero_image_url} />
-      <CourseShowcase courses={courses} categories={categories} />
+      <CourseShowcase courses={courses} />
       <HowItWorks steps={steps} />
       <Outcomes points={asList(settings?.outcome_points)} />
       <Vision
