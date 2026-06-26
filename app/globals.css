@@ -236,8 +236,39 @@
   }
 }
 
+@layer utilities {
+  /* Living dark gradient — Vision section. */
+  .shimmer-night {
+    background-image: linear-gradient(
+      110deg,
+      var(--color-ink) 0%,
+      var(--color-primary) 30%,
+      #241f2c 50%,
+      color-mix(in oklab, var(--color-secondary) 55%, var(--color-ink)) 72%,
+      var(--color-ink) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 14s linear infinite;
+  }
+  /* Vibrant brand gradient — final CTA (coral button pops on it). */
+  .shimmer-brand {
+    background-image: linear-gradient(
+      110deg,
+      var(--color-primary) 0%,
+      var(--color-highlight) 30%,
+      var(--color-secondary) 55%,
+      var(--color-primary) 78%,
+      var(--color-highlight) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 12s linear infinite;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ai-shimmer {
+  .ai-shimmer,
+  .shimmer-night,
+  .shimmer-brand {
     animation: none;
   }
 }
