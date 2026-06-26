@@ -101,6 +101,11 @@ export function Hero({
         <div data-orb className="absolute top-1/3 end-[6%] size-80 rounded-full bg-secondary/15 blur-3xl" />
         <div data-orb className="absolute -bottom-10 start-[8%] size-72 rounded-full bg-primary/15 blur-3xl" />
       </div>
+      {/* fade the hero into the next (surface) section — no hard seam */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-b from-transparent to-surface"
+        aria-hidden="true"
+      />
 
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
         <div className="grid gap-8 lg:min-h-[36rem] lg:grid-cols-[1fr_1.05fr_0.75fr]">
