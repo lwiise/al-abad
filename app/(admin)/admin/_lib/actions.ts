@@ -212,6 +212,18 @@ export async function saveSettings(formData: FormData) {
     }
   }
 
+  // instructor (coach) image: uploaded file or existing url
+  let instructorImage = text("instructor_image_url");
+  const instructorFile = formData.get("instructor_image_url__file");
+  if (instructorFile instanceof File && instructorFile.size > 0) {
+    try {
+      instructorImage = await uploadImage(instructorFile, "site");
+    } catch (e) {
+      console.error("instructor image upload failed:", e);
+      redirect(`/admin/settings?error=${encodeURIComponent("تعذّر رفع صورة المدرّب. جرّب صورة أصغر.")}`);
+    }
+  }
+
   const socialEntries: Record<string, string> = {};
   for (const k of [
     "facebook",
@@ -263,6 +275,7 @@ export async function saveSettings(formData: FormData) {
     instructor_name: text("instructor_name"),
     instructor_markers: list("instructor_markers"),
     instructor_cta_label: text("instructor_cta_label"),
+    instructor_image_url: instructorImage,
     courses_eyebrow: text("courses_eyebrow"),
     courses_heading: text("courses_heading"),
     courses_subhead: text("courses_subhead"),

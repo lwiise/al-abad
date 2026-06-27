@@ -129,6 +129,7 @@ export interface SiteSettingsRow extends Timestamps {
   instructor_name: string | null;
   instructor_markers: Json | null;
   instructor_cta_label: string | null;
+  instructor_image_url: string | null;
   courses_eyebrow: string | null;
   courses_heading: string | null;
   courses_subhead: string | null;

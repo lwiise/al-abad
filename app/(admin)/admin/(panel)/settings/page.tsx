@@ -139,6 +139,12 @@ export default async function SettingsPage(props: {
         <Section title="قسم المدرّب">
           <TextField name="instructor_eyebrow" label="السطر التمهيدي" defaultValue={str("instructor_eyebrow")} />
           <TextField name="instructor_name" label="الاسم / العنوان" defaultValue={str("instructor_name")} />
+          <ImageField
+            name="instructor_image_url"
+            label="صورة المدرّب"
+            defaultValue={str("instructor_image_url")}
+            help="اتركه فارغاً لاستخدام صورة القسم الرئيسي"
+          />
           <AreaField name="instructor_markers" label="الوسوم" defaultValue={listVal("instructor_markers")} help="سطر واحد لكل وسم" rows={3} />
           <TextField name="instructor_cta_label" label="نص زر النبذة" defaultValue={str("instructor_cta_label")} />
         </Section>

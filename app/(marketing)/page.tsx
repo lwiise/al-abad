@@ -56,7 +56,7 @@ export default async function HomePage() {
       />
       <MeetInstructor
         aboutBody={settings?.about_body}
-        imageUrl={settings?.hero_image_url}
+        imageUrl={settings?.instructor_image_url || settings?.hero_image_url}
         eyebrow={settings?.instructor_eyebrow}
         name={settings?.instructor_name}
         markers={asList(settings?.instructor_markers)}
