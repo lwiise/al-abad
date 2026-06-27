@@ -30,6 +30,18 @@ function NavLink({ href, label, exact }: { href: string; label: string; exact?: 
   );
 }
 
+/**
+ * Non-clickable section header. Deliberately styled unlike NavLink — smaller,
+ * lighter, with a divider rule — so it never reads as a tappable item.
+ */
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mt-4 mb-1 select-none border-t border-border px-3 pt-4 text-[0.6875rem] font-semibold text-foreground-subtle/70">
+      {children}
+    </p>
+  );
+}
+
 export function Sidebar() {
   return (
     <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col border-e border-border bg-background">
@@ -41,12 +53,12 @@ export function Sidebar() {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
         <NavLink href="/admin" label="الرئيسية" exact />
 
-        <p className="px-3 pb-1 pt-4 text-xs font-medium text-foreground-subtle">المحتوى</p>
+        <GroupLabel>المحتوى</GroupLabel>
         {RESOURCES.map((r) => (
           <NavLink key={r.key} href={`/admin/${r.key}`} label={r.label} />
         ))}
 
-        <p className="px-3 pb-1 pt-4 text-xs font-medium text-foreground-subtle">الإعدادات والوارد</p>
+        <GroupLabel>الإعدادات والوارد</GroupLabel>
         {extraLinks.map((l) => (
           <NavLink key={l.href} href={l.href} label={l.label} />
         ))}
