@@ -2,21 +2,29 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { buttonClasses } from "@/components/ui/button";
 import type { CourseRow } from "@/lib/database.types";
 import { useTilt } from "@/components/motion/use-tilt";
 import { MediaFallback } from "./media-fallback";
 
-function price(course: CourseRow): string | null {
+/** "1,000 ر.س" for SAR, otherwise "1,000 <currency>". Null when the course is unpriced. */
+function formatPrice(course: CourseRow): string | null {
   if (course.price == null) return null;
-  return `${course.price} ${course.currency ?? "SAR"}`;
+  const currency = course.currency ?? "SAR";
+  const amount = Number(course.price).toLocaleString("en-US");
+  return currency === "SAR" ? `${amount} ر.س` : `${amount} ${currency}`;
 }
 
 /**
- * Image-led overlay card: photo (or brand-gradient fallback) with a bottom
- * scrim, title/benefit/price overlaid in white, a category pill (top-start)
- * and a circular arrow affordance (top-end). The whole card is the link.
+ * Course cards lead with the cover artwork — the title and branding are baked
+ * into the graphic, so the card overlays nothing but the price. Hover gently
+ * zooms the image; on desktop the whole card gets a 3D tilt + lift via useTilt
+ * (which drives the transform, so we never transition transform in CSS here).
+ *
+ * The `featured` variant is a larger banner that also carries an enrol CTA, so
+ * it uses a stretched link rather than a wrapping <a> (the CTA must be its own
+ * link, and <a> cannot nest inside <a>).
  */
 export function CourseCard({
   course,
@@ -28,62 +36,119 @@ export function CourseCard({
   featured?: boolean;
 }) {
   const href = `/الدورات/${course.slug}`;
-  const p = price(course);
+  const price = formatPrice(course);
+
+  return featured ? (
+    <FeaturedCard course={course} href={href} price={price} index={index} />
+  ) : (
+    <GridCard course={course} href={href} price={price} index={index} />
+  );
+}
+
+function GridCard({
+  course,
+  href,
+  price,
+  index,
+}: {
+  course: CourseRow;
+  href: string;
+  price: string | null;
+  index: number;
+}) {
   const tilt = useTilt<HTMLAnchorElement>();
 
   return (
     <Link
       ref={tilt}
       href={href}
-      className={cn(
-        "group relative block aspect-video overflow-hidden rounded-3xl shadow-md transition-shadow duration-300 hover:shadow-xl",
-      )}
+      className="group relative block aspect-video overflow-hidden rounded-3xl border border-border bg-surface-strong shadow-md transition-shadow duration-300 hover:shadow-xl"
     >
-      <div className="absolute inset-0">
-        {course.hero_image_url ? (
-          <Image
-            src={course.hero_image_url}
-            alt={course.title}
-            fill
-            sizes={featured ? "(max-width: 768px) 100vw, 760px" : "(max-width: 768px) 100vw, 380px"}
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <MediaFallback title={course.title} seed={index} showTitle={false} />
-        )}
-      </div>
+      {course.hero_image_url ? (
+        <Image
+          src={course.hero_image_url}
+          alt={course.title}
+          fill
+          sizes="(max-width: 768px) 100vw, 380px"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : (
+        <MediaFallback title={course.title} seed={index} className="absolute inset-0" />
+      )}
 
-      {/* legibility scrim */}
-      <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent" />
+      {price && (
+        <span className="absolute bottom-3 start-3 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-ink shadow-sm backdrop-blur">
+          {price}
+        </span>
+      )}
+    </Link>
+  );
+}
 
-      {/* top row */}
-      <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-        {course.category ? (
-          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-ink backdrop-blur">
-            {course.category}
+function FeaturedCard({
+  course,
+  href,
+  price,
+  index,
+}: {
+  course: CourseRow;
+  href: string;
+  price: string | null;
+  index: number;
+}) {
+  return (
+    <div className="group relative aspect-[16/9] overflow-hidden rounded-[1.75rem] border border-border bg-surface-strong shadow-lg transition-shadow duration-300 hover:shadow-xl md:aspect-[16/7]">
+      {course.hero_image_url ? (
+        <Image
+          src={course.hero_image_url}
+          alt={course.title}
+          fill
+          priority
+          sizes="(max-width: 1024px) 100vw, 1100px"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : (
+        <MediaFallback title={course.title} seed={index} className="absolute inset-0" />
+      )}
+
+      {/* gradient only behind the action row, so the price + CTA stay legible */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-ink/85 via-ink/30 to-transparent"
+        aria-hidden="true"
+      />
+
+      {/* whole-card link to the detail page — a sibling of the CTA, never its parent */}
+      <Link href={href} aria-label={course.title} className="absolute inset-0 z-10" />
+
+      {/* action row above the stretched link; only the CTA captures clicks, the
+          rest falls through (pointer-events-none) so the card still opens detail */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-4 p-5 md:p-7">
+        {price ? (
+          <span className="text-2xl font-extrabold text-white drop-shadow-sm md:text-3xl">
+            {price}
           </span>
         ) : (
           <span />
         )}
-        <span className="flex size-9 items-center justify-center rounded-full bg-white/90 text-ink transition-transform duration-300 group-hover:-rotate-12">
-          <ArrowUpLeft className="size-4" />
-        </span>
-      </div>
 
-      {/* bottom content */}
-      <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-        <h3 className={cn("font-bold leading-snug", featured ? "text-2xl md:text-3xl" : "text-lg")}>
-          {course.title}
-        </h3>
-        {course.subtitle && (
-          <p className="mt-1.5 line-clamp-2 max-w-md text-sm text-white/85">{course.subtitle}</p>
-        )}
-        {p && (
-          <span className="mt-3 inline-block rounded-full bg-white/15 px-3 py-1 text-sm font-medium backdrop-blur">
-            {p}
-          </span>
+        {course.cta_url ? (
+          <a
+            href={course.cta_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonClasses("danger", "md"), "pointer-events-auto rounded-full shadow-md")}
+          >
+            اشترك الآن
+          </a>
+        ) : (
+          <Link
+            href={href}
+            className={cn(buttonClasses("danger", "md"), "pointer-events-auto rounded-full shadow-md")}
+          >
+            اعرف المزيد
+          </Link>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
