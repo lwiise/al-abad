@@ -69,7 +69,10 @@ function GridCard({
           src={course.hero_image_url}
           alt={course.title}
           fill
-          sizes="(max-width: 768px) 100vw, 380px"
+          quality={90}
+          // Grid is sm:grid-cols-2 inside a max-w-6xl (1104px) section → each card
+          // renders up to ~540px; under-declaring made the browser upscale → soft.
+          sizes="(max-width: 640px) 100vw, (max-width: 1152px) 50vw, 540px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       ) : (
@@ -104,6 +107,7 @@ function FeaturedCard({
           alt={course.title}
           fill
           priority
+          quality={90}
           sizes="(max-width: 1024px) 100vw, 1100px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />

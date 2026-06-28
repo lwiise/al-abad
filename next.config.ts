@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // Serve AVIF first (smaller at equal quality), webp fallback. Next picks the
+    // first format the browser accepts.
+    formats: ["image/avif", "image/webp"],
+    // Next 16 enforces an allowlist; default is [75]. 90 is needed for crisp
+    // marketing photography — without it, a `quality={90}` prop coerces to 75.
+    qualities: [75, 90],
     // Supabase Storage public URLs are served from <project-ref>.supabase.co.
     // Wildcard keeps this working across environments without editing config.
     remotePatterns: [
