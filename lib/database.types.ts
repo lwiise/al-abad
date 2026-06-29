@@ -38,9 +38,22 @@ export interface CourseRow extends Timestamps {
   description: string | null;
   hero_image_url: string | null;
   price: number | null;
+  price_original: number | null;
   currency: string;
   cta_url: string | null;
+  video_preview_url: string | null;
+  guarantee_text: string | null;
+  outcomes: string[] | null;
   category: string | null;
+  sort_order: number;
+  is_published: boolean;
+}
+
+export interface CourseModuleRow extends Timestamps {
+  course_id: string;
+  title: string;
+  lessons: number | null;
+  duration: string | null;
   sort_order: number;
   is_published: boolean;
 }
@@ -181,6 +194,7 @@ export interface Database {
   public: {
     Tables: {
       courses: TableShape<CourseRow>;
+      course_modules: TableShape<CourseModuleRow>;
       blog_posts: TableShape<BlogPostRow>;
       testimonials: TableShape<TestimonialRow>;
       faqs: TableShape<FaqRow>;
