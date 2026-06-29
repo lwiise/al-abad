@@ -1,46 +1,69 @@
-import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { CourseRow } from "@/lib/database.types";
-import { Markdown } from "@/components/ui/markdown";
 import { Reveal } from "@/components/motion/reveal";
-import { Stagger } from "@/components/motion/stagger";
-import { Section, SectionHeading } from "../section";
+import { Section } from "../section";
+import { parsePitch } from "./parse-pitch";
+import { PitchCardGrid } from "./pitch/pitch-card-grid";
+import { PullQuote } from "./pitch/pull-quote";
+import { Callout } from "./pitch/callout";
 
 /**
- * The pitch: the course's narrative body (markdown) rendered as styled rich
- * text, then the outcomes as a scannable check-list under "ماذا ستتعلّم".
+ * The pitch ("what is inside"): the body markdown, transformed into visual blocks
+ * — hook + pull-quote, list/feature runs → icon-card grids, callouts — so it
+ * never reads as one uninterrupted column. Prose is constrained to ~65ch.
  */
 export function CoursePitch({ course }: { course: CourseRow }) {
-  const outcomes = course.outcomes ?? [];
-  if (!course.description && outcomes.length === 0) return null;
+  const nodes = parsePitch(course.description);
+  if (nodes.length === 0) return null;
+
+  const firstHeadingIndex = nodes.findIndex((n) => n.type === "heading");
 
   return (
     <Section bg="surface">
-      {course.description && (
-        <Reveal className="mx-auto max-w-3xl">
-          <div className="leading-loose text-foreground-muted">
-            <Markdown>{course.description}</Markdown>
-          </div>
-        </Reveal>
-      )}
+      {nodes.map((n, i) => {
+        const key = `${i}-${n.type}`;
 
-      {outcomes.length > 0 && (
-        <div className="mx-auto mt-16 max-w-4xl">
-          <SectionHeading align="center" eyebrow="نتائج الدورة" title="ماذا ستتعلّم؟" />
-          <Stagger as="ul" className="mt-8 grid gap-4 sm:grid-cols-2">
-            {outcomes.map((o) => (
-              <li
-                key={o}
-                className="flex items-start gap-3 rounded-2xl border border-border bg-background p-4 shadow-sm"
+        if (n.type === "quote") return <PullQuote key={key} text={n.text} />;
+        if (n.type === "callout") return <Callout key={key} text={n.text} />;
+
+        if (n.type === "heading") {
+          const isFirst = i === firstHeadingIndex;
+          return (
+            <Reveal key={key} className={cn("mx-auto max-w-2xl text-center", i === 0 ? "" : "mt-16")}>
+              <h2
+                className={cn(
+                  "font-bold text-foreground",
+                  isFirst ? "text-3xl md:text-4xl" : "text-2xl md:text-3xl",
+                )}
               >
-                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary">
-                  <Check className="size-4" aria-hidden="true" />
-                </span>
-                <span className="leading-relaxed text-foreground">{o}</span>
-              </li>
-            ))}
-          </Stagger>
-        </div>
-      )}
+                {n.text}
+              </h2>
+              <span
+                className="mx-auto mt-4 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-secondary"
+                aria-hidden="true"
+              />
+            </Reveal>
+          );
+        }
+
+        if (n.type === "cards") return <PitchCardGrid key={key} items={n.items} ordered={n.ordered} />;
+
+        // paragraph — constrained measure; break a run of consecutive paras with a subtle rule
+        const prevPara = i > 0 && nodes[i - 1].type === "para";
+        return (
+          <div key={key}>
+            {prevPara && (
+              <div
+                className="mx-auto my-8 h-px w-16 bg-gradient-to-r from-transparent via-border-strong to-transparent"
+                aria-hidden="true"
+              />
+            )}
+            <Reveal className="mx-auto mt-6 max-w-[65ch] first:mt-0">
+              <p className="text-center text-lg leading-loose text-foreground-muted">{n.text}</p>
+            </Reveal>
+          </div>
+        );
+      })}
     </Section>
   );
 }
