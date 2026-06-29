@@ -19,7 +19,7 @@ export function CoursePitch({ course }: { course: CourseRow }) {
   const firstHeadingIndex = nodes.findIndex((n) => n.type === "heading");
 
   return (
-    <Section bg="surface">
+    <Section bg="background">
       {nodes.map((n, i) => {
         const key = `${i}-${n.type}`;
 
@@ -48,20 +48,11 @@ export function CoursePitch({ course }: { course: CourseRow }) {
 
         if (n.type === "cards") return <PitchCardGrid key={key} items={n.items} ordered={n.ordered} />;
 
-        // paragraph — constrained measure; break a run of consecutive paras with a subtle rule
-        const prevPara = i > 0 && nodes[i - 1].type === "para";
+        // paragraph — constrained measure
         return (
-          <div key={key}>
-            {prevPara && (
-              <div
-                className="mx-auto my-8 h-px w-16 bg-gradient-to-r from-transparent via-border-strong to-transparent"
-                aria-hidden="true"
-              />
-            )}
-            <Reveal className="mx-auto mt-6 max-w-[65ch] first:mt-0">
-              <p className="text-center text-lg leading-loose text-foreground-muted">{n.text}</p>
-            </Reveal>
-          </div>
+          <Reveal key={key} className="mx-auto mt-6 max-w-[65ch]">
+            <p className="text-center text-lg leading-loose text-foreground-muted">{n.text}</p>
+          </Reveal>
         );
       })}
     </Section>

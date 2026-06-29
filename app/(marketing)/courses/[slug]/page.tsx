@@ -15,8 +15,8 @@ import { Faq } from "@/components/sections/faq";
 import { CourseHero } from "@/components/sections/course/course-hero";
 import { StickyBuyBar } from "@/components/sections/course/sticky-buy-bar";
 import { CoursePitch } from "@/components/sections/course/course-pitch";
-import { CourseOutcomes } from "@/components/sections/course/course-outcomes";
 import { CourseCurriculum } from "@/components/sections/course/course-curriculum";
+import { CourseGuarantee } from "@/components/sections/course/course-guarantee";
 import { CourseInstructor } from "@/components/sections/course/course-instructor";
 import { CourseOffer } from "@/components/sections/course/course-offer";
 import { CourseFinalCta } from "@/components/sections/course/course-final-cta";
@@ -58,6 +58,10 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
   const priceLabel = price != null ? formatPrice(price, currency) : null;
   const originalLabel = hasAnchor && original != null ? formatPrice(original, currency) : null;
 
+  // Coach photo for the guarantee + instructor sections: the hero portrait, else
+  // the bundled cutout. (Once the instructor_image_url feature lands, prefer it.)
+  const coachPhoto = settings?.hero_image_url ?? "/coach.png";
+
   return (
     <>
       <StickyBuyBar
@@ -69,11 +73,11 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
 
       <CourseHero course={course} modules={modules} />
       <CoursePitch course={course} />
-      <CourseOutcomes outcomes={course.outcomes ?? []} />
       <CourseCurriculum modules={modules} />
+      <CourseGuarantee guaranteeText={course.guarantee_text} imageUrl={coachPhoto} />
       <CourseInstructor
         aboutBody={settings?.about_body}
-        imageUrl={settings?.hero_image_url}
+        imageUrl={coachPhoto}
         name={settings?.instructor_name}
         markers={asList(settings?.instructor_markers)}
         stats={stats}

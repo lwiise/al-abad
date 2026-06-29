@@ -23,9 +23,7 @@ export function CourseOffer({
     modules.length
       ? `${modules.length} محاور${totalLessons ? ` تضمّ ${totalLessons} درساً` : ""}`
       : null,
-    "شهادة إتمامٍ إلكترونية",
-    "تطبيقات وتمارين عملية",
-    course.guarantee_text ? "ضمان استرجاع لمدة 14 يوماً" : null,
+    course.guarantee_text ? "ضمان استرجاع المبلغ كما في الضمان الذهبي" : null,
   ].filter(Boolean) as string[];
 
   return (

@@ -50,12 +50,6 @@ function parsePrice(v) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function parseInt0(v) {
-  if (v == null || v === "") return null;
-  const n = Number(String(v).replace(/[^\d]/g, ""));
-  return Number.isFinite(n) ? n : null;
-}
-
 /** Coerce a value to a clean string[] (drops blanks). */
 function asStringArray(v) {
   if (!Array.isArray(v)) return [];
@@ -132,39 +126,11 @@ async function importCourse(supabase, c) {
     .single();
   if (error) throw new Error(`courses upsert ${slug}: ${error.message}`);
 
-  const moduleCount = await replaceModules(supabase, row.id, c.modules);
-  console.log(`  ✓ ${slug} — ${outcomes.length} outcome(s), ${moduleCount} module(s)`);
+  // Phase 2.2: course_modules holds demo placeholder curriculum — re-imports
+  // must NEVER touch it (the owner replaces it with real LMS data later). We
+  // only upsert the real `courses` fields above and leave modules alone.
+  console.log(`  ✓ ${slug} — ${outcomes.length} outcome(s) · modules untouched`);
   return row.id;
-}
-
-async function replaceModules(supabase, courseId, modules) {
-  const list = Array.isArray(modules) ? modules : [];
-
-  const { error: delErr } = await supabase
-    .from("course_modules")
-    .delete()
-    .eq("course_id", courseId);
-  if (delErr) throw new Error(`course_modules delete ${courseId}: ${delErr.message}`);
-
-  const records = [];
-  list.forEach((m, i) => {
-    const title = clean(m?.title);
-    if (!title) return;
-    records.push({
-      course_id: courseId,
-      title,
-      lessons: parseInt0(m?.lessons),
-      duration: clean(m?.duration),
-      sort_order: i + 1,
-      is_published: true,
-    });
-  });
-
-  if (records.length) {
-    const { error } = await supabase.from("course_modules").insert(records);
-    if (error) throw new Error(`course_modules insert ${courseId}: ${error.message}`);
-  }
-  return records.length;
 }
 
 /** Add the two shared, site-wide FAQs if a row with that question is missing. */
