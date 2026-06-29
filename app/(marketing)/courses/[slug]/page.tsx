@@ -1,8 +1,24 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCourseBySlug, getCourseModules, getPublishedCourses } from "@/lib/data";
-import { Markdown } from "@/components/ui/markdown";
+import {
+  asList,
+  getCourseBySlug,
+  getCourseModules,
+  getPublishedCourses,
+  getPublishedFaqs,
+  getPublishedTestimonials,
+  getSettings,
+} from "@/lib/data";
+import { MeetInstructor } from "@/components/sections/meet-instructor";
+import { Testimonials } from "@/components/sections/testimonials";
+import { Faq } from "@/components/sections/faq";
 import { CourseHero } from "@/components/sections/course/course-hero";
+import { StickyBuyBar } from "@/components/sections/course/sticky-buy-bar";
+import { CoursePitch } from "@/components/sections/course/course-pitch";
+import { CourseCurriculum } from "@/components/sections/course/course-curriculum";
+import { CourseOffer } from "@/components/sections/course/course-offer";
+import { CourseFinalCta } from "@/components/sections/course/course-final-cta";
+import { formatPrice, priceParts } from "@/components/sections/course/pricing";
 
 export const revalidate = 300;
 
@@ -28,19 +44,41 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
   const course = await getCourseBySlug(slug);
   if (!course) notFound();
 
-  const modules = await getCourseModules(course.id);
+  const [modules, testimonials, faqs, settings] = await Promise.all([
+    getCourseModules(course.id),
+    getPublishedTestimonials(),
+    getPublishedFaqs(),
+    getSettings(),
+  ]);
+
+  const { price, original, currency, hasAnchor } = priceParts(course);
+  const priceLabel = price != null ? formatPrice(price, currency) : null;
+  const originalLabel = hasAnchor && original != null ? formatPrice(original, currency) : null;
 
   return (
     <>
-      <CourseHero course={course} modules={modules} />
+      <StickyBuyBar
+        title={course.title}
+        priceLabel={priceLabel}
+        originalLabel={originalLabel}
+        ctaUrl={course.cta_url}
+      />
 
-      {/* Remaining sections (pitch, curriculum, instructor, testimonials, offer,
-          FAQ, final CTA) are built after the hero direction is approved. */}
-      {course.description && (
-        <section className="mx-auto max-w-3xl px-6 py-12 md:py-16">
-          <Markdown>{course.description}</Markdown>
-        </section>
-      )}
+      <CourseHero course={course} modules={modules} />
+      <CoursePitch course={course} />
+      <CourseCurriculum modules={modules} />
+      <MeetInstructor
+        aboutBody={settings?.about_body}
+        imageUrl={settings?.hero_image_url}
+        eyebrow={settings?.instructor_eyebrow}
+        name={settings?.instructor_name}
+        markers={asList(settings?.instructor_markers)}
+        ctaLabel={settings?.instructor_cta_label}
+      />
+      <Testimonials testimonials={testimonials} />
+      <CourseOffer course={course} modules={modules} />
+      <Faq faqs={faqs} />
+      <CourseFinalCta course={course} />
     </>
   );
 }
