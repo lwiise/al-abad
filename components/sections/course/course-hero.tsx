@@ -269,17 +269,17 @@ function HeroMedia({ course }: { course: CourseRow }) {
   }
 
   // Frameless coach cutout — floats directly on the hero aurora (no panel,
-  // border or shadow); object-bottom grounds the figure, object-contain keeps it
-  // uncropped.
+  // border or shadow). A square box matches the photo's aspect so there's no
+  // empty gap, and object-center keeps the figure vertically centered.
   return (
-    <div className="relative aspect-[4/5] w-full">
+    <div className="relative aspect-square w-full">
       <Image
         src="/coach.png"
         alt="الأستاذ علي العباد"
         fill
         priority
         sizes="(max-width: 1024px) 90vw, 560px"
-        className="object-contain object-bottom"
+        className="object-contain object-center"
       />
     </div>
   );
