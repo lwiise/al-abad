@@ -6,16 +6,18 @@ import {
   getCourseModules,
   getPublishedCourses,
   getPublishedFaqs,
+  getPublishedStats,
   getPublishedTestimonials,
   getSettings,
 } from "@/lib/data";
-import { MeetInstructor } from "@/components/sections/meet-instructor";
 import { Testimonials } from "@/components/sections/testimonials";
 import { Faq } from "@/components/sections/faq";
 import { CourseHero } from "@/components/sections/course/course-hero";
 import { StickyBuyBar } from "@/components/sections/course/sticky-buy-bar";
 import { CoursePitch } from "@/components/sections/course/course-pitch";
+import { CourseOutcomes } from "@/components/sections/course/course-outcomes";
 import { CourseCurriculum } from "@/components/sections/course/course-curriculum";
+import { CourseInstructor } from "@/components/sections/course/course-instructor";
 import { CourseOffer } from "@/components/sections/course/course-offer";
 import { CourseFinalCta } from "@/components/sections/course/course-final-cta";
 import { formatPrice, priceParts } from "@/components/sections/course/pricing";
@@ -44,10 +46,11 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
   const course = await getCourseBySlug(slug);
   if (!course) notFound();
 
-  const [modules, testimonials, faqs, settings] = await Promise.all([
+  const [modules, testimonials, faqs, stats, settings] = await Promise.all([
     getCourseModules(course.id),
     getPublishedTestimonials(),
     getPublishedFaqs(),
+    getPublishedStats(),
     getSettings(),
   ]);
 
@@ -66,14 +69,14 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
 
       <CourseHero course={course} modules={modules} />
       <CoursePitch course={course} />
+      <CourseOutcomes outcomes={course.outcomes ?? []} />
       <CourseCurriculum modules={modules} />
-      <MeetInstructor
+      <CourseInstructor
         aboutBody={settings?.about_body}
         imageUrl={settings?.hero_image_url}
-        eyebrow={settings?.instructor_eyebrow}
         name={settings?.instructor_name}
         markers={asList(settings?.instructor_markers)}
-        ctaLabel={settings?.instructor_cta_label}
+        stats={stats}
       />
       <Testimonials testimonials={testimonials} />
       <CourseOffer course={course} modules={modules} />
