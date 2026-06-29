@@ -5,7 +5,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import type { CourseRow } from "@/lib/database.types";
-import { useTilt } from "@/components/motion/use-tilt";
 import { MediaFallback } from "./media-fallback";
 
 /** "1,000 ر.س" for SAR, otherwise "1,000 <currency>". Null when the course is unpriced. */
@@ -19,8 +18,9 @@ function formatPrice(course: CourseRow): string | null {
 /**
  * Course cards lead with the cover artwork — the title and branding are baked
  * into the graphic, so the card overlays nothing but the price. Hover gently
- * zooms the image; on desktop the whole card gets a 3D tilt + lift via useTilt
- * (which drives the transform, so we never transition transform in CSS here).
+ * zooms the image and lifts the card with a 2D translate; transform-gpu forces a
+ * compositing layer so the rounded overflow-hidden mask reliably clips the zoom
+ * and the corners stay perfectly rounded (a 3D tilt distorted them).
  *
  * The `featured` variant is a larger banner that also carries an enrol CTA, so
  * it uses a stretched link rather than a wrapping <a> (the CTA must be its own
@@ -56,13 +56,10 @@ function GridCard({
   price: string | null;
   index: number;
 }) {
-  const tilt = useTilt<HTMLAnchorElement>();
-
   return (
     <Link
-      ref={tilt}
       href={href}
-      className="group relative block aspect-video overflow-hidden rounded-3xl border border-border bg-surface-strong shadow-md transition-shadow duration-300 hover:shadow-xl"
+      className="group relative block aspect-video transform-gpu overflow-hidden rounded-3xl border border-border bg-surface-strong shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
       {course.hero_image_url ? (
         <Image
@@ -100,7 +97,7 @@ function FeaturedCard({
   index: number;
 }) {
   return (
-    <div className="group relative aspect-[16/9] overflow-hidden rounded-[1.75rem] border border-border bg-surface-strong shadow-lg transition-shadow duration-300 hover:shadow-xl md:aspect-[16/7]">
+    <div className="group relative aspect-[16/9] transform-gpu overflow-hidden rounded-[1.75rem] border border-border bg-surface-strong shadow-lg transition-shadow duration-300 hover:shadow-xl md:aspect-[16/7]">
       {course.hero_image_url ? (
         <Image
           src={course.hero_image_url}
