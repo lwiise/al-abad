@@ -9,7 +9,6 @@ import { buttonClasses } from "@/components/ui/button";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { useMagnetic } from "@/components/motion/use-magnetic";
 import type { CourseRow, CourseModuleRow } from "@/lib/database.types";
-import { MediaFallback } from "../media-fallback";
 
 /** "190 ر.س" for SAR, otherwise "190 <currency>". */
 function formatPrice(amount: number, currency: string): string {
@@ -219,7 +218,7 @@ export function CourseHero({
           </div>
 
           {/* Media column */}
-          <div data-hero-rise className="relative mx-auto w-full max-w-xl lg:mx-0">
+          <div data-hero-rise className="relative mx-auto w-full max-w-sm lg:mx-0">
             <div
               className="absolute -bottom-5 -end-5 -z-10 size-28 rounded-3xl bg-secondary/10"
               aria-hidden="true"
@@ -236,13 +235,15 @@ function HeroMedia({ course }: { course: CourseRow }) {
   const [playing, setPlaying] = useState(false);
   const videoId = youTubeId(course.video_preview_url);
 
-  const frame =
-    "relative aspect-video w-full overflow-hidden rounded-3xl border border-border-strong/50 shadow-xl";
+  // Coach portrait on a soft brand panel. The asset is a transparent cutout, so
+  // object-contain + object-bottom shows the whole figure (no crop) standing on
+  // the panel; the lilac→surface gradient fills the space above the head.
+  const panel =
+    "relative aspect-[4/5] w-full overflow-hidden rounded-t-[4rem] rounded-b-3xl border border-border-strong/40 bg-gradient-to-b from-surface-strong to-surface shadow-xl";
 
   if (videoId) {
-    const thumb = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
     return (
-      <div className={frame}>
+      <div className={panel}>
         {playing ? (
           <iframe
             className="absolute inset-0 h-full w-full"
@@ -259,13 +260,14 @@ function HeroMedia({ course }: { course: CourseRow }) {
             aria-label={`تشغيل المعاينة: ${course.title}`}
           >
             <Image
-              src={course.hero_image_url || thumb}
-              alt=""
+              src="/coach.png"
+              alt="الأستاذ علي العباد"
               fill
-              sizes="(max-width: 1024px) 90vw, 560px"
-              className="object-cover"
+              priority
+              sizes="(max-width: 1024px) 90vw, 420px"
+              className="object-contain object-bottom"
             />
-            <span className="absolute inset-0 grid place-items-center bg-ink/25 transition-colors group-hover:bg-ink/35">
+            <span className="absolute inset-0 grid place-items-center bg-ink/15 transition-colors group-hover:bg-ink/25">
               <span className="flex size-16 items-center justify-center rounded-full bg-white/90 text-primary shadow-lg transition-transform group-hover:scale-110">
                 <Play className="size-7 translate-x-0.5 fill-current" aria-hidden="true" />
               </span>
@@ -276,24 +278,16 @@ function HeroMedia({ course }: { course: CourseRow }) {
     );
   }
 
-  if (course.hero_image_url) {
-    return (
-      <div className={frame}>
-        <Image
-          src={course.hero_image_url}
-          alt={course.title}
-          fill
-          priority
-          sizes="(max-width: 1024px) 90vw, 560px"
-          className="object-cover"
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className={frame}>
-      <MediaFallback title={course.title} seed={3} showTitle />
+    <div className={panel}>
+      <Image
+        src="/coach.png"
+        alt="الأستاذ علي العباد"
+        fill
+        priority
+        sizes="(max-width: 1024px) 90vw, 420px"
+        className="object-contain object-bottom"
+      />
     </div>
   );
 }
