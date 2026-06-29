@@ -278,6 +278,7 @@ alter table public.site_settings
   add column if not exists instructor_name          text,
   add column if not exists instructor_markers       jsonb,
   add column if not exists instructor_cta_label     text,
+  add column if not exists instructor_image_url     text,
   add column if not exists courses_eyebrow          text,
   add column if not exists courses_heading          text,
   add column if not exists courses_subhead          text,
