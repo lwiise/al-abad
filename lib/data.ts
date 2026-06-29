@@ -5,6 +5,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import type {
   BlogPostRow,
   CourseRow,
+  CourseModuleRow,
   FaqRow,
   HowItWorksStepRow,
   SiteSettingsRow,
@@ -44,6 +45,17 @@ export const getCourseBySlug = cache(async (slug: string): Promise<CourseRow | n
     .eq("is_published", true)
     .maybeSingle();
   return data ?? null;
+});
+
+export const getCourseModules = cache(async (courseId: string): Promise<CourseModuleRow[]> => {
+  const supabase = createPublicClient();
+  const { data } = await supabase
+    .from("course_modules")
+    .select("*")
+    .eq("course_id", courseId)
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true });
+  return data ?? [];
 });
 
 export const getCourseCategories = cache(async (): Promise<string[]> => {
