@@ -122,7 +122,7 @@ export function CourseHero({
           <span aria-hidden="true">→</span> كل الدورات
         </Link>
 
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr]">
           {/* Text column */}
           <div className="text-start">
             {course.category && (
@@ -217,12 +217,8 @@ export function CourseHero({
             )}
           </div>
 
-          {/* Media column */}
-          <div data-hero-rise className="relative mx-auto w-full max-w-sm lg:mx-0">
-            <div
-              className="absolute -bottom-5 -end-5 -z-10 size-28 rounded-3xl bg-secondary/10"
-              aria-hidden="true"
-            />
+          {/* Media column — frameless coach cutout */}
+          <div data-hero-rise className="relative mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
             <HeroMedia course={course} />
           </div>
         </div>
@@ -235,15 +231,9 @@ function HeroMedia({ course }: { course: CourseRow }) {
   const [playing, setPlaying] = useState(false);
   const videoId = youTubeId(course.video_preview_url);
 
-  // Coach portrait on a soft brand panel. The asset is a transparent cutout, so
-  // object-contain + object-bottom shows the whole figure (no crop) standing on
-  // the panel; the lilac→surface gradient fills the space above the head.
-  const panel =
-    "relative aspect-[4/5] w-full overflow-hidden rounded-t-[4rem] rounded-b-3xl border border-border-strong/40 bg-gradient-to-b from-surface-strong to-surface shadow-xl";
-
   if (videoId) {
     return (
-      <div className={panel}>
+      <div className="relative aspect-video w-full overflow-hidden rounded-3xl border border-border-strong/50 bg-surface-strong shadow-lg">
         {playing ? (
           <iframe
             className="absolute inset-0 h-full w-full"
@@ -264,7 +254,7 @@ function HeroMedia({ course }: { course: CourseRow }) {
               alt="الأستاذ علي العباد"
               fill
               priority
-              sizes="(max-width: 1024px) 90vw, 420px"
+              sizes="(max-width: 1024px) 90vw, 560px"
               className="object-contain object-bottom"
             />
             <span className="absolute inset-0 grid place-items-center bg-ink/15 transition-colors group-hover:bg-ink/25">
@@ -278,14 +268,17 @@ function HeroMedia({ course }: { course: CourseRow }) {
     );
   }
 
+  // Frameless coach cutout — floats directly on the hero aurora (no panel,
+  // border or shadow); object-bottom grounds the figure, object-contain keeps it
+  // uncropped.
   return (
-    <div className={panel}>
+    <div className="relative aspect-[4/5] w-full">
       <Image
         src="/coach.png"
         alt="الأستاذ علي العباد"
         fill
         priority
-        sizes="(max-width: 1024px) 90vw, 420px"
+        sizes="(max-width: 1024px) 90vw, 560px"
         className="object-contain object-bottom"
       />
     </div>
