@@ -80,7 +80,8 @@ export function parsePitch(md: string | null | undefined): PitchNode[] {
 
   const featureSplit = (b: string): { label: string; text: string } | null => {
     if (b.includes("\n")) return null;
-    const m = b.match(/^([^:：]{2,45})[:：]\s+(.+)$/);
+    // Label/description separator: colon (: ：) OR Arabic/Latin semicolon (؛ ;).
+    const m = b.match(/^([^:：؛;]{2,55})[:：؛;]\s+(.+)$/);
     if (!m) return null;
     const itemText = stripInline(m[2]);
     if (!itemText || itemText.length < 8) return null;
