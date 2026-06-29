@@ -38,20 +38,26 @@ export function MeetInstructor({
     <Section bg="background">
       <div className="grid items-center gap-10 lg:grid-cols-2">
         <Reveal className="relative mx-auto w-full max-w-sm lg:order-2">
-          <div className="absolute -bottom-5 -end-5 -z-10 size-28 rounded-3xl bg-secondary/10" aria-hidden="true" />
-          <div className="relative aspect-[4/5] overflow-hidden rounded-t-[6rem] rounded-b-3xl border border-border shadow-lg">
-            {imageUrl ? (
+          {imageUrl ? (
+            <div className="relative aspect-[4/5]">
+              {/* soft brand halo behind the cutout so it blends into the page (no frame) */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-0 bottom-0 top-6 -z-10 rounded-[100%] bg-gradient-to-b from-highlight/25 via-highlight/10 to-transparent blur-3xl"
+              />
               <Image
                 src={imageUrl}
                 alt="الأستاذ علي العباد"
                 fill
                 sizes="(max-width: 1024px) 80vw, 400px"
-                className="object-cover"
+                className="object-contain object-bottom"
               />
-            ) : (
+            </div>
+          ) : (
+            <div className="relative aspect-[4/5] overflow-hidden rounded-t-[6rem] rounded-b-3xl border border-border shadow-lg">
               <MediaFallback title="الأستاذ علي العباد" seed={4} />
-            )}
-          </div>
+            </div>
+          )}
         </Reveal>
 
         <Reveal className="lg:order-1">

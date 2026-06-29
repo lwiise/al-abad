@@ -170,20 +170,27 @@ export function Hero({
             data-hero-portrait
             className="relative order-first mx-auto h-[24rem] w-full max-w-xs lg:order-none lg:mx-0 lg:h-auto lg:min-h-[34rem] lg:max-w-none"
           >
-            <div className="relative h-full w-full overflow-hidden rounded-t-[6rem] rounded-b-[2rem] border border-border-strong/50 bg-surface-strong/70 shadow-xl backdrop-blur-sm">
-              {imageUrl ? (
+            {imageUrl ? (
+              <>
+                {/* soft brand halo behind the cutout so it blends into the page (no frame) */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 bottom-0 top-6 -z-10 rounded-[100%] bg-gradient-to-b from-highlight/25 via-highlight/10 to-transparent blur-3xl"
+                />
                 <Image
                   src={imageUrl}
                   alt="الأستاذ علي العباد"
                   fill
                   priority
                   sizes="(max-width: 1024px) 80vw, 460px"
-                  className="object-cover"
+                  className="object-contain object-bottom"
                 />
-              ) : (
+              </>
+            ) : (
+              <div className="relative h-full w-full overflow-hidden rounded-t-[6rem] rounded-b-[2rem] border border-border-strong/50 bg-surface-strong/70">
                 <MediaFallback title="الأستاذ علي العباد" seed={2} />
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Stats */}
