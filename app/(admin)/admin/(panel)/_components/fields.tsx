@@ -90,15 +90,26 @@ async function downscaleImage(file: File, maxEdge = 1600, quality = 0.82): Promi
     canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) return file;
-    ctx.fillStyle = "#ffffff"; // flatten transparency — JPEG has no alpha channel
-    ctx.fillRect(0, 0, w, h);
+    // Preserve transparency for alpha-capable formats; only flatten onto white
+    // for formats that have no alpha channel (JPEG), which would otherwise show
+    // black where transparent.
+    const hasAlpha =
+      file.type === "image/png" || file.type === "image/webp" || file.type === "image/avif";
+    if (!hasAlpha) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+    }
     ctx.drawImage(img, 0, 0, w, h);
+    const outType = hasAlpha ? "image/webp" : "image/jpeg";
+    const ext = hasAlpha ? "webp" : "jpg";
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", quality),
+      canvas.toBlob(resolve, outType, quality),
     );
-    if (!blob || blob.size >= file.size) return file; // no gain → keep original
+    // toBlob can fail (e.g. webp unsupported) or not shrink → keep the original
+    // file, which for a transparent PNG preserves its alpha.
+    if (!blob || blob.type !== outType || blob.size >= file.size) return file;
     const base = file.name.replace(/\.[^.]+$/, "") || "image";
-    return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
+    return new File([blob], `${base}.${ext}`, { type: outType });
   } catch {
     return file;
   } finally {
