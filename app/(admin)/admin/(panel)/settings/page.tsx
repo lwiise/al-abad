@@ -76,18 +76,8 @@ export default async function SettingsPage(props: {
 
   return (
     <>
-      <header className="mb-6 flex items-center justify-between gap-4">
+      <header className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">إعدادات الموقع</h1>
-        {saved && (
-          <span className="rounded-full bg-secondary/10 px-3 py-1 text-sm text-secondary">
-            تم الحفظ
-          </span>
-        )}
-        {error && (
-          <span className="rounded-full bg-accent/10 px-3 py-1 text-sm text-accent">
-            تعذّر الحفظ: {error}
-          </span>
-        )}
       </header>
 
       <form action={saveSettings} encType="multipart/form-data" className="space-y-6">
@@ -219,8 +209,18 @@ export default async function SettingsPage(props: {
           </div>
         </Section>
 
-        <div className="sticky bottom-0 -mx-6 border-t border-border bg-surface/80 px-6 py-4 backdrop-blur">
+        <div className="sticky bottom-0 -mx-6 flex items-center gap-3 border-t border-border bg-surface/80 px-6 py-4 backdrop-blur">
           <Button type="submit">حفظ الإعدادات</Button>
+          {saved && (
+            <span className="rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary">
+              تم الحفظ ✓
+            </span>
+          )}
+          {error && (
+            <span className="rounded-full bg-accent/10 px-3 py-1 text-sm font-medium text-accent">
+              تعذّر الحفظ: {error}
+            </span>
+          )}
         </div>
       </form>
     </>
