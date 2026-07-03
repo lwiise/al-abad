@@ -181,11 +181,23 @@ export async function reorderResource(
 }
 
 // ---------------------------------------------------------------------------
-// Site settings (single row, bespoke form)
+// Site settings (single row, edited via the per-page forms at /admin/pages/*)
 // ---------------------------------------------------------------------------
+export type SettingsPage = "home" | "about" | "blog" | "contact";
+
+const SETTINGS_PAGES: SettingsPage[] = ["home", "about", "blog", "contact"];
+
 export async function saveSettings(formData: FormData) {
   await requireAdmin();
   const client = db();
+
+  // Each editor page submits only its own fields; the payload must stay
+  // scoped to them, otherwise saving one page would null the others.
+  const pageRaw = String(formData.get("page") ?? "");
+  const page: SettingsPage = (SETTINGS_PAGES as string[]).includes(pageRaw)
+    ? (pageRaw as SettingsPage)
+    : "home";
+  const backTo = `/admin/pages/${page}`;
 
   const text = (k: string) => {
     const v = String(formData.get(k) ?? "").trim();
@@ -199,102 +211,107 @@ export async function saveSettings(formData: FormData) {
       .filter(Boolean);
     return arr.length ? arr : null;
   };
-
-  // hero image: uploaded file or existing url
-  let heroImage = text("hero_image_url");
-  const heroFile = formData.get("hero_image_url__file");
-  if (heroFile instanceof File && heroFile.size > 0) {
-    try {
-      heroImage = await uploadImage(heroFile, "site");
-    } catch (e) {
-      console.error("hero image upload failed:", e);
-      redirect(`/admin/settings?error=${encodeURIComponent("تعذّر رفع الصورة. جرّب صورة أصغر.")}`);
+  const image = async (k: string) => {
+    // uploaded file or existing url
+    let url = text(k);
+    const file = formData.get(`${k}__file`);
+    if (file instanceof File && file.size > 0) {
+      try {
+        url = await uploadImage(file, "site");
+      } catch (e) {
+        console.error(`${k} upload failed:`, e);
+        redirect(`${backTo}?error=${encodeURIComponent("تعذّر رفع الصورة. جرّب صورة أصغر.")}`);
+      }
     }
-  }
-
-  // instructor (coach) image: uploaded file or existing url
-  let instructorImage = text("instructor_image_url");
-  const instructorFile = formData.get("instructor_image_url__file");
-  if (instructorFile instanceof File && instructorFile.size > 0) {
-    try {
-      instructorImage = await uploadImage(instructorFile, "site");
-    } catch (e) {
-      console.error("instructor image upload failed:", e);
-      redirect(`/admin/settings?error=${encodeURIComponent("تعذّر رفع الصورة. جرّب صورة أصغر.")}`);
-    }
-  }
-
-  const socialEntries: Record<string, string> = {};
-  for (const k of [
-    "facebook",
-    "tiktok",
-    "snapchat",
-    "telegram",
-    "youtube",
-    "twitter",
-    "instagram",
-  ]) {
-    const v = text(`social_${k}`);
-    if (v) socialEntries[k] = v;
-  }
-
-  const payload: Record<string, unknown> = {
-    promo_enabled: bool("promo_enabled"),
-    promo_bar_text: text("promo_bar_text"),
-    promo_code: text("promo_code"),
-    hero_headline: text("hero_headline"),
-    hero_subhead: text("hero_subhead"),
-    hero_image_url: heroImage,
-    hero_primary_cta_label: text("hero_primary_cta_label"),
-    hero_primary_cta_url: text("hero_primary_cta_url"),
-    hero_secondary_cta_label: text("hero_secondary_cta_label"),
-    hero_secondary_cta_url: text("hero_secondary_cta_url"),
-    hero_microproof: text("hero_microproof"),
-    ai_headline: text("ai_headline"),
-    ai_subhead: text("ai_subhead"),
-    ai_points: list("ai_points"),
-    problem_points: list("problem_points"),
-    outcome_points: list("outcome_points"),
-    vision_text: text("vision_text"),
-    vision_cta_label: text("vision_cta_label"),
-    vision_cta_url: text("vision_cta_url"),
-    final_cta_heading: text("final_cta_heading"),
-    final_cta_primary_label: text("final_cta_primary_label"),
-    final_cta_primary_url: text("final_cta_primary_url"),
-    final_cta_secondary_label: text("final_cta_secondary_label"),
-    final_cta_secondary_url: text("final_cta_secondary_url"),
-    about_body: text("about_body"),
-    whatsapp_number: text("whatsapp_number"),
-    contact_email: text("contact_email"),
-    social_links: Object.keys(socialEntries).length ? socialEntries : null,
-    // homepage section labels
-    hero_trust_badge: text("hero_trust_badge"),
-    problem_heading: text("problem_heading"),
-    problem_subhead: text("problem_subhead"),
-    instructor_eyebrow: text("instructor_eyebrow"),
-    instructor_name: text("instructor_name"),
-    instructor_image_url: instructorImage,
-    instructor_markers: list("instructor_markers"),
-    instructor_cta_label: text("instructor_cta_label"),
-    courses_eyebrow: text("courses_eyebrow"),
-    courses_heading: text("courses_heading"),
-    courses_subhead: text("courses_subhead"),
-    courses_view_all_label: text("courses_view_all_label"),
-    how_heading: text("how_heading"),
-    how_subhead: text("how_subhead"),
-    outcomes_heading: text("outcomes_heading"),
-    outcomes_subhead: text("outcomes_subhead"),
-    ai_badge: text("ai_badge"),
-    testimonials_eyebrow: text("testimonials_eyebrow"),
-    testimonials_heading: text("testimonials_heading"),
-    faq_eyebrow: text("faq_eyebrow"),
-    faq_heading: text("faq_heading"),
-    faq_help_text: text("faq_help_text"),
-    faq_help_cta_label: text("faq_help_cta_label"),
-    blog_heading: text("blog_heading"),
-    blog_subhead: text("blog_subhead"),
-    blog_view_all_label: text("blog_view_all_label"),
+    return url;
   };
+
+  const payload: Record<string, unknown> = {};
+
+  if (page === "home") {
+    Object.assign(payload, {
+      promo_enabled: bool("promo_enabled"),
+      promo_bar_text: text("promo_bar_text"),
+      promo_code: text("promo_code"),
+      hero_headline: text("hero_headline"),
+      hero_subhead: text("hero_subhead"),
+      hero_image_url: await image("hero_image_url"),
+      hero_primary_cta_label: text("hero_primary_cta_label"),
+      hero_primary_cta_url: text("hero_primary_cta_url"),
+      hero_secondary_cta_label: text("hero_secondary_cta_label"),
+      hero_secondary_cta_url: text("hero_secondary_cta_url"),
+      hero_microproof: text("hero_microproof"),
+      hero_trust_badge: text("hero_trust_badge"),
+      problem_heading: text("problem_heading"),
+      problem_subhead: text("problem_subhead"),
+      problem_points: list("problem_points"),
+      instructor_eyebrow: text("instructor_eyebrow"),
+      instructor_name: text("instructor_name"),
+      instructor_image_url: await image("instructor_image_url"),
+      instructor_markers: list("instructor_markers"),
+      instructor_cta_label: text("instructor_cta_label"),
+      courses_eyebrow: text("courses_eyebrow"),
+      courses_heading: text("courses_heading"),
+      courses_subhead: text("courses_subhead"),
+      courses_view_all_label: text("courses_view_all_label"),
+      how_heading: text("how_heading"),
+      how_subhead: text("how_subhead"),
+      outcomes_heading: text("outcomes_heading"),
+      outcomes_subhead: text("outcomes_subhead"),
+      outcome_points: list("outcome_points"),
+      ai_badge: text("ai_badge"),
+      ai_headline: text("ai_headline"),
+      ai_subhead: text("ai_subhead"),
+      ai_points: list("ai_points"),
+      testimonials_eyebrow: text("testimonials_eyebrow"),
+      testimonials_heading: text("testimonials_heading"),
+      faq_eyebrow: text("faq_eyebrow"),
+      faq_heading: text("faq_heading"),
+      faq_help_text: text("faq_help_text"),
+      faq_help_cta_label: text("faq_help_cta_label"),
+      final_cta_heading: text("final_cta_heading"),
+      final_cta_primary_label: text("final_cta_primary_label"),
+      final_cta_primary_url: text("final_cta_primary_url"),
+      final_cta_secondary_label: text("final_cta_secondary_label"),
+      final_cta_secondary_url: text("final_cta_secondary_url"),
+      blog_heading: text("blog_heading"),
+      blog_subhead: text("blog_subhead"),
+      blog_view_all_label: text("blog_view_all_label"),
+    });
+  } else if (page === "about") {
+    Object.assign(payload, {
+      about_body: text("about_body"),
+      vision_text: text("vision_text"),
+      vision_cta_label: text("vision_cta_label"),
+      vision_cta_url: text("vision_cta_url"),
+    });
+  } else if (page === "blog") {
+    Object.assign(payload, {
+      blog_page_heading: text("blog_page_heading"),
+      blog_page_subhead: text("blog_page_subhead"),
+    });
+  } else {
+    const socialEntries: Record<string, string> = {};
+    for (const k of [
+      "facebook",
+      "tiktok",
+      "snapchat",
+      "telegram",
+      "youtube",
+      "twitter",
+      "instagram",
+    ]) {
+      const v = text(`social_${k}`);
+      if (v) socialEntries[k] = v;
+    }
+    Object.assign(payload, {
+      contact_heading: text("contact_heading"),
+      contact_subhead: text("contact_subhead"),
+      whatsapp_number: text("whatsapp_number"),
+      contact_email: text("contact_email"),
+      social_links: Object.keys(socialEntries).length ? socialEntries : null,
+    });
+  }
 
   try {
     const { data: existing } = await client.from("site_settings").select("id").limit(1).maybeSingle();
@@ -308,12 +325,12 @@ export async function saveSettings(formData: FormData) {
   } catch (e) {
     console.error("saveSettings failed:", e);
     const msg = e instanceof Error ? e.message : "تعذّر حفظ الإعدادات";
-    redirect(`/admin/settings?error=${encodeURIComponent(msg.slice(0, 200))}`);
+    redirect(`${backTo}?error=${encodeURIComponent(msg.slice(0, 200))}`);
   }
 
-  revalidatePath("/admin/settings");
+  revalidatePath(backTo);
   revalidatePath("/", "layout"); // settings drive header/footer/promo site-wide
-  redirect("/admin/settings?saved=1");
+  redirect(`${backTo}?saved=1`);
 }
 
 export async function deleteWaitlistEntry(id: string) {

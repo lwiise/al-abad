@@ -6,8 +6,15 @@ import { cn } from "@/lib/utils";
 import { RESOURCES } from "../../_lib/resources";
 import { signOut } from "../../_lib/actions";
 
+// Site pages, in the order they appear in the site's navigation.
+const pageLinks = [
+  { href: "/admin/pages/home", label: "الرئيسية" },
+  { href: "/admin/pages/about", label: "من نحن" },
+  { href: "/admin/pages/blog", label: "المدونة" },
+  { href: "/admin/pages/contact", label: "التواصل" },
+];
+
 const extraLinks = [
-  { href: "/admin/settings", label: "إعدادات الموقع" },
   { href: "/admin/contact", label: "الرسائل الواردة" },
   { href: "/admin/waitlist", label: "قائمة انتظار الذكاء الاصطناعي" },
 ];
@@ -53,12 +60,17 @@ export function Sidebar() {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
         <NavLink href="/admin" label="الرئيسية" exact />
 
+        <GroupLabel>الصفحات</GroupLabel>
+        {pageLinks.map((l) => (
+          <NavLink key={l.href} href={l.href} label={l.label} />
+        ))}
+
         <GroupLabel>المحتوى</GroupLabel>
         {RESOURCES.map((r) => (
           <NavLink key={r.key} href={`/admin/${r.key}`} label={r.label} />
         ))}
 
-        <GroupLabel>الإعدادات والوارد</GroupLabel>
+        <GroupLabel>الوارد</GroupLabel>
         {extraLinks.map((l) => (
           <NavLink key={l.href} href={l.href} label={l.label} />
         ))}

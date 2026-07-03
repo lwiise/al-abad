@@ -162,6 +162,11 @@ export interface SiteSettingsRow extends Timestamps {
   blog_heading: string | null;
   blog_subhead: string | null;
   blog_view_all_label: string | null;
+  // standalone page headers (/blog, /contact)
+  blog_page_heading: string | null;
+  blog_page_subhead: string | null;
+  contact_heading: string | null;
+  contact_subhead: string | null;
 }
 
 export interface ContactSubmissionRow extends Timestamps {
