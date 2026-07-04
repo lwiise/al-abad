@@ -92,7 +92,8 @@ export function parsePitch(md: string | null | undefined): PitchNode[] {
   const toks: Tok[] = [];
   rawBlocks.forEach((b, idx) => {
     if (idx === 0 && isHookQuestion(b)) {
-      toks.push({ type: "quote", text: stripInline(b) });
+      // A `# …؟` hook keeps its hash through stripInline — drop it here.
+      toks.push({ type: "quote", text: stripInline(b.replace(/^#{1,6}\s+/, "")) });
     } else if (isFiller(b)) {
       // drop CTA exhortation line
     } else if (isHeadingHash(b)) {
