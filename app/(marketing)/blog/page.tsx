@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getPublishedPosts } from "@/lib/data";
+import { getPublishedPosts, getSettings } from "@/lib/data";
 import { PostCard } from "@/components/sections/post-card";
 
 export const revalidate = 300;
@@ -10,13 +10,17 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const posts = await getPublishedPosts();
+  const [posts, settings] = await Promise.all([getPublishedPosts(), getSettings()]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
       <header className="mb-12 text-center">
-        <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">المدونة</h1>
-        <p className="mt-4 text-lg text-foreground-muted">مقالاتٌ تثري وعيك حول العلاقة الزوجية.</p>
+        <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">
+          {settings?.blog_page_heading || "المدونة"}
+        </h1>
+        <p className="mt-4 text-lg text-foreground-muted">
+          {settings?.blog_page_subhead || "مقالاتٌ تثري وعيك حول العلاقة الزوجية."}
+        </p>
       </header>
 
       {posts.length === 0 ? (

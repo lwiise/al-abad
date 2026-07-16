@@ -58,8 +58,8 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
   const priceLabel = price != null ? formatPrice(price, currency) : null;
   const originalLabel = hasAnchor && original != null ? formatPrice(original, currency) : null;
 
-  // Coach photo for the guarantee + instructor sections: the dedicated instructor
-  // image, else the hero portrait, else the bundled cutout.
+  // Coach photo for the pitch + guarantee + instructor sections: the dedicated
+  // instructor image, else the hero portrait, else the bundled cutout.
   const coachPhoto = settings?.instructor_image_url ?? settings?.hero_image_url ?? "/coach.png";
 
   return (
@@ -72,7 +72,7 @@ export default async function CourseDetailPage(props: { params: Promise<{ slug: 
       />
 
       <CourseHero course={course} modules={modules} />
-      <CoursePitch course={course} />
+      <CoursePitch course={course} coachPhoto={coachPhoto} />
       <CourseCurriculum modules={modules} />
       <CourseGuarantee guaranteeText={course.guarantee_text} imageUrl={coachPhoto} />
       <CourseInstructor

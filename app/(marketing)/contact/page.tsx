@@ -19,9 +19,11 @@ export default async function ContactPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
       <header className="mb-12 text-center">
-        <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">تواصل معنا</h1>
+        <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">
+          {settings?.contact_heading || "تواصل معنا"}
+        </h1>
         <p className="mt-4 text-lg text-foreground-muted">
-          سؤال عن دورة؟ أو رغبة في التسجيل؟ نحن هنا لمساعدتك.
+          {settings?.contact_subhead || "سؤال عن دورة؟ أو رغبة في التسجيل؟ نحن هنا لمساعدتك."}
         </p>
       </header>
 

@@ -19,7 +19,7 @@ export default async function CoursesPage() {
   ]);
   const [featured, ...rest] = courses;
 
-  // Framing copy is editable from /admin/settings (shared with the homepage
+  // Framing copy is editable from /admin/pages/home (shared with the homepage
   // courses section) — fall back to the page's own defaults.
   const eyebrow = settings?.courses_eyebrow || "الدورات";
   const heading = settings?.courses_heading || "دوراتنا";
