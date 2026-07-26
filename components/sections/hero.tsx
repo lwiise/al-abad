@@ -205,7 +205,14 @@ export function Hero({
             <div className="max-w-md space-y-5 text-start">
               <h1
                 ref={headlineRef}
-                style={{ lineHeight: 1.5 }}
+                // 1.28, not the token's 1.18: SplitText wraps each word in an
+                // inline-block, and Arabic diacritics on the top line clip
+                // against that box at tighter leading. pb-1 catches descenders.
+                style={{ lineHeight: 1.28 }}
+                // Stays at 4xl/5xl/6xl — which the enlarged tokens now render at
+                // 40/52/68px. Going a step further put 84px type in a ~370px
+                // grid column and broke the headline into four cramped lines;
+                // the three-column hero can't hold display sizes.
                 className="pb-1 text-4xl font-extrabold text-foreground [text-wrap:normal] sm:text-5xl lg:text-6xl"
               >
                 {headline || "زواج أكثر وعياً… وعلاقة تدوم"}
