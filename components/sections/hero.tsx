@@ -4,10 +4,15 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Users, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, splitStat } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { useMagnetic } from "@/components/motion/use-magnetic";
+import { pauseOffscreen } from "@/components/motion/pause-offscreen";
+import { Scene3D } from "@/components/motion/scene-3d";
+import { DepthLayer } from "@/components/motion/depth-layer";
+import { CountUp } from "@/components/motion/count-up";
+import { Grain } from "./art/grain";
 import type { StatRow } from "@/lib/database.types";
 import { MediaFallback } from "./media-fallback";
 
@@ -44,23 +49,28 @@ export function Hero({
       const mm = gsap.matchMedia();
 
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        // No mask: masking clips Arabic diacritics/descenders. Plain fade-rise.
+        // Words, never characters — per-character wrapping breaks Arabic letter
+        // joining. No mask either: masking clips diacritics and descenders.
+        // The rotateX hinge swings words in from depth instead of sliding them.
         const split = SplitText.create(headlineRef.current, {
           type: "words",
           autoSplit: true,
           onSplit: (self) =>
             gsap.from(self.words, {
-              y: 28,
+              y: 30,
               opacity: 0,
-              duration: 0.85,
+              rotateX: -55,
+              transformPerspective: 700,
+              transformOrigin: "50% 100%",
+              duration: 0.9,
               ease: "power3.out",
-              stagger: 0.09,
+              stagger: 0.08,
               delay: 0.1,
             }),
         });
         gsap.from("[data-hero-rise]", {
           opacity: 0,
-          y: 22,
+          y: 24,
           duration: 0.7,
           ease: "power3.out",
           stagger: 0.12,
@@ -70,7 +80,7 @@ export function Hero({
       });
 
       mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
-        gsap.to("[data-orb]", {
+        const drift = gsap.to("[data-orb]", {
           y: "+=26",
           x: "+=14",
           duration: 7,
@@ -79,14 +89,49 @@ export function Hero({
           yoyo: true,
           stagger: { each: 1.6, from: "random" },
         });
+        const stopPausing = pauseOffscreen(root.current, [drift]);
+
+        // Scroll-out parallax. Each layer leaves at its own rate — the aurora
+        // barely moves, the orbs lag well behind — which is what sells the
+        // depth that the pointer rotation only hints at.
+        const scrub = {
+          trigger: root.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        } as const;
+
+        const layers = [
+          gsap.to("[data-hero-aurora]", { yPercent: 10, ease: "none", scrollTrigger: scrub }),
+          gsap.to("[data-hero-orbs]", { yPercent: 26, ease: "none", scrollTrigger: scrub }),
+        ];
+
+        return () => {
+          stopPausing();
+          drift.kill();
+          layers.forEach((l) => {
+            l.scrollTrigger?.kill();
+            l.kill();
+          });
+        };
       });
 
       mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
-        gsap.to("[data-hero-portrait]", {
-          yPercent: -6,
-          ease: "none",
-          scrollTrigger: { trigger: root.current, start: "top top", end: "bottom top", scrub: true },
-        });
+        const scrub = {
+          trigger: root.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        } as const;
+        const tweens = [
+          gsap.to("[data-hero-portrait]", { yPercent: -10, ease: "none", scrollTrigger: scrub }),
+          gsap.to("[data-hero-halo]", { yPercent: 18, ease: "none", scrollTrigger: scrub }),
+        ];
+        return () =>
+          tweens.forEach((t) => {
+            t.scrollTrigger?.kill();
+            t.kill();
+          });
       });
 
       return () => mm.revert();
@@ -96,13 +141,36 @@ export function Hero({
 
   return (
     <section ref={root} className="relative isolate overflow-hidden bg-background">
-      {/* aurora wash + floating brand orbs */}
-      <div className="hero-aurora pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div data-orb className="absolute -top-12 start-[16%] size-72 rounded-full bg-highlight/20 blur-3xl" />
-        <div data-orb className="absolute top-1/3 end-[6%] size-80 rounded-full bg-secondary/15 blur-3xl" />
-        <div data-orb className="absolute -bottom-10 start-[8%] size-72 rounded-full bg-primary/15 blur-3xl" />
-      </div>
+      {/* Background stage: aurora and orbs sit at real Z, so one pointer
+          rotation parallaxes them against each other. Clipping stays on the
+          section — preserve-3d defeats overflow on descendants. */}
+      <Scene3D max={6} className="pointer-events-none absolute inset-0 -z-10">
+        <DepthLayer z={-320} className="absolute inset-0">
+          <div data-hero-aurora className="hero-aurora absolute inset-0" aria-hidden="true" />
+        </DepthLayer>
+
+        <DepthLayer z={-140} className="absolute inset-0">
+          <div data-hero-orbs className="absolute inset-0" aria-hidden="true">
+            <div
+              data-orb
+              className="absolute -top-12 start-[16%] size-72 rounded-full bg-highlight/20 blur-3xl"
+            />
+            <div
+              data-orb
+              className="absolute top-1/3 end-[6%] size-80 rounded-full bg-secondary/15 blur-3xl"
+            />
+            <div
+              data-orb
+              className="absolute -bottom-10 start-[8%] size-72 rounded-full bg-primary/15 blur-3xl"
+            />
+          </div>
+        </DepthLayer>
+      </Scene3D>
+
+      {/* Grain gives the flat gradient wash a surface — the cheapest antidote
+          to the plasticky look large CSS gradients have on their own. */}
+      <Grain className="pointer-events-none absolute inset-0 -z-10 size-full" />
+
       {/* fade the hero into the next (surface) section — no hard seam */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-b from-transparent to-surface"
@@ -129,7 +197,9 @@ export function Hero({
                   />
                 ))}
               </div>
-              <span className="text-sm text-foreground-muted">{trustBadge || "موثوق من آلاف المتدربين"}</span>
+              <span className="text-sm text-foreground-muted">
+                {trustBadge || "موثوق من آلاف المتدربين"}
+              </span>
             </div>
 
             <div className="max-w-md space-y-5 text-start">
@@ -157,7 +227,10 @@ export function Hero({
                 </Link>
                 <Link
                   href={secondaryUrl || "/نبذة"}
-                  className={cn(buttonClasses("outline", "md"), "rounded-full bg-background/70 backdrop-blur")}
+                  className={cn(
+                    buttonClasses("outline", "md"),
+                    "rounded-full bg-background/70 backdrop-blur",
+                  )}
                 >
                   {secondaryLabel || "تعرّف على الأستاذ علي"}
                 </Link>
@@ -172,10 +245,14 @@ export function Hero({
           >
             {imageUrl ? (
               <>
-                {/* soft brand halo behind the cutout so it blends into the page (no frame) */}
+                {/* Soft brand halo behind the cutout so it blends into the page
+                    (no frame). It breathes slowly and drifts at its own scroll
+                    rate, so the portrait reads as standing in front of
+                    something rather than pasted onto it. */}
                 <div
+                  data-hero-halo
                   aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 top-6 -z-10 rounded-[100%] bg-gradient-to-b from-highlight/25 via-highlight/10 to-transparent blur-3xl"
+                  className="aura-breathe absolute inset-x-0 bottom-0 top-6 -z-10 rounded-[100%] bg-gradient-to-b from-highlight/25 via-highlight/10 to-transparent blur-3xl"
                 />
                 <Image
                   src={imageUrl}
@@ -199,6 +276,7 @@ export function Hero({
               <ul className="space-y-7">
                 {topStats.map((s, i) => {
                   const Icon = STAT_ICONS[i % STAT_ICONS.length];
+                  const { prefix, num, suffix } = splitStat(s.value);
                   return (
                     <li key={s.id} className="flex items-center gap-3">
                       <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-background/70 text-secondary backdrop-blur">
@@ -206,7 +284,15 @@ export function Hero({
                       </span>
                       <span>
                         <span className="block text-2xl font-extrabold tabular-nums text-foreground">
-                          {s.value}
+                          {num != null ? (
+                            <CountUp
+                              value={num}
+                              prefix={prefix}
+                              suffix={suffix ? ` ${suffix}` : ""}
+                            />
+                          ) : (
+                            s.value
+                          )}
                         </span>
                         <span className="block text-xs text-foreground-subtle">{s.label}</span>
                       </span>
