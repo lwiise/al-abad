@@ -21,13 +21,22 @@ const CELL = 44; // px — grid pitch, and therefore the exact loop distance
 export function GridHorizon({
   className,
   tone = "violet",
+  fadeClassName = "from-ink",
 }: {
   className?: string;
-  /** Line colour. Kept to the two hues that survive a dark background. */
-  tone?: "violet" | "teal";
+  /** Line colour. "light" is for saturated brand panels, where a brand-hue
+   *  line disappears into the background it sits on. */
+  tone?: "violet" | "teal" | "light";
+  /** Gradient start for the horizon fade — match the surface this sits on. */
+  fadeClassName?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const line = tone === "violet" ? "rgba(165,81,252,0.35)" : "rgba(13,103,139,0.4)";
+  const line =
+    tone === "violet"
+      ? "rgba(165,81,252,0.35)"
+      : tone === "teal"
+        ? "rgba(13,103,139,0.4)"
+        : "rgba(255,255,255,0.28)";
 
   useGSAP(
     () => {
@@ -72,7 +81,7 @@ export function GridHorizon({
         }}
       />
       {/* Fade the far edge into the section so the plane has no hard top seam. */}
-      <div className="absolute inset-x-0 top-[30%] h-40 bg-gradient-to-b from-ink to-transparent" />
+      <div className={cn("absolute inset-x-0 top-[30%] h-40 bg-gradient-to-b to-transparent", fadeClassName)} />
     </div>
   );
 }

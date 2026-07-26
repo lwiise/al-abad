@@ -43,7 +43,7 @@ export function CourseExplorer({
         </div>
       )}
 
-      <Stagger className="grid gap-6 sm:grid-cols-2">
+      <Stagger preset="depth" className="grid gap-6 sm:grid-cols-2">
         {shown.map((course, i) => (
           <CourseCard key={course.id} course={course} index={i + 1} />
         ))}
