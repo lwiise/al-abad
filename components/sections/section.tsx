@@ -11,23 +11,36 @@ const bgMap: Record<Bg, string> = {
   plum: "bg-primary",
 };
 
-/** Full-width band + centered max-width container. Drives section rhythm. */
+type Width = "default" | "wide" | "full";
+
+const widthMap: Record<Width, string> = {
+  default: "mx-auto max-w-6xl px-6",
+  wide: "mx-auto max-w-7xl px-6",
+  // Edge-to-edge. Boxing every section at one width is what makes a site read
+  // as a document rather than a brand — full-bleed is reserved for the moments
+  // that should feel like they own the screen.
+  full: "w-full",
+};
+
+/** Full-width band + centered container. Drives section rhythm. */
 export function Section({
   id,
   bg = "background",
+  width = "default",
   className,
   containerClassName,
   children,
 }: {
   id?: string;
   bg?: Bg;
+  width?: Width;
   className?: string;
   containerClassName?: string;
   children: ReactNode;
 }) {
   return (
-    <section id={id} className={cn(bgMap[bg], "py-20 md:py-24", className)}>
-      <div className={cn("mx-auto max-w-6xl px-6", containerClassName)}>{children}</div>
+    <section id={id} className={cn(bgMap[bg], "py-24 md:py-32", className)}>
+      <div className={cn(widthMap[width], containerClassName)}>{children}</div>
     </section>
   );
 }
@@ -61,7 +74,7 @@ export function SectionHeading({
       )}
       <h2
         className={cn(
-          "text-3xl font-bold md:text-4xl",
+          "text-4xl font-bold md:text-5xl",
           light ? "text-white" : "text-foreground",
         )}
       >

@@ -37,8 +37,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`${readex.variable} ${plex.variable}`}>
-      <body className="min-h-dvh bg-background text-foreground font-sans">
+    <html
+      lang="ar"
+      dir="rtl"
+      className={`${readex.variable} ${plex.variable} overflow-x-clip`}
+    >
+      {/* overflow-x-clip, not -hidden: decorative auras and orbit art bleed
+          past their containers by design (-inset-8, scale-125, inset-x-[-50%]),
+          which made the page scroll sideways on narrow screens. `clip` stops
+          that without establishing a scroll container — `hidden` would, and
+          that breaks the sticky header. */}
+      <body className="min-h-dvh overflow-x-clip bg-background text-foreground font-sans">
         {children}
       </body>
     </html>

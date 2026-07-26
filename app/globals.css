@@ -75,16 +75,25 @@
   --text-xl--line-height: 1.7;
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 1.45;
-  --text-3xl: 1.875rem;
+  --text-3xl: 2rem;
   --text-3xl--line-height: 1.35;
-  --text-4xl: 2.25rem;
-  --text-4xl--line-height: 1.25;
-  --text-5xl: 3rem;
-  --text-5xl--line-height: 1.18;
-  --text-6xl: 3.75rem;
-  --text-6xl--line-height: 1.1;
-  --text-display: 4.5rem;
-  --text-display--line-height: 1.06;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 1.28;
+  --text-5xl: 3.25rem;
+  --text-5xl--line-height: 1.22;
+  --text-6xl: 4.25rem;
+  --text-6xl--line-height: 1.22;
+  --text-7xl: 5.25rem;
+  --text-7xl--line-height: 1.2;
+  --text-8xl: 6.5rem;
+  --text-8xl--line-height: 1.18;
+  --text-display: 5.5rem;
+  --text-display--line-height: 1.2;
+
+  /* Arabic sets larger than Latin at the same nominal size, and its diacritics
+     and descenders sit outside the em box — so display leading stays at ~1.16+
+     rather than the ~1.05 a Latin display face would take. Anything tighter
+     clips fatha/damma on the top line. */
 
   /* --- Radii (soft, no harsh corners) -------------------------------- */
   --radius-sm: 0.5rem;

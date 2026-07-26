@@ -19,9 +19,11 @@ export function FinalCta({
   waHref?: string | null;
 }) {
   return (
-    <Section bg="background">
+    <Section bg="background" width="full" className="py-0">
       <Reveal>
-        <div className="shimmer-brand relative overflow-hidden rounded-[2rem] px-6 py-16 text-center md:py-20">
+        {/* Full-bleed close — the last thing on the page should feel like it
+            owns the screen, not like another card in the stack. */}
+        <div className="shimmer-brand relative overflow-hidden px-6 py-24 text-center md:py-32">
           {/* Counter-rotating orbit pairs at opposite corners — they frame the
               CTA and keep the panel alive without competing with the button,
               which stays the only coral thing on screen. */}
@@ -29,8 +31,8 @@ export function FinalCta({
           <OrbitField tone="light" className="-bottom-14 -end-10 size-48 opacity-40" />
           <Grain opacity={0.06} />
 
-          <div className="relative z-10">
-            <h2 className="mx-auto max-w-2xl text-3xl font-bold text-white md:text-4xl">
+          <div className="relative z-10 mx-auto max-w-4xl">
+            <h2 className="mx-auto max-w-3xl text-4xl font-bold text-white md:text-5xl lg:text-6xl">
               {heading || "ابدأ رحلتك نحو علاقةٍ أفضل اليوم"}
             </h2>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
