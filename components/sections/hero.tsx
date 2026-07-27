@@ -7,6 +7,7 @@ import { BookOpen, Users, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useMagnetic } from "@/components/motion/use-magnetic";
+import { NajdiBackdrop } from "./art/najdi-backdrop";
 import type { StatRow } from "@/lib/database.types";
 
 const STAT_ICONS = [BookOpen, Users, Target];
@@ -110,25 +111,10 @@ export function Hero({
       ref={root}
       className="relative isolate overflow-hidden bg-ink-deep text-white"
     >
-      {/* A single warm light source from the upper right — the whole lighting
-          idea of the art direction in one gradient. Deliberately not a
-          full-bleed violet wash. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(70% 55% at 82% 12%, color-mix(in oklab, var(--color-aubergine) 70%, transparent) 0%, transparent 68%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(38% 30% at 88% 6%, color-mix(in oklab, var(--color-coral) 22%, transparent) 0%, transparent 70%)",
-        }}
-      />
+      {/* Two shafts of light in a Najdi plaster wall, brighter where they
+          cross. Replaces the two radial washes: same job, but it says
+          something rather than just tinting the corner. */}
+      <NajdiBackdrop className="-z-10" />
 
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
@@ -250,71 +236,10 @@ export function Hero({
                   className="object-contain object-bottom"
                 />
               </div>
-            ) : (
-              <MashrabiyaLight />
-            )}
+            ) : null}
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-/**
- * Stand-in for the hero portrait until real photography of the coach exists.
- *
- * Deliberately architectural rather than figurative: the art direction forbids
- * generating a face or Gulf dress, and a flat placeholder block reads worse on
- * near-black than it does on white. A mashrabiya screen with light behind it is
- * the approved vocabulary, and drawn in code it costs nothing and ships now.
- *
- * Replace wholesale once a real portrait lands in the CMS.
- */
-function MashrabiyaLight() {
-  return (
-    <div
-      aria-hidden="true"
-      className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-white/10 lg:max-w-none"
-    >
-      {/* light source behind the screen */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 45% at 50% 22%, color-mix(in oklab, var(--color-coral) 32%, transparent) 0%, transparent 70%), linear-gradient(180deg, var(--color-aubergine) 0%, var(--color-ink-deep) 72%)",
-        }}
-      />
-      {/* the screen itself — an eight-point geometric lattice */}
-      <svg className="absolute inset-0 size-full" viewBox="0 0 200 250" fill="none">
-        <defs>
-          <pattern id="mashrabiya" width="25" height="25" patternUnits="userSpaceOnUse">
-            <path
-              d="M12.5 0 L25 12.5 L12.5 25 L0 12.5 Z M12.5 6 L19 12.5 L12.5 19 L6 12.5 Z"
-              stroke="var(--color-sand)"
-              strokeOpacity="0.22"
-              strokeWidth="0.6"
-              fill="none"
-            />
-            <path
-              d="M0 0 L6 6 M25 0 L19 6 M0 25 L6 19 M25 25 L19 19"
-              stroke="var(--color-sand)"
-              strokeOpacity="0.14"
-              strokeWidth="0.6"
-            />
-          </pattern>
-          <linearGradient id="mashrabiya-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="white" stopOpacity="0.9" />
-            <stop offset="0.65" stopColor="white" stopOpacity="0.35" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
-          </linearGradient>
-          <mask id="mashrabiya-mask">
-            <rect width="200" height="250" fill="url(#mashrabiya-fade)" />
-          </mask>
-        </defs>
-        <rect width="200" height="250" fill="url(#mashrabiya)" mask="url(#mashrabiya-mask)" />
-      </svg>
-      {/* settle the base into the section ground */}
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink-deep to-transparent" />
-    </div>
   );
 }
