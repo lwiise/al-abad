@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { GraduationCap, Award, BadgeCheck, Users } from "lucide-react";
-import { cn, splitStat } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { CountUp } from "@/components/motion/count-up";
@@ -18,6 +18,13 @@ function excerpt(md: string | null | undefined, n = 300): string {
   const text = md.replace(/[#*_>`[\]()-]/g, " ").replace(/\s+/g, " ").trim();
   if (!text) return FALLBACK_BIO;
   return text.length > n ? text.slice(0, n).trim() + "…" : text;
+}
+
+/** "+1000" → { prefix:"+", num:1000, suffix:"" }; non-numeric → { num:null }. */
+function splitStat(value: string) {
+  const m = value.match(/^(\D*)(\d[\d,]*)(.*)$/);
+  if (!m) return { prefix: "", num: null as number | null, suffix: value };
+  return { prefix: m[1].trim(), num: parseInt(m[2].replace(/,/g, ""), 10), suffix: m[3].trim() };
 }
 
 export function CourseInstructor({

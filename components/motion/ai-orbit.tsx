@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { pauseOffscreen } from "./pause-offscreen";
 
 /**
  * Decorative orbiting-dots accent for the AI section. Slowly rotates; dots
@@ -15,27 +14,17 @@ export function AiOrbit({ className }: { className?: string }) {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const spins = [
-          gsap.to("[data-orbit]", { rotate: 360, transformOrigin: "center", duration: 26, ease: "none", repeat: -1 }),
-          gsap.to("[data-orbit-rev]", { rotate: -360, transformOrigin: "center", duration: 34, ease: "none", repeat: -1 }),
-          gsap.to("[data-orbit-dot]", {
-            scale: 1.6,
-            transformOrigin: "center",
-            duration: 1.6,
-            ease: "sine.inOut",
-            repeat: -1,
-            yoyo: true,
-            stagger: { each: 0.3, from: "random" },
-          }),
-        ];
-
-        // These loop forever and appear on several sections; without this they
-        // keep spinning off screen for the whole session.
-        const stopPausing = pauseOffscreen(ref.current, spins);
-        return () => {
-          stopPausing();
-          spins.forEach((s) => s.kill());
-        };
+        gsap.to("[data-orbit]", { rotate: 360, transformOrigin: "center", duration: 26, ease: "none", repeat: -1 });
+        gsap.to("[data-orbit-rev]", { rotate: -360, transformOrigin: "center", duration: 34, ease: "none", repeat: -1 });
+        gsap.to("[data-orbit-dot]", {
+          scale: 1.6,
+          transformOrigin: "center",
+          duration: 1.6,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          stagger: { each: 0.3, from: "random" },
+        });
       });
       return () => mm.revert();
     },

@@ -28,7 +28,7 @@ export function BlogTeaser({
           sub={subhead || "مقالاتٌ تثري وعيك حول العلاقة الزوجية."}
         />
       </Reveal>
-      <Stagger preset="depth" className="mt-12 grid gap-6 md:grid-cols-3">
+      <Stagger className="mt-12 grid gap-6 md:grid-cols-3">
         {posts.map((p, i) => (
           <PostCard key={p.id} post={p} index={i} />
         ))}

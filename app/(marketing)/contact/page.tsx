@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { getSettings, waLink } from "@/lib/data";
 import { ContactForm } from "@/components/sections/contact-form";
 import { SocialIcon, SOCIAL_KEYS, SOCIAL_LABELS, WhatsappGlyph } from "@/components/site/icons";
-import { Reveal } from "@/components/motion/reveal";
-import { Stagger } from "@/components/motion/stagger";
 
 export const revalidate = 300;
 
@@ -20,33 +18,27 @@ export default async function ContactPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-      <Reveal>
-        <header className="mb-12 text-center">
-          <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">
-            {settings?.contact_heading || "تواصل معنا"}
-          </h1>
-          <p className="mt-4 text-lg text-foreground-muted">
-            {settings?.contact_subhead || "سؤال عن دورة؟ أو رغبة في التسجيل؟ نحن هنا لمساعدتك."}
-          </p>
-        </header>
-      </Reveal>
+      <header className="mb-12 text-center">
+        <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">
+          {settings?.contact_heading || "تواصل معنا"}
+        </h1>
+        <p className="mt-4 text-lg text-foreground-muted">
+          {settings?.contact_subhead || "سؤال عن دورة؟ أو رغبة في التسجيل؟ نحن هنا لمساعدتك."}
+        </p>
+      </header>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
-        <Reveal>
-          <div className="rounded-2xl border border-border bg-background p-6 shadow-sm md:p-8">
-            <ContactForm />
-          </div>
-        </Reveal>
+        <div className="rounded-2xl border border-border bg-background p-6 shadow-sm md:p-8">
+          <ContactForm />
+        </div>
 
-        {/* The sidebar cards cascade in after the form, so the eye lands on the
-            form first — motion here follows the task order, not the DOM order. */}
-        <Stagger as="aside" amount={0.12} className="space-y-6">
+        <aside className="space-y-6">
           {wa && (
             <a
               href={wa}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md"
+              className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-border-strong"
             >
               <span className="flex size-11 items-center justify-center rounded-full bg-[#25D366]/10 text-[#25D366]">
                 <WhatsappGlyph className="size-6" />
@@ -83,7 +75,7 @@ export default async function ContactPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={SOCIAL_LABELS[k]}
-                      className="flex size-10 items-center justify-center rounded-full bg-background text-foreground-muted transition-all duration-200 hover:scale-110 hover:bg-primary hover:text-on-primary"
+                      className="flex size-10 items-center justify-center rounded-full bg-background text-foreground-muted transition-colors hover:bg-primary hover:text-on-primary"
                     >
                       <SocialIcon name={k} className="size-4" />
                     </a>
@@ -92,7 +84,7 @@ export default async function ContactPage() {
               </div>
             </div>
           )}
-        </Stagger>
+        </aside>
       </div>
     </div>
   );
