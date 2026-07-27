@@ -394,3 +394,126 @@
     height: 0;
   }
 }
+
+/* ===========================================================================
+   Section 1 — nav + hero as one continuous surface
+   ===========================================================================
+   Deliberately NOT wrapped in @layer. Tailwind v4 treats rules inside
+   `@layer utilities` as utility *candidates* and only emits the ones it
+   matches, so hand-written classes and their supporting custom properties get
+   dropped from the build. Plain top-level CSS is emitted verbatim.
+
+   The nav is fixed and therefore out of flow, so the hero starts at y=0 and
+   its background runs behind it. That is what removes the seam: there is only
+   ever one surface. The hero pads its CONTENT down by --nav-h instead.
+   ------------------------------------------------------------------------- */
+:root {
+  --nav-h: 84px;
+  --nav-h-scrolled: 64px;
+  /* One shared curve for nav, entrance and hover, rather than three
+     near-identical hand-typed ones. */
+  --ease-hero: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Najdi relief tile — stepped nested triangles over a zigzag course, the
+     Diriyah / old-Najdi plasterwork geometry. Not mashrabiya latticework, not
+     a Moroccan interlace. Data-URI so it is never a network request. */
+  --najdi-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='62' viewBox='0 0 72 62'%3E%3Cg fill='none' stroke='%233a363d' stroke-width='1.6'%3E%3Cpath d='M36 8 L52 34 H20 Z'/%3E%3Cpath d='M36 18 L44 32 H28 Z'/%3E%3Cpath d='M0 8 L8 22 H-8 Z'/%3E%3Cpath d='M72 8 L80 22 H64 Z'/%3E%3Cpath d='M-6 50 L6 50 L12 42 L18 50 L30 50 L36 42 L42 50 L54 50 L60 42 L66 50 L78 50'/%3E%3C/g%3E%3C/svg%3E");
+  --grain-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+@media (max-width: 1079px) {
+  :root {
+    --nav-h: 68px;
+    --nav-h-scrolled: 56px;
+  }
+}
+
+/* --- Entrance: one staggered rise-and-fade, once on load ------------------ */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-enter {
+  opacity: 0;
+  animation: hero-rise 820ms var(--ease-hero) forwards;
+}
+
+/* --- Ripples --------------------------------------------------------------
+   `r` is a CSS-animatable SVG geometry property, so the whole field is six
+   keyframed circles per emitter and no JS at all. 19s is deliberately long: if
+   it ever reads as "an animation" it is too fast. */
+@keyframes hero-ripple {
+  0% {
+    r: 30px;
+    opacity: 0;
+  }
+  7% {
+    opacity: 1;
+  }
+  100% {
+    r: 780px;
+    opacity: 0;
+  }
+}
+
+.hero-ripple {
+  animation: hero-ripple 19s linear infinite;
+}
+
+/* Texture to be felt, not looked at: masked to the lower-left, held at 5%. */
+.hero-najdi {
+  background-image: var(--najdi-tile);
+  background-size: 72px 62px;
+  background-repeat: repeat;
+  opacity: 0.05;
+  -webkit-mask-image: radial-gradient(120% 110% at 8% 96%, #000 0%, #000 32%, transparent 72%);
+  mask-image: radial-gradient(120% 110% at 8% 96%, #000 0%, #000 32%, transparent 72%);
+}
+
+/* Without this the wide gradients band visibly on 6-bit laptop panels, which
+   is most of them. */
+.hero-grain {
+  background-image: var(--grain-tile);
+  opacity: 0.42;
+  mix-blend-mode: overlay;
+}
+
+/* Nav link underline, drawn from the right — RTL reading direction. */
+.nav-underline::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.75rem;
+  bottom: 0.35rem;
+  height: 1.5px;
+  background-color: var(--color-coral);
+  transform: scaleX(0);
+  transform-origin: 100% 50%;
+  transition: transform 240ms var(--ease-hero);
+}
+.nav-underline:hover::after,
+.nav-underline:focus-visible::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Entrance resolves instantly to its end state; the ripple field freezes at
+     the six fixed radii set inline on each circle. */
+  .hero-enter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .hero-ripple {
+    animation: none;
+  }
+  .nav-underline::after {
+    transition: none;
+  }
+}
