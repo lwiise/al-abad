@@ -6,7 +6,7 @@ import { gsap, useGSAP, ScrollTrigger } from "@/lib/gsap";
 /**
  * الخيط — the thread. The one element the site should be remembered by.
  *
- * A single gold line runs the length of the homepage as TWO separate strands
+ * A single coral line runs the length of the homepage as TWO separate strands
  * that braid into one by the final CTA. The metaphor is the thesis: "علاقة تدوم"
  * — a relationship that lasts — drawn as one unbroken line.
  *
@@ -133,7 +133,7 @@ export function ThreadOverlay() {
       <path
         data-strand
         d={strand(height, -1)}
-        stroke="var(--color-gold)"
+        stroke="var(--color-coral)"
         strokeOpacity="0.35"
         strokeWidth="1.5"
         vectorEffect="non-scaling-stroke"
@@ -142,7 +142,7 @@ export function ThreadOverlay() {
       <path
         data-strand
         d={strand(height, 1)}
-        stroke="var(--color-gold)"
+        stroke="var(--color-coral)"
         strokeOpacity="0.35"
         strokeWidth="1.5"
         vectorEffect="non-scaling-stroke"

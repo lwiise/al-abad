@@ -126,7 +126,7 @@ export function Hero({
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(38% 30% at 88% 6%, color-mix(in oklab, var(--color-gold) 22%, transparent) 0%, transparent 70%)",
+            "radial-gradient(38% 30% at 88% 6%, color-mix(in oklab, var(--color-coral) 22%, transparent) 0%, transparent 70%)",
         }}
       />
 
@@ -166,7 +166,7 @@ export function Hero({
                   // descenders and sweeping baseline sit well outside the em
                   // box, so this carries its own generous leading and padding
                   // rather than inheriting the heading scale's.
-                  className="mt-3 block font-calligraphy text-gold"
+                  className="mt-3 block font-calligraphy text-coral"
                   style={{ lineHeight: 1.9, paddingBottom: "0.15em" }}
                 >
                   {calligraphic}
@@ -184,7 +184,7 @@ export function Hero({
 
             <div data-hero-rise className="mt-9 flex flex-wrap gap-3">
               {/* On an ink ground plum is too close to the background — the
-                  primary action takes the warm neutral, with gold reserved for
+                  primary action takes the warm neutral, with coral reserved for
                   the thread and the hover accent. */}
               <Link
                 ref={magnetic}
@@ -207,7 +207,7 @@ export function Hero({
                   const Icon = STAT_ICONS[i % STAT_ICONS.length];
                   return (
                     <li key={s.id} className="flex items-center gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/8 text-gold">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/8 text-coral">
                         <Icon className="size-4" />
                       </span>
                       <span>
@@ -226,20 +226,28 @@ export function Hero({
           {/* Visual column */}
           <div data-hero-visual className="relative">
             {imageUrl ? (
-              <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[1.75rem] lg:max-w-none">
+              // The CMS images are transparent CUTOUTS — the live hero asset is
+              // 24.5% alpha-zero with all four corners transparent. So: no
+              // frame, no crop, `object-contain`, and a soft halo behind it.
+              // `object-cover` inside a rounded box (which this briefly had)
+              // crops a cutout's empty margins and puts a visible edge around a
+              // subject that is meant to float.
+              <div className="relative mx-auto aspect-[4/5] w-full max-w-sm lg:max-w-none">
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 bottom-0 top-6 -z-10 rounded-[100%] blur-3xl"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, color-mix(in oklab, var(--color-aubergine) 85%, transparent), transparent 75%)",
+                  }}
+                />
                 <Image
                   src={imageUrl}
                   alt="الأستاذ علي العباد"
                   fill
                   priority
                   sizes="(max-width: 1024px) 80vw, 460px"
-                  className="object-cover object-top"
-                />
-                {/* Foot the portrait into the dark ground instead of cutting it
-                    off against a hard edge. */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink-deep to-transparent"
+                  className="object-contain object-bottom"
                 />
               </div>
             ) : (
@@ -273,7 +281,7 @@ function MashrabiyaLight() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(60% 45% at 50% 22%, color-mix(in oklab, var(--color-gold) 32%, transparent) 0%, transparent 70%), linear-gradient(180deg, var(--color-aubergine) 0%, var(--color-ink-deep) 72%)",
+            "radial-gradient(60% 45% at 50% 22%, color-mix(in oklab, var(--color-coral) 32%, transparent) 0%, transparent 70%), linear-gradient(180deg, var(--color-aubergine) 0%, var(--color-ink-deep) 72%)",
         }}
       />
       {/* the screen itself — an eight-point geometric lattice */}
