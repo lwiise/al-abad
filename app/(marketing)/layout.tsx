@@ -5,6 +5,7 @@ import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { WhatsappFloat } from "@/components/site/whatsapp-float";
 import { ScrollRefresh } from "@/components/motion/scroll-refresh";
+import { ThreadOverlay } from "@/components/visual/thread-overlay";
 
 export default async function MarketingLayout({ children }: { children: ReactNode }) {
   const settings = await getSettings();
@@ -30,6 +31,11 @@ export default async function MarketingLayout({ children }: { children: ReactNod
       <WhatsappFloat
         href={waLink(settings?.whatsapp_number, "السلام عليكم، لدي استفسار عن الدورات")}
       />
+      {/* Sits behind everything, spans the full document. Rendered after the
+          content so its height measurement runs against a settled DOM;
+          ScrollRefresh below then re-runs ScrollTrigger.refresh() once fonts
+          swap and images land, which the thread's geometry depends on. */}
+      <ThreadOverlay />
       <ScrollRefresh />
     </>
   );
