@@ -40,7 +40,7 @@ export function CourseShowcase({
           <CourseCard course={featured} index={0} featured />
         </Reveal>
         {grid.length > 0 && (
-          <Stagger preset="depth" className="grid gap-6 sm:grid-cols-2">
+          <Stagger className="grid gap-6 sm:grid-cols-2">
             {grid.map((course, i) => (
               <CourseCard key={course.id} course={course} index={i + 1} />
             ))}

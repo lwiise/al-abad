@@ -7,8 +7,7 @@ import { useReveal } from "./use-reveal";
  * Reveals its direct children in a staggered cascade on scroll-in, via
  * IntersectionObserver + CSS transitions. Renders the element given by `as`
  * (div by default) so list semantics (ul/ol) are kept.
- * `preset`: "rise" (fade+up, default), "flip" (3D rotateX flip-in), or
- * "depth" (children arrive from a translateZ distance — the boldest entrance).
+ * `preset`: "rise" (fade+up, default) or "flip" (3D rotateX flip-in).
  * Per-child delay is set on the real DOM children (robust to Fragment/string
  * children; no style forwarding needed). Honors prefers-reduced-motion.
  */
@@ -23,7 +22,7 @@ export function Stagger({
   className?: string;
   children: ReactNode;
   amount?: number;
-  preset?: "rise" | "flip" | "depth";
+  preset?: "rise" | "flip";
 }) {
   const Tag = (as ?? "div") as ElementType;
   const ref = useRef<HTMLElement>(null);

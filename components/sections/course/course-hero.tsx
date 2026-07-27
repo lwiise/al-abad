@@ -8,10 +8,6 @@ import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { useMagnetic } from "@/components/motion/use-magnetic";
-import { pauseOffscreen } from "@/components/motion/pause-offscreen";
-import { Scene3D } from "@/components/motion/scene-3d";
-import { DepthLayer } from "@/components/motion/depth-layer";
-import { Grain } from "@/components/sections/art/grain";
 import type { CourseRow, CourseModuleRow } from "@/lib/database.types";
 
 /** "190 ر.س" for SAR, otherwise "190 <currency>". */
@@ -65,12 +61,9 @@ export function CourseHero({
           autoSplit: true,
           onSplit: (self) =>
             gsap.from(self.words, {
-              y: 28,
+              y: 26,
               opacity: 0,
-              rotateX: -55,
-              transformPerspective: 700,
-              transformOrigin: "50% 100%",
-              duration: 0.85,
+              duration: 0.8,
               ease: "power3.out",
               stagger: 0.08,
               delay: 0.05,
@@ -88,7 +81,7 @@ export function CourseHero({
       });
 
       mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
-        const drift = gsap.to("[data-orb]", {
+        gsap.to("[data-orb]", {
           y: "+=24",
           x: "+=12",
           duration: 7,
@@ -97,28 +90,6 @@ export function CourseHero({
           yoyo: true,
           stagger: { each: 1.5, from: "random" },
         });
-        const stopPausing = pauseOffscreen(root.current, [drift]);
-
-        // Aurora and orbs leave at different rates, matching the homepage hero.
-        const scrub = {
-          trigger: root.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        } as const;
-        const layers = [
-          gsap.to("[data-hero-aurora]", { yPercent: 10, ease: "none", scrollTrigger: scrub }),
-          gsap.to("[data-hero-orbs]", { yPercent: 24, ease: "none", scrollTrigger: scrub }),
-        ];
-
-        return () => {
-          stopPausing();
-          drift.kill();
-          layers.forEach((l) => {
-            l.scrollTrigger?.kill();
-            l.kill();
-          });
-        };
       });
 
       return () => mm.revert();
@@ -132,19 +103,12 @@ export function CourseHero({
       ref={root}
       className="relative isolate overflow-hidden bg-background"
     >
-      <Scene3D max={5} className="pointer-events-none absolute inset-0 -z-10">
-        <DepthLayer z={-320} className="absolute inset-0">
-          <div data-hero-aurora className="hero-aurora absolute inset-0" aria-hidden="true" />
-        </DepthLayer>
-        <DepthLayer z={-140} className="absolute inset-0">
-          <div data-hero-orbs className="absolute inset-0" aria-hidden="true">
-            <div data-orb className="absolute -top-12 start-[14%] size-72 rounded-full bg-highlight/20 blur-3xl" />
-            <div data-orb className="absolute top-1/3 end-[8%] size-80 rounded-full bg-secondary/15 blur-3xl" />
-            <div data-orb className="absolute -bottom-10 start-[10%] size-72 rounded-full bg-primary/15 blur-3xl" />
-          </div>
-        </DepthLayer>
-      </Scene3D>
-      <Grain className="pointer-events-none absolute inset-0 -z-10 size-full" />
+      <div className="hero-aurora pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <div data-orb className="absolute -top-12 start-[14%] size-72 rounded-full bg-highlight/20 blur-3xl" />
+        <div data-orb className="absolute top-1/3 end-[8%] size-80 rounded-full bg-secondary/15 blur-3xl" />
+        <div data-orb className="absolute -bottom-10 start-[10%] size-72 rounded-full bg-primary/15 blur-3xl" />
+      </div>
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-surface"
         aria-hidden="true"

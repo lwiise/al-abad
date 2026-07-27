@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { getSettings } from "@/lib/data";
 import { Markdown } from "@/components/ui/markdown";
 import { Vision } from "@/components/sections/vision";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Reveal } from "@/components/motion/reveal";
-import { MagneticLink } from "@/components/motion/magnetic-link";
-import { ParallaxLayer } from "@/components/motion/parallax-layer";
-import { Grain } from "@/components/sections/art/grain";
 
 export const revalidate = 300;
 
@@ -29,15 +26,10 @@ export default async function AboutPage() {
 
   return (
     <>
-      <div className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
-        <Grain className="pointer-events-none absolute inset-0 -z-10 size-full" />
+      <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
         <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-          <Reveal className="relative mx-auto w-full max-w-sm">
-            {/* The aura breathes and drifts on its own scroll rate, so the
-                portrait reads as standing in front of it rather than on it. */}
-            <ParallaxLayer depth={0.3} className="pointer-events-none absolute -inset-8 -z-10">
-              <div className="aura aura-breathe size-full" aria-hidden="true" />
-            </ParallaxLayer>
+          <div className="relative mx-auto w-full max-w-sm">
+            <div className="aura pointer-events-none absolute -inset-8 -z-10" aria-hidden="true" />
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-surface-strong shadow-xl">
               {settings?.hero_image_url ? (
                 <Image
@@ -54,31 +46,19 @@ export default async function AboutPage() {
                 </div>
               )}
             </div>
-          </Reveal>
+          </div>
 
-          {/* Deliberately NOT one <Stagger> around the whole column: the prose
-              runs its own paragraph cascade, and nesting a stagger inside a
-              stagger would hide the same nodes twice and double their delays. */}
           <div>
-            <Reveal>
-              <p className="text-sm font-medium text-secondary">نبذة عن الأستاذ</p>
-            </Reveal>
-            <Reveal delay={0.08}>
-              <h1 className="mt-3 text-5xl font-extrabold text-foreground md:text-6xl">
-                الأستاذ علي العباد
-              </h1>
-            </Reveal>
+            <p className="text-sm font-medium text-secondary">نبذة عن الأستاذ</p>
+            <h1 className="mt-3 text-4xl font-extrabold text-foreground md:text-5xl">
+              الأستاذ علي العباد
+            </h1>
             <div className="mt-6">
-              <Markdown stagger>{about}</Markdown>
+              <Markdown>{about}</Markdown>
             </div>
-            <Reveal delay={0.16} className="mt-8">
-              <MagneticLink
-                href="/الدورات"
-                className={cn(buttonClasses("primary", "md"), "rounded-full")}
-              >
-                تصفّح الدورات
-              </MagneticLink>
-            </Reveal>
+            <Link href="/الدورات" className={cn(buttonClasses("primary", "md"), "mt-8 rounded-full")}>
+              تصفّح الدورات
+            </Link>
           </div>
         </div>
       </div>

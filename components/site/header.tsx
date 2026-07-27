@@ -11,23 +11,10 @@ import { NAV, LMS_URL } from "./nav";
 export function Header() {
   const pathname = decodeURIComponent(usePathname() || "/");
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    let last = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 8);
-      // Retract on the way down, return on the way up — gives back a full
-      // viewport while reading and puts navigation one flick away. The 90px
-      // floor keeps it from flickering around the top of the page, and the 6px
-      // threshold ignores trackpad jitter.
-      if (Math.abs(y - last) > 6) {
-        setHidden(y > last && y > 90);
-        last = y;
-      }
-    };
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -39,16 +26,10 @@ export function Header() {
   return (
     <header
       className={cn(
-        // Tailwind v4 compiles translate-y-* to the `translate` property, not
-        // `transform` — naming `transform` here would leave the retract
-        // un-animated while still moving.
-        "sticky top-0 z-50 transition-[translate,background-color,border-color] duration-300 motion-reduce:transition-none motion-reduce:[translate:none]",
+        "sticky top-0 z-50 transition-colors",
         scrolled || open
           ? "border-b border-border bg-background/90 backdrop-blur"
           : "border-b border-transparent bg-background/0",
-        // Never retract while the mobile menu is open — that would drag the
-        // open panel off screen with it.
-        hidden && !open ? "-translate-y-full" : "translate-y-0",
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">

@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { pauseOffscreen } from "@/components/motion/pause-offscreen";
 
 /**
  * Abstract brand illustration for the Problem/Empathy section: two overlapping
@@ -16,21 +15,14 @@ export function ConnectionArt({ className }: { className?: string }) {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        // Scrubbed rather than fired once: the outlines draw and retreat with
-        // scroll position, so the illustration keeps responding the whole time
-        // it is on screen instead of playing once and going inert.
         gsap.from("[data-draw]", {
           drawSVG: "0%",
-          ease: "none",
+          duration: 1.4,
+          ease: "power2.inOut",
           stagger: 0.25,
-          scrollTrigger: {
-            trigger: ref.current,
-            start: "top 85%",
-            end: "center 45%",
-            scrub: 0.8,
-          },
+          scrollTrigger: { trigger: ref.current, start: "clamp(top 80%)", once: true },
         });
-        const float = gsap.to("[data-float]", {
+        gsap.to("[data-float]", {
           y: "-=12",
           duration: 3,
           ease: "sine.inOut",
@@ -38,7 +30,7 @@ export function ConnectionArt({ className }: { className?: string }) {
           yoyo: true,
           stagger: { each: 0.4, from: "random" },
         });
-        const bob = gsap.to("[data-bob]", {
+        gsap.to("[data-bob]", {
           y: "+=8",
           duration: 4.5,
           ease: "sine.inOut",
@@ -46,13 +38,6 @@ export function ConnectionArt({ className }: { className?: string }) {
           yoyo: true,
           stagger: 0.7,
         });
-
-        const stopPausing = pauseOffscreen(ref.current, [float, bob]);
-        return () => {
-          stopPausing();
-          float.kill();
-          bob.kill();
-        };
       });
       return () => mm.revert();
     },
