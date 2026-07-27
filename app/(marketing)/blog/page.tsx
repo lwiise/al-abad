@@ -18,7 +18,7 @@ export default async function BlogPage() {
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
       <Reveal>
         <header className="mb-12 text-center">
-          <h1 className="text-5xl font-extrabold text-foreground md:text-6xl">
+          <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">
             {settings?.blog_page_heading || "المدونة"}
           </h1>
           <p className="mt-4 text-lg text-foreground-muted">

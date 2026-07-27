@@ -23,24 +23,24 @@ export function AiTeaser({
   const items = points.length ? points : FALLBACK_POINTS;
 
   return (
-    <Section bg="background" width="full" className="py-0">
+    <Section bg="background">
       <Reveal>
         {/* The "future" moment. A receding grid plane plus depth-layered orbits
             give this the only literal 3D on the homepage — earned here because
-            the section is about the AI assistant, not applied as decoration.
-            Full-bleed: this one should own the screen rather than sit in a box. */}
-        <div className="ai-shimmer relative overflow-hidden px-6 py-24 text-center text-on-highlight md:py-32">
+            the section is about the AI assistant, not applied as decoration. */}
+        <div className="ai-shimmer relative overflow-hidden rounded-[2rem] px-6 py-14 text-center text-on-highlight md:px-12">
           <GridHorizon tone="light" fadeClassName="from-highlight" />
-          <OrbitField tone="light" className="-end-10 -top-12 size-56 opacity-80" />
+          <OrbitField
+            tone="light"
+            className="-end-10 -top-12 size-56 opacity-80"
+          />
           <Grain opacity={0.07} />
 
-          {/* The band goes edge-to-edge; the text inside stays at a readable
-              measure. Full-bleed layout, not full-bleed line length. */}
-          <div className="relative z-10 mx-auto max-w-4xl">
+          <div className="relative z-10">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium backdrop-blur">
               <Sparkles className="size-4" /> {badge || "قريباً"}
             </span>
-            <h2 className="mx-auto mt-5 max-w-3xl text-4xl font-bold md:text-5xl lg:text-6xl">
+            <h2 className="mx-auto mt-5 max-w-2xl text-3xl font-bold md:text-4xl">
               {headline || "مساعدك الذكي للتعلّم"}
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-on-highlight/90">

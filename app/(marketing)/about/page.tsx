@@ -64,7 +64,7 @@ export default async function AboutPage() {
               <p className="text-sm font-medium text-secondary">نبذة عن الأستاذ</p>
             </Reveal>
             <Reveal delay={0.08}>
-              <h1 className="mt-3 text-5xl font-extrabold text-foreground md:text-6xl">
+              <h1 className="mt-3 text-4xl font-extrabold text-foreground md:text-5xl">
                 الأستاذ علي العباد
               </h1>
             </Reveal>
