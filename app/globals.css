@@ -19,6 +19,32 @@
   --color-lilac: #ebe3f7; /* surface tint — alternating sections, soft fills   */
   --color-ink: #3a363d; /* primary text, dark sections, footer                */
 
+  /* --- Elevation palette (visual elevation plan §1) --------------------
+     Warm, grounded counterpart to the cold lavender above: purple stays the
+     brand but is demoted from background to accent, and gold becomes the single
+     thread running through the site.
+
+     Named distinctly (-deep, -accent) rather than overwriting `--color-ink`
+     (#3a363d) and `--color-violet` (#a551fc) — every existing section, the
+     admin panel and CLAUDE.md depend on those. Currently applied in the hero
+     only; the rest of the site migrates once the direction is approved. */
+  --color-ink-deep: #1c1725; /* dark plum — footer, dark cards, final CTA     */
+  --color-aubergine: #3b2455; /* deep brand purple, not neon                  */
+  --color-violet-accent: #6d28d9; /* primary brand purple                     */
+  --color-charcoal: #2a2530; /* second card background only                   */
+  --color-sand: #efe9e1; /* warm neutral — replaces the cold lavender         */
+  --color-paper: #fbf9f7; /* page background                                  */
+
+  /* NO gold. The revised direction drops it: coral (--color-coral, #e04f64)
+     already carries the accent across the CTA, course-card circles and blog
+     tags, and adding a sixth hue is the exact problem being fixed. The thread
+     and the calligraphic line therefore use coral.
+
+     Note the revised palette specifies coral as #F4614E, ~20 points warmer than
+     the #e04f64 already in use. Migrating is a site-wide change (promo bar,
+     every CTA, badges), so this keeps the existing token rather than shipping
+     two near-identical corals — which would recreate the problem. */
+
   /* --- Neutral ramp (purple-tuned) ------------------------------------ */
   --color-neutral-50: #f8f6fb;
   --color-neutral-100: #f1eef6;
@@ -104,11 +130,15 @@
   --animate-accordion-up: accordion-up 0.22s ease-out;
 }
 
-/* Tajawal is injected on <html> by next/font as --font-tajawal. `inline` keeps
-   the utility referencing the live CSS variable rather than baking a value. */
+/* next/font injects --font-readex / --font-plex / --font-ruqaa on <html>.
+   `inline` keeps the utility referencing the live CSS variable rather than
+   baking a value. (Readex + Plex replaced the original Tajawal in Phase 2.1.) */
 @theme inline {
   --font-sans: var(--font-plex), system-ui, sans-serif;
   --font-display: var(--font-readex), var(--font-plex), system-ui, sans-serif;
+  /* Utility is `font-calligraphy` — the token cannot be named --font-ruqaa,
+     which is the raw variable next/font injects on <html>. */
+  --font-calligraphy: var(--font-ruqaa), var(--font-readex), serif;
 }
 
 @layer base {
