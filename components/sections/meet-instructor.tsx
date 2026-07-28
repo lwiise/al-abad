@@ -1,10 +1,8 @@
+"use client";
+
+import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { buttonClasses } from "@/components/ui/button";
-import { Reveal } from "@/components/motion/reveal";
-import { MediaFallback } from "./media-fallback";
-import { Section } from "./section";
 
 const FALLBACK =
   "يجمع الأستاذ علي العباد في دوراته بين العمق العلمي والخبرة العملية، ليقدّم لك أدواتٍ واضحةً وقابلةً للتطبيق في حياتك الزوجية — منهجٌ يأخذ بيدك من فهم الذات إلى بناء علاقةٍ متوازنةٍ وسعيدة.";
@@ -18,6 +16,44 @@ function excerpt(md: string | null | undefined, n = 340): string {
 
 const MARKERS = ["منهج علميّ", "أدوات عملية", "خبرة ميدانية"];
 
+/**
+ * Supporting line under each pillar label, by position.
+ *
+ * TODO(client): fill these in — one short line per pillar saying what actually
+ * backs it. Left deliberately empty, and empty is shipped: a row renders as the
+ * label alone until a line arrives.
+ *
+ * Do NOT write anything here that the client has not confirmed. No degrees, no
+ * institutions, no years, no counts, no certifications. This is a real person's
+ * professional site; an invented credential here is a false claim about him,
+ * not a placeholder.
+ */
+const PILLAR_NOTES = ["", "", ""];
+
+// Signature geometry. Kept here because useSignatureScrub has to convert the
+// circle's length into device pixels, and that conversion needs the viewBox.
+const VIEWBOX = 200;
+const RADIUS = 99;
+
+// Layout effect on the client (runs before paint → no flash of the animated-in
+// state), plain effect on the server so SSR doesn't warn. Mirrors use-reveal.ts.
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+/**
+ * Meet-the-instructor — the dark chapter break.
+ *
+ * Deliberately inverts the hero: portrait on the RIGHT in the wider column,
+ * copy on the LEFT, on an ink-deep ground. The dark ground is not decoration —
+ * a white thobe and ghutra cut out against a light background has almost no
+ * edge separation, and this is the first place the cutout reads properly.
+ *
+ * Ink-deep (#1c1725) rather than ink (#3a363d): the brief calls for near-black,
+ * and CLAUDE.md's dark-section rule notes plum sits too close to #3a363d — the
+ * signature's plum→coral stroke would vanish on it.
+ *
+ * No GSAP here. One IntersectionObserver drives the entrance, a second gates a
+ * rAF-throttled scroll read that scrubs the signature circle closed.
+ */
 export function MeetInstructor({
   aboutBody,
   imageUrl,
@@ -33,51 +69,364 @@ export function MeetInstructor({
   markers?: string[];
   ctaLabel?: string | null;
 }) {
+  const root = useRef<HTMLElement>(null);
+  const signature = useRef<SVGCircleElement>(null);
+
+  useSectionEnter(root);
+  useSignatureScrub(root, signature);
+
   const markerList = markers && markers.length ? markers : MARKERS;
+
   return (
-    <Section bg="background">
-      <div className="grid items-center gap-10 lg:grid-cols-2">
-        <Reveal className="relative mx-auto w-full max-w-sm lg:order-2">
-          {imageUrl ? (
-            <div className="relative aspect-[4/5]">
-              {/* soft brand halo behind the cutout so it blends into the page (no frame) */}
-              <div
-                aria-hidden="true"
-                className="absolute inset-x-0 bottom-0 top-6 -z-10 rounded-[100%] bg-gradient-to-b from-highlight/25 via-highlight/10 to-transparent blur-3xl"
-              />
-              <Image
-                src={imageUrl}
-                alt="الأستاذ علي العباد"
-                fill
-                sizes="(max-width: 1024px) 80vw, 400px"
-                className="object-contain object-bottom"
-              />
-            </div>
-          ) : (
-            <div className="relative aspect-[4/5] overflow-hidden rounded-t-[6rem] rounded-b-3xl border border-border shadow-lg">
-              <MediaFallback title="الأستاذ علي العباد" seed={4} />
-            </div>
-          )}
-        </Reveal>
+    <section
+      ref={root}
+      // isolate → the -z layers below stack against this section only.
+      // overflow-hidden → clips the bleeding portrait at the ink edge. The
+      // transition to the light sections either side is a hard cut on purpose;
+      // the outsized padding is what makes the block read as deliberate.
+      className="relative isolate overflow-hidden bg-ink-deep pt-24 pb-24 min-[1080px]:pt-40 min-[1080px]:pb-40"
+    >
+      <Grain />
 
-        <Reveal className="lg:order-1">
-          <p className="text-sm font-medium text-secondary">{eyebrow || "تعرّف على مدرّبك"}</p>
-          <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">{name || "الأستاذ علي العباد"}</h2>
-          <p className="mt-5 text-lg leading-loose text-foreground-muted">{excerpt(aboutBody)}</p>
+      <div className="mx-auto max-w-6xl px-6">
+        <div
+          className="flex flex-col min-[1080px]:grid min-[1080px]:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] min-[1080px]:items-center min-[1080px]:gap-x-12"
+        >
+          {/* ---- Portrait -------------------------------------------------
+              Column 1 = the right in RTL. Bottom-aligned and pulled past the
+              section's bottom padding so it bleeds into the ink edge instead
+              of sitting in a padded box; the extra svh clips the asset's own
+              bottom 10% — a patterned tablecloth he is sitting behind, which
+              reads as a foreign grey slab against ink. Single column below
+              1080px puts it straight after the h2 — keeps the face high on a
+              phone — where it sits in flow and cannot bleed, so the tablecloth
+              is taken off with a short base fade instead (see the Image). */}
+          <figure
+            data-enter=""
+            style={{ transitionDelay: "0ms" }}
+            className="relative order-3 mt-8 h-[46svh] w-full data-[enter=hidden]:translate-y-8 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[900ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)] min-[1080px]:col-start-1 min-[1080px]:row-start-1 min-[1080px]:-ms-6 min-[1080px]:mt-0 min-[1080px]:-mb-[calc(10rem_+_8svh)] min-[1080px]:h-[70svh] min-[1080px]:self-end"
+          >
+            {/* ONE light pool, brand purple, wide falloff — something for the
+                figure to stand in front of. There is no second one on the copy
+                side, by design. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-[-30%] top-[-8%] -z-20 h-[78%]"
+              style={{
+                background:
+                  "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--color-aubergine) 62%, transparent) 0%, transparent 72%)",
+              }}
+            />
+            {/* Contact shadow — same idea as the hero's, but tighter and much
+                darker so it reads as weight against ink rather than a halo. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-[14%] bottom-[13%] -z-20 h-[11%] min-[1080px]:bottom-[20%]"
+              style={{
+                background:
+                  "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, black 62%, var(--color-ink-deep)) 0%, transparent 70%)",
+              }}
+            />
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            {markerList.map((m) => (
-              <span key={m} className="rounded-full bg-surface-strong px-3 py-1 text-sm text-primary">
-                {m}
-              </span>
-            ))}
+            <Signature circleRef={signature} />
+
+            {/* Base fade below 1080px only. Above it the section's own bottom
+                edge crops the tablecloth off, which is the bleed the layout
+                wants; masking there as well would dissolve the figure before
+                it ever reached the edge. */}
+            <Image
+              src={imageUrl || "/coach.png"}
+              alt="الأستاذ علي العباد"
+              fill
+              sizes="(max-width: 1080px) 90vw, 620px"
+              className="object-contain object-bottom [mask-image:linear-gradient(to_top,transparent_0,transparent_4%,black_14%)] min-[1080px]:[mask-image:none]"
+            />
+          </figure>
+
+          {/* ---- Copy -----------------------------------------------------
+              display:contents below 1080px so eyebrow / h2 / body / pillars /
+              CTA become siblings of the portrait and can be ordered around it;
+              a normal block in column 2 (the left in RTL) above it. */}
+          <div className="contents min-[1080px]:col-start-2 min-[1080px]:row-start-1 min-[1080px]:block min-[1080px]:max-w-[46ch]">
+            {/* No letter-spacing, despite the small-caps-ish role: Arabic is
+                cursive and tracking breaks letter joining — globals.css nulls
+                it site-wide. The short rule on the leading (right) edge does
+                the separating work instead. */}
+            <p
+              data-enter=""
+              style={{ transitionDelay: "0ms" }}
+              className="order-1 flex items-center gap-3 text-[13px] font-medium text-accent data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)]"
+            >
+              <span aria-hidden="true" className="block h-px w-6 shrink-0 bg-accent/70" />
+              {eyebrow || "تعرّف على مدرّبك"}
+            </p>
+
+            <h2
+              data-enter=""
+              style={{ transitionDelay: "80ms" }}
+              className="order-2 mt-4 max-w-[46ch] text-4xl leading-[1.12] text-paper data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)] min-[1080px]:mt-5 min-[1080px]:text-5xl"
+            >
+              {name || "الأستاذ علي العباد"}
+            </h2>
+
+            {/* Muted tint of paper, not pure white — #fff on near-black
+                vibrates at body sizes. 74% lands at 9.5:1, well past AAA. */}
+            <p
+              data-enter=""
+              style={{ transitionDelay: "160ms" }}
+              className="order-4 mt-8 max-w-[46ch] text-[18px] leading-[2] text-paper/74 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)] min-[1080px]:mt-7 min-[1080px]:text-[19px]"
+            >
+              {excerpt(aboutBody)}
+            </p>
+
+            {/* The pillars are the credibility of the section, so they are rows
+                with hairline rules — not pills, which read as metadata. Rows
+                stay full-width stacked at every size; the 46ch cap is repeated
+                here because the copy wrapper is display:contents below 1080px
+                and so cannot constrain them. */}
+            <ul className="order-5 mt-10 max-w-[46ch]">
+              {markerList.map((m, i) => (
+                <li
+                  key={m}
+                  data-enter=""
+                  style={{ transitionDelay: `${240 + i * 80}ms` }}
+                  className="border-t border-paper/10 py-4 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)]"
+                >
+                  <p className="font-display text-[17px] font-bold text-paper/90">{m}</p>
+                  {/* Renders only once PILLAR_NOTES is filled in — see the TODO
+                      at the top of this file. */}
+                  {PILLAR_NOTES[i] ? (
+                    <p className="mt-1 text-[14px] leading-[1.7] text-paper/55">
+                      {PILLAR_NOTES[i]}
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+
+            {/* Ghost button. Secondary by construction — it must not compete
+                with the coral primary CTAs elsewhere on the page, so the accent
+                only appears on hover, in the border. */}
+            <div
+              data-enter=""
+              style={{ transitionDelay: "480ms" }}
+              className="order-6 mt-10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)]"
+            >
+              <Link
+                href="/نبذة"
+                className="group inline-flex items-center rounded-full border border-paper/24 px-7 py-3 font-medium text-paper transition-colors duration-300 hover:border-accent"
+              >
+                <span className="block transition-transform duration-300 group-hover:-translate-y-0.5">
+                  {ctaLabel || "نبذة عن الأستاذ"}
+                </span>
+              </Link>
+            </div>
           </div>
-
-          <Link href="/نبذة" className={cn(buttonClasses("outline", "md"), "mt-7 rounded-full")}>
-            {ctaLabel || "نبذة عن الأستاذ"}
-          </Link>
-        </Reveal>
+        </div>
       </div>
-    </Section>
+    </section>
   );
+}
+
+/**
+ * The signature: ONE circle.
+ *
+ * The hero emits two ripples; the connection art in section 2 holds two circles
+ * in tension. Here they have resolved into a single line whose stroke runs plum
+ * → coral: both colours, one continuous stroke. There is deliberately no second
+ * circle and no label. Sized larger than the column so it crops at the edges.
+ */
+function Signature({ circleRef }: { circleRef: RefObject<SVGCircleElement | null> }) {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-x-[-18%] top-[-26%] -z-10 aspect-square"
+    >
+      <svg viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`} fill="none" className="size-full">
+        <defs>
+          <linearGradient id="instructor-signature" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" style={{ stopColor: "var(--color-plum)" }} />
+            <stop offset="1" style={{ stopColor: "var(--color-coral)" }} />
+          </linearGradient>
+        </defs>
+        {/* No stroke-dasharray here on purpose: the circle renders CLOSED for
+            SSR, no-JS and reduced motion, and only useSignatureScrub adds the
+            dash. See the note there on why the dash cannot be authored. */}
+        <circle
+          ref={circleRef}
+          cx={VIEWBOX / 2}
+          cy={VIEWBOX / 2}
+          r={RADIUS}
+          // rotate -90° so the dash origin (3 o'clock) moves to the top; the
+          // stroke then grows clockwise from there.
+          transform={`rotate(-90 ${VIEWBOX / 2} ${VIEWBOX / 2})`}
+          stroke="url(#instructor-signature)"
+          strokeWidth="1.25"
+          strokeOpacity="0.35"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * Film grain, tiled. Dark grounds band far more visibly than light ones, so the
+ * light pool above needs this more than anything on the light sections does.
+ * Sits above the pool (-z-10 vs -z-20) and below the content, so it dithers the
+ * gradient without touching the portrait or the type.
+ */
+function Grain() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] mix-blend-overlay"
+      style={{
+        backgroundImage:
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E\")",
+        backgroundSize: "180px 180px",
+      }}
+    />
+  );
+}
+
+/**
+ * Sequenced entrance for the whole section: one observer on the root flips
+ * every [data-enter] descendant to "shown" at once, and each element carries
+ * its own transition-delay so the order reads eyebrow → h2 → body → pillars →
+ * CTA regardless of where each sits on screen.
+ *
+ * Content renders VISIBLE and is only hidden once JS has confirmed it can
+ * reveal it again — no JS, no IntersectionObserver, or reduced motion all leave
+ * the section fully rendered. Same defensive shape as use-reveal.ts.
+ */
+function useSectionEnter(ref: RefObject<HTMLElement | null>) {
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    const items = el.querySelectorAll<HTMLElement>("[data-enter]");
+    items.forEach((item) => item.setAttribute("data-enter", "hidden"));
+
+    const io = new IntersectionObserver(
+      (entries, obs) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          items.forEach((item) => item.setAttribute("data-enter", "shown"));
+          obs.disconnect(); // once
+          return;
+        }
+      },
+      { root: null, rootMargin: "0px 0px -12% 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+    // Set up once: the section is server-rendered and static per mount.
+  }, []);
+}
+
+/**
+ * Scrubs the signature circle closed against the section's progress through the
+ * viewport: 0 when the section's top edge touches the viewport bottom, 1 when
+ * the section's midpoint reaches the viewport midpoint. Once closed it latches,
+ * the dash is dropped and every listener is torn down — it holds, it does not
+ * loop or breathe.
+ *
+ * The dash length is computed in DEVICE pixels, recomputed on every read. That
+ * is not belt-and-braces: `vector-effect: non-scaling-stroke` moves the whole
+ * stroke operation — dashing included — into device space, while `pathLength`
+ * normalisation resolves against the user-space length. Authoring
+ * `pathLength="1" stroke-dasharray="1"` therefore yields a fixed arc (measured
+ * here at ~88° of a 2552px circle: 621 user units applied as 621 device px)
+ * that slides around the circle as the offset changes instead of growing from
+ * the top. So: no pathLength, and both values in the space the UA actually
+ * strokes in.
+ *
+ * The scroll read is rAF-throttled and only attached while the section is
+ * actually intersecting.
+ */
+function useSignatureScrub(
+  ref: RefObject<HTMLElement | null>,
+  circleRef: RefObject<SVGCircleElement | null>,
+) {
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    const circle = circleRef.current;
+    if (!el || !circle) return;
+    if (typeof IntersectionObserver === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    let frame = 0;
+    let done = false;
+
+    // user-space circumference × (device px per user unit)
+    const circumference = () => {
+      const svg = circle.ownerSVGElement;
+      const width = svg ? svg.getBoundingClientRect().width : 0;
+      return 2 * Math.PI * RADIUS * (width / VIEWBOX);
+    };
+
+    const draw = (p: number) => {
+      const c = circumference();
+      circle.style.strokeDasharray = String(c);
+      circle.style.strokeDashoffset = String(c * (1 - p));
+    };
+
+    draw(0); // unwritten, before first paint
+
+    const detach = () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+
+    const update = () => {
+      frame = 0;
+      if (done) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const raw = (vh - rect.top) / ((vh + rect.height) / 2);
+      const p = raw < 0 ? 0 : raw > 1 ? 1 : raw;
+      if (p >= 1) {
+        done = true;
+        // Drop the dash rather than pinning offset 0 — a later resize would
+        // otherwise leave a device-px pattern shorter than the grown circle
+        // and re-open a gap.
+        circle.style.strokeDasharray = "";
+        circle.style.strokeDashoffset = "";
+        detach();
+        io.disconnect();
+        return;
+      }
+      draw(p);
+    };
+
+    function onScroll() {
+      if (!frame) frame = requestAnimationFrame(update);
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            window.addEventListener("scroll", onScroll, { passive: true });
+            window.addEventListener("resize", onScroll);
+            update();
+          } else {
+            detach();
+          }
+        }
+      },
+      { root: null, threshold: 0 },
+    );
+    io.observe(el);
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      detach();
+      io.disconnect();
+    };
+  }, []);
 }
