@@ -55,17 +55,17 @@ export function ChallengesDiagram({
       />
 
       {/* حيرة الاختيار — faint alternatives of the second source */}
-      <circle className="ch-ghost ch-ghost-1" cx="245" cy="170" r="100" stroke="var(--color-teal)" strokeWidth="2" />
-      <circle className="ch-ghost ch-ghost-2" cx="245" cy="170" r="100" stroke="var(--color-teal)" strokeWidth="2" />
+      <circle className="ch-ghost ch-ghost-1" cx="245" cy="170" r="100" stroke="var(--color-coral)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
+      <circle className="ch-ghost ch-ghost-2" cx="245" cy="170" r="100" stroke="var(--color-coral)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
 
-      <circle className="ch-a ch-stroke" cx="155" cy="170" r="100" stroke="var(--color-plum)" strokeWidth="2" />
-      <circle className="ch-b ch-stroke" cx="245" cy="170" r="100" stroke="var(--color-teal)" strokeWidth="2" />
+      <circle className="ch-a ch-stroke" cx="155" cy="170" r="100" stroke="var(--color-aubergine)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
+      <circle className="ch-b ch-stroke" cx="245" cy="170" r="100" stroke="var(--color-coral)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
 
       <path
         className="ch-heart"
         d="M200 154 c -10 -17 -35 -9 -35 11 c 0 17 23 29 35 38 c 12 -9 35 -21 35 -38 c 0 -20 -25 -28 -35 -11 z"
         stroke="var(--color-coral)"
-        strokeWidth="2.5"
+        strokeWidth="1.75"
         strokeLinejoin="round"
         fill="var(--color-coral)"
         fillOpacity="0.12"
@@ -74,12 +74,12 @@ export function ChallengesDiagram({
       {/* القلق والضغوط — six dots that press inward; order matches the
           per-dot direction vars in globals.css */}
       <g className="ch-dots">
-        <circle cx="78" cy="62" r="6" fill="var(--color-plum)" />
-        <circle cx="200" cy="34" r="6" fill="var(--color-teal)" />
-        <circle cx="322" cy="62" r="6" fill="var(--color-plum)" />
-        <circle cx="322" cy="278" r="6" fill="var(--color-teal)" />
-        <circle cx="200" cy="306" r="6" fill="var(--color-plum)" />
-        <circle cx="78" cy="278" r="6" fill="var(--color-teal)" />
+        <circle cx="78" cy="62" r="6" fill="var(--color-aubergine)" />
+        <circle cx="200" cy="34" r="6" fill="var(--color-coral)" />
+        <circle cx="322" cy="62" r="6" fill="var(--color-aubergine)" />
+        <circle cx="322" cy="278" r="6" fill="var(--color-coral)" />
+        <circle cx="200" cy="306" r="6" fill="var(--color-aubergine)" />
+        <circle cx="78" cy="278" r="6" fill="var(--color-coral)" />
       </g>
     </svg>
   );

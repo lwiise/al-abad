@@ -406,14 +406,16 @@
    has morphed back to solid) and the heart's flicker (mostly at full opacity,
    so an exit almost always lands on a frame that matches its resting value).
 
-   `--ch-ease` is the site curve already used by `.reveal` / `[data-reveal]`
-   rather than a second near-identical one; the diagram is meant to share the
-   hero's easing. */
+   Colour, stroke weight and easing are the hero's, not this section's: the two
+   circles are `--color-aubergine` and `--color-coral` at the same 1.25px
+   non-scaling stroke as the hero's two ripple emitters, and every transition
+   runs on `--ease-hero`, the curve the hero already shares with the nav. This
+   is the second appearance of the hero's idea, so nothing here is its own. */
 
 @layer utilities {
   .ch-reveal,
   .ch-diagram {
-    --ch-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ch-ease: var(--ease-hero);
     --ch-move: 650ms;
     --ch-row-move: 240ms;
   }
@@ -614,13 +616,15 @@
   .ch-label {
     color: var(--color-foreground);
   }
+  /* Aubergine, not plum: the marker is meant to read as one of the diagram's
+     circles, so it takes the same emitter colour the hero uses. */
   .ch-row[aria-pressed="true"] .ch-marker {
-    background-color: var(--color-plum);
-    border-color: var(--color-plum);
+    background-color: var(--color-aubergine);
+    border-color: var(--color-aubergine);
     scale: 1.15;
   }
   .ch-row[aria-pressed="true"] .ch-label {
-    color: var(--color-plum);
+    color: var(--color-aubergine);
     font-weight: 600;
   }
 }
