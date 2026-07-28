@@ -43,9 +43,12 @@ export function HowItWorks({
         >
           <defs>
             <linearGradient id="hiw-line" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="#0d678b" />
-              <stop offset="0.5" stopColor="#a551fc" />
-              <stop offset="1" stopColor="#583b66" />
+              {/* Via `style`, not the stopColor attribute: CSS variables do
+                  not resolve in SVG presentation attributes. Same approach as
+                  the signature gradient in meet-instructor.tsx. */}
+              <stop offset="0" style={{ stopColor: "var(--color-secondary)" }} />
+              <stop offset="0.5" style={{ stopColor: "var(--color-highlight)" }} />
+              <stop offset="1" style={{ stopColor: "var(--color-primary)" }} />
             </linearGradient>
           </defs>
           <path

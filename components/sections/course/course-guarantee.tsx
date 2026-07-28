@@ -21,7 +21,7 @@ export function CourseGuarantee({
     <Section bg="ink">
       <Reveal>
         <div className="mx-auto grid max-w-4xl items-center gap-8 md:grid-cols-[auto_1fr] md:gap-12">
-          <div className="relative mx-auto aspect-square w-44 overflow-hidden rounded-3xl bg-white/5 ring-1 ring-amber-300/20 md:w-52">
+          <div className="relative mx-auto aspect-square w-44 overflow-hidden rounded-3xl bg-white/5 ring-1 ring-lilac/20 md:w-52">
             <Image
               src={imageUrl}
               alt="الأستاذ علي العباد"
@@ -32,7 +32,7 @@ export function CourseGuarantee({
           </div>
 
           <div className="text-center md:text-start">
-            <span className="inline-flex items-center gap-2 rounded-full bg-amber-300/15 px-3.5 py-1.5 text-sm font-bold text-amber-300">
+            <span className="inline-flex items-center gap-2 rounded-full bg-lilac/15 px-3.5 py-1.5 text-sm font-bold text-lilac">
               <ShieldCheck className="size-4" aria-hidden="true" />
               الضمان الذهبي
             </span>

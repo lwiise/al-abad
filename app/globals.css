@@ -82,6 +82,13 @@
 
   --color-focus: #a551fc;
 
+  /* --- Third-party brand ---------------------------------------------- */
+  /* WhatsApp's own green. Deliberately outside the palette — it identifies
+     someone else's product and must not be brand-shifted. Tokenised only so
+     the three places that need it stop each carrying their own copy of the
+     hex. Nothing else may use it. */
+  --color-whatsapp: #25d366;
+
   /* --- Modular type scale (Arabic-friendly line-heights) -------------- */
   --text-xs: 0.8rem;
   --text-xs--line-height: 1.7;

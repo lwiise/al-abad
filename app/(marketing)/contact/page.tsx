@@ -40,7 +40,7 @@ export default async function ContactPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-border-strong"
             >
-              <span className="flex size-11 items-center justify-center rounded-full bg-[#25D366]/10 text-[#25D366]">
+              <span className="flex size-11 items-center justify-center rounded-full bg-whatsapp/10 text-whatsapp">
                 <WhatsappGlyph className="size-6" />
               </span>
               <span>

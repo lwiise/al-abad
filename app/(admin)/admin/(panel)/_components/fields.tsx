@@ -96,7 +96,7 @@ async function downscaleImage(file: File, maxEdge = 1600, quality = 0.82): Promi
     const hasAlpha =
       file.type === "image/png" || file.type === "image/webp" || file.type === "image/avif";
     if (!hasAlpha) {
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = "white";
       ctx.fillRect(0, 0, w, h);
     }
     ctx.drawImage(img, 0, 0, w, h);

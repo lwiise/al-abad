@@ -103,9 +103,9 @@ export function CurriculumArc({
             the gradient turns with it and all four fade identically. Peak lands
             at the ~28% the whole layer is set to, tailing to about half that. */}
         <linearGradient id={id} x1="1" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="1" />
-          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.8" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity="0.35" />
+          <stop offset="0" stopColor="white" stopOpacity="1" />
+          <stop offset="0.5" stopColor="white" stopOpacity="0.8" />
+          <stop offset="1" stopColor="white" stopOpacity="0.35" />
         </linearGradient>
       </defs>
 
