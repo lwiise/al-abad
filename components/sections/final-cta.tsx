@@ -2,6 +2,8 @@ import { WhatsappGlyph } from "@/components/site/icons";
 import { Reveal } from "@/components/motion/reveal";
 import { AiOrbit } from "@/components/motion/ai-orbit";
 import { MagneticLink } from "@/components/motion/magnetic-link";
+import { cn } from "@/lib/utils";
+import { buttonClasses } from "@/components/ui/button";
 import { Section } from "./section";
 
 export function FinalCta({
@@ -31,7 +33,7 @@ export function FinalCta({
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <MagneticLink
                 href={primaryUrl || "/الدورات"}
-                className="rounded-full bg-accent px-7 py-3 font-medium text-on-accent shadow-lg transition-colors hover:bg-accent-hover"
+                className={cn(buttonClasses("danger", "md", true), "rounded-full px-7 py-3 shadow-lg")}
               >
                 {primaryLabel || "تصفح الدورات"}
               </MagneticLink>
@@ -40,7 +42,10 @@ export function FinalCta({
                   href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3 font-medium text-white backdrop-blur transition-colors hover:bg-white/20"
+                  className={cn(
+                    buttonClasses("outline", "md", true),
+                    "rounded-full px-6 py-3 backdrop-blur",
+                  )}
                 >
                   <WhatsappGlyph className="size-5" />
                   {secondaryLabel || "تحدث معنا على واتساب"}

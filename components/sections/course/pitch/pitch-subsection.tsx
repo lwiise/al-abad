@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/motion/reveal";
 import type { PitchNode } from "../parse-pitch";
+import { HeadingRule } from "../../section";
 import { PitchBlocks } from "./pitch-blocks";
 
 const CHIP_ICONS: LucideIcon[] = [Target, Gem, Compass, Lightbulb];
@@ -43,10 +44,7 @@ export function PitchSubsection({
           <Chip className="size-6" />
         </span>
         <h2 className="mt-4 text-2xl font-bold text-foreground md:text-3xl">{heading}</h2>
-        <span
-          className="mx-auto mt-4 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-secondary"
-          aria-hidden="true"
-        />
+        <HeadingRule className="mx-auto mt-4" />
       </Reveal>
       <PitchBlocks nodes={nodes} cardIcons={CARD_ICONS} />
     </div>

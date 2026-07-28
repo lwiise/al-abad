@@ -109,7 +109,7 @@ export function SettingsForm({
           </span>
         )}
         {error && (
-          <span className="rounded-full bg-accent/10 px-3 py-1 text-sm font-medium text-accent">
+          <span className="rounded-full bg-accent/10 px-3 py-1 text-sm font-medium text-accent-strong">
             تعذّر الحفظ: {error}
           </span>
         )}

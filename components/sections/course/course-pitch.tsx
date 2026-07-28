@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { CourseRow } from "@/lib/database.types";
 import { Reveal } from "@/components/motion/reveal";
-import { Section } from "../section";
+import { HeadingRule, Section } from "../section";
 import { parsePitch, type PitchNode } from "./parse-pitch";
 import { groupPitch } from "./group-pitch";
 import { PitchCardGrid } from "./pitch/pitch-card-grid";
@@ -85,10 +85,7 @@ function FlatPitch({ nodes }: { nodes: PitchNode[] }) {
               >
                 {n.text}
               </h2>
-              <span
-                className="mx-auto mt-4 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-secondary"
-                aria-hidden="true"
-              />
+              <HeadingRule className="mx-auto mt-4" />
             </Reveal>
           );
         }

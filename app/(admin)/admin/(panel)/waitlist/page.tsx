@@ -52,7 +52,7 @@ export default async function WaitlistPage() {
                     <form action={deleteWaitlistEntry.bind(null, String(r.id))}>
                       <ConfirmButton
                         message="حذف هذا الاشتراك؟"
-                        className="rounded-md px-2 py-1 text-xs text-accent transition-colors hover:bg-surface-strong"
+                        className="rounded-md px-2 py-1 text-xs text-accent-strong transition-colors hover:bg-surface-strong"
                       >
                         حذف
                       </ConfirmButton>

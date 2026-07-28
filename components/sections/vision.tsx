@@ -31,10 +31,7 @@ export function Vision({
             {ctaLabel && (
               <Link
                 href={ctaUrl || "/الدورات"}
-                className={cn(
-                  buttonClasses("primary", "md"),
-                  "mt-9 rounded-full bg-surface-strong text-ink hover:bg-lilac/90",
-                )}
+                className={cn(buttonClasses("primary", "md", true), "mt-9 rounded-full")}
               >
                 {ctaLabel}
               </Link>

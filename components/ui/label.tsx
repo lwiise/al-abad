@@ -9,7 +9,7 @@ export function Label({
   return (
     <label className={cn("block text-sm font-medium text-foreground", className)} {...props}>
       {children}
-      {required && <span className="text-accent"> *</span>}
+      {required && <span className="text-accent-strong"> *</span>}
     </label>
   );
 }

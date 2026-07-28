@@ -1,14 +1,20 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type Bg = "background" | "surface" | "sand" | "lilac" | "ink" | "plum";
+type Bg = "background" | "surface" | "lilac" | "ink" | "plum";
 
+/**
+ * The section rhythm is white ↔ lilac, with ink as the dark anchor.
+ *
+ * `surface` (#f8f6fb) is kept for cards and insets but is NOT the alternating
+ * band: measured against #ffffff it is 1.07:1, which is below the threshold of
+ * perception — alternating the two produces no rhythm at all, just a page that
+ * looks flat and slightly dirty. `lilac` (#ebe3f7) is 1.25:1 against white,
+ * a step you can actually see. Verify with `pnpm check-contrast`.
+ */
 const bgMap: Record<Bg, string> = {
   background: "bg-background",
   surface: "bg-surface",
-  // Warm neutral from the elevation palette — the counterpart to the cold
-  // `surface`/`lilac` tints. Flat, never gradient.
-  sand: "bg-sand",
   lilac: "bg-surface-strong",
   ink: "bg-ink",
   plum: "bg-primary",
@@ -35,6 +41,31 @@ export function Section({
   );
 }
 
+/**
+ * The one heading rule — flat, never a gradient.
+ *
+ * There used to be seven hand-copied `bg-gradient-to-r from-primary to-secondary`
+ * bars across the site. An identical two-hue gradient stamped under every
+ * heading is the loudest generic-template signal a page can carry, and having
+ * it duplicated verbatim meant it could never be changed in one place. It is
+ * one component now, and it is flat. Don't reintroduce the gradient.
+ *
+ * Decorative only (aria-hidden), so it is exempt from WCAG 1.4.11 — see the
+ * note in scripts/check-contrast.mjs.
+ */
+export function HeadingRule({ light, className }: { light?: boolean; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "mt-5 block h-1 w-12 rounded-full",
+        light ? "bg-white/30" : "bg-primary/30",
+        className,
+      )}
+    />
+  );
+}
+
 export function SectionHeading({
   eyebrow,
   title,
@@ -57,8 +88,11 @@ export function SectionHeading({
         className,
       )}
     >
+      {/* Lilac, not violet, on dark: violet on ink measures 2.92:1 — below even
+          the 3:1 graphics threshold, and this is real text. Lilac is 9.50:1 and
+          is what CLAUDE.md's dark-section rule already calls for. */}
       {eyebrow && (
-        <p className={cn("mb-3 text-sm font-medium", light ? "text-violet" : "text-secondary")}>
+        <p className={cn("mb-3 text-sm font-medium", light ? "text-lilac" : "text-secondary")}>
           {eyebrow}
         </p>
       )}
@@ -70,13 +104,7 @@ export function SectionHeading({
       >
         {title}
       </h2>
-      <span
-        className={cn(
-          "mt-5 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-secondary",
-          align === "center" && "mx-auto",
-        )}
-        aria-hidden="true"
-      />
+      <HeadingRule light={light} className={cn(align === "center" && "mx-auto")} />
       {sub && (
         <p
           className={cn(

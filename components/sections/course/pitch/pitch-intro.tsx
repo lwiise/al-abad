@@ -2,6 +2,7 @@ import Image from "next/image";
 import { BookOpenCheck } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import type { PitchNode } from "../parse-pitch";
+import { HeadingRule } from "../../section";
 import { Callout } from "./callout";
 import { PitchCardGrid } from "./pitch-card-grid";
 
@@ -42,10 +43,7 @@ export function PitchIntro({
               {headline}
             </h2>
           )}
-          <span
-            className="mt-4 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-secondary"
-            aria-hidden="true"
-          />
+          <HeadingRule className="mt-4" />
           {columnNodes.map((n, i) => {
             const key = `${i}-${n.type}`;
             if (n.type === "callout") return <Callout key={key} text={n.text} className="my-6" />;

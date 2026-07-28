@@ -78,7 +78,7 @@ export function Hero({
           {/* --- Copy (right column in RTL) ------------------------------- */}
           <div className="order-1 max-w-xl text-center min-[1080px]:text-start">
             <p
-              className="hero-enter inline-flex items-center gap-2 rounded-full border border-border bg-[rgb(255_255_255_/_0.62)] px-4 py-1.5 text-sm text-foreground-muted backdrop-blur-sm"
+              className="hero-enter inline-flex items-center gap-2 rounded-full border border-border bg-white/60 px-4 py-1.5 text-sm text-foreground-muted backdrop-blur-sm"
               style={enter(0)}
             >
               <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
@@ -167,7 +167,7 @@ export function Hero({
             {pills.map((s) => (
               <li
                 key={s.label}
-                className="rounded-xl border border-[rgb(255_255_255_/_0.7)] bg-[rgb(255_255_255_/_0.78)] px-4 py-3 text-center shadow-sm backdrop-blur-md min-[1080px]:text-start"
+                className="rounded-xl border border-white/70 bg-white/75 px-4 py-3 text-center shadow-sm backdrop-blur-md min-[1080px]:text-start"
               >
                 <span className="block text-xl font-extrabold tabular-nums text-foreground">
                   {s.value}

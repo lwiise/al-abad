@@ -26,7 +26,7 @@ export function ProblemEmpathy({
   const items = points.length ? points : FALLBACK;
 
   return (
-    <Section bg="sand">
+    <Section bg="lilac">
       {/* One entrance for the whole section — rise + fade on intersection,
           once. The diagram's own motion starts from there. */}
       <Reveal className="ch-reveal">

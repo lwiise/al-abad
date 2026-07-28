@@ -46,12 +46,12 @@ export function Header() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50",
-        frosted ? "border-b border-[rgb(58_54_61_/_0.07)]" : "border-b border-transparent",
+        frosted ? "border-b border-border" : "border-b border-transparent",
       )}
       style={{
         height: frosted ? "var(--nav-h-scrolled)" : "var(--nav-h)",
         backgroundColor: frosted
-          ? "color-mix(in oklab, var(--color-paper) 84%, transparent)"
+          ? "color-mix(in oklab, var(--color-background) 84%, transparent)"
           : "transparent",
         backdropFilter: frosted ? "blur(16px) saturate(1.5)" : "none",
         WebkitBackdropFilter: frosted ? "blur(16px) saturate(1.5)" : "none",

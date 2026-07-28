@@ -3,6 +3,7 @@ import { getCourseCategories, getPublishedCourses, getSettings } from "@/lib/dat
 import { CourseCard } from "@/components/sections/course-card";
 import { CourseExplorer } from "@/components/sections/course-explorer";
 import { Reveal } from "@/components/motion/reveal";
+import { HeadingRule } from "@/components/sections/section";
 
 export const revalidate = 300;
 
@@ -36,10 +37,7 @@ export default async function CoursesPage() {
           <Reveal>
             <p className="mb-3 text-sm font-medium text-secondary">{eyebrow}</p>
             <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">{heading}</h1>
-            <span
-              className="mx-auto mt-5 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-secondary"
-              aria-hidden="true"
-            />
+            <HeadingRule className="mx-auto" />
             <p className="mt-5 text-lg leading-relaxed text-foreground-muted">{subhead}</p>
           </Reveal>
         </div>

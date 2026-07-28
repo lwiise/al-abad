@@ -58,7 +58,7 @@ export function ChallengesDiagram({
       <circle className="ch-ghost ch-ghost-1" cx="245" cy="170" r="100" stroke="var(--color-coral)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
       <circle className="ch-ghost ch-ghost-2" cx="245" cy="170" r="100" stroke="var(--color-coral)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
 
-      <circle className="ch-a ch-stroke" cx="155" cy="170" r="100" stroke="var(--color-aubergine)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
+      <circle className="ch-a ch-stroke" cx="155" cy="170" r="100" stroke="var(--color-primary)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
       <circle className="ch-b ch-stroke" cx="245" cy="170" r="100" stroke="var(--color-coral)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
 
       <path
@@ -74,11 +74,11 @@ export function ChallengesDiagram({
       {/* القلق والضغوط — six dots that press inward; order matches the
           per-dot direction vars in globals.css */}
       <g className="ch-dots">
-        <circle cx="78" cy="62" r="6" fill="var(--color-aubergine)" />
+        <circle cx="78" cy="62" r="6" fill="var(--color-primary)" />
         <circle cx="200" cy="34" r="6" fill="var(--color-coral)" />
-        <circle cx="322" cy="62" r="6" fill="var(--color-aubergine)" />
+        <circle cx="322" cy="62" r="6" fill="var(--color-primary)" />
         <circle cx="322" cy="278" r="6" fill="var(--color-coral)" />
-        <circle cx="200" cy="306" r="6" fill="var(--color-aubergine)" />
+        <circle cx="200" cy="306" r="6" fill="var(--color-primary)" />
         <circle cx="78" cy="278" r="6" fill="var(--color-coral)" />
       </g>
     </svg>

@@ -3,6 +3,8 @@ import type { CourseRow } from "@/lib/database.types";
 import { Reveal } from "@/components/motion/reveal";
 import { AiOrbit } from "@/components/motion/ai-orbit";
 import { MagneticLink } from "@/components/motion/magnetic-link";
+import { cn } from "@/lib/utils";
+import { buttonClasses } from "@/components/ui/button";
 import { Section } from "../section";
 import { formatPrice, priceParts } from "./pricing";
 
@@ -34,7 +36,10 @@ export function CourseFinalCta({ course }: { course: CourseRow }) {
                 href={course.cta_url || "/تواصل"}
                 target={course.cta_url ? "_blank" : undefined}
                 rel={course.cta_url ? "noopener noreferrer" : undefined}
-                className="rounded-full bg-accent px-8 py-3.5 text-lg font-semibold text-on-accent shadow-lg transition-colors hover:bg-accent-hover"
+                className={cn(
+                  buttonClasses("danger", "md", true),
+                  "rounded-full px-8 py-3.5 text-lg font-semibold shadow-lg",
+                )}
               >
                 {course.cta_url ? "اشترك الآن" : "للتسجيل تواصل معنا"}
               </MagneticLink>

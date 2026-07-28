@@ -40,6 +40,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Browser chrome colour, not a CSS colour — it ships as a <meta> tag the UA
+  // reads before any stylesheet, so it cannot reference a token. Keep in sync
+  // with --color-background by hand.
+  // eslint-disable-next-line no-restricted-syntax
   themeColor: "#ffffff",
   colorScheme: "light",
 };

@@ -97,7 +97,7 @@ export function ResourceTable({
                     <form action={deleteResource.bind(null, resource.key, id)}>
                       <ConfirmButton
                         message="حذف هذا العنصر نهائياً؟"
-                        className={iconBtn + " text-accent hover:text-accent-hover"}
+                        className={iconBtn + " text-accent-strong hover:text-accent"}
                       >
                         حذف
                       </ConfirmButton>

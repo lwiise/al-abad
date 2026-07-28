@@ -3,6 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { buttonClasses } from "@/components/ui/button";
 
 const FALLBACK =
   "يجمع الأستاذ علي العباد في دوراته بين العمق العلمي والخبرة العملية، ليقدّم لك أدواتٍ واضحةً وقابلةً للتطبيق في حياتك الزوجية — منهجٌ يأخذ بيدك من فهم الذات إلى بناء علاقةٍ متوازنةٍ وسعيدة.";
@@ -43,13 +45,20 @@ const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : use
  * Meet-the-instructor — the dark chapter break.
  *
  * Deliberately inverts the hero: portrait on the RIGHT in the wider column,
- * copy on the LEFT, on an ink-deep ground. The dark ground is not decoration —
+ * copy on the LEFT, on an ink ground. The dark ground is not decoration —
  * a white thobe and ghutra cut out against a light background has almost no
  * edge separation, and this is the first place the cutout reads properly.
  *
- * Ink-deep (#1c1725) rather than ink (#3a363d): the brief calls for near-black,
- * and CLAUDE.md's dark-section rule notes plum sits too close to #3a363d — the
- * signature's plum→coral stroke would vanish on it.
+ * Ink (#3a363d) is the site's one dark ground — see the rhythm note in
+ * section.tsx. This section used the retired elevation palette's near-black
+ * (#1c1725) while that direction was being trialled.
+ *
+ * That earlier near-black existed to let the signature's plum→coral stroke
+ * survive; on ink, plum is 1.26:1 and disappears. Rather than keep a whole
+ * extra dark token alive for one arc, the stroke now runs lilac→coral (9.50:1
+ * and 3.08:1 on ink) — which is what CLAUDE.md's dark-section rule prescribes
+ * anyway: never plum on ink, lilac/white for weight, coral for accent. Same
+ * idea, two colours in one continuous stroke, executed in colours that work.
  *
  * No GSAP here. One IntersectionObserver drives the entrance, a second gates a
  * rAF-throttled scroll read that scrubs the signature circle closed.
@@ -84,7 +93,7 @@ export function MeetInstructor({
       // overflow-hidden → clips the bleeding portrait at the ink edge. The
       // transition to the light sections either side is a hard cut on purpose;
       // the outsized padding is what makes the block read as deliberate.
-      className="relative isolate overflow-hidden bg-ink-deep pt-24 pb-24 min-[1080px]:pt-40 min-[1080px]:pb-40"
+      className="relative isolate overflow-hidden bg-ink pt-24 pb-24 min-[1080px]:pt-40 min-[1080px]:pb-40"
     >
       {/* The hero's own grain layer, same tile / opacity / blend mode. Dark
           grounds band far more visibly than light ones, so this matters more
@@ -119,7 +128,7 @@ export function MeetInstructor({
               className="pointer-events-none absolute inset-x-[-30%] top-[-8%] -z-20 h-[78%]"
               style={{
                 background:
-                  "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--color-aubergine) 62%, transparent) 0%, transparent 72%)",
+                  "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--color-primary) 62%, transparent) 0%, transparent 72%)",
               }}
             />
             {/* Contact shadow — the hero's blurred ellipse, but tighter
@@ -159,7 +168,7 @@ export function MeetInstructor({
             <p
               data-enter=""
               style={{ transitionDelay: "0ms" }}
-              className="order-1 flex items-center gap-3 text-[13px] font-medium text-accent data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
+              className="order-1 flex items-center gap-3 text-[13px] font-medium text-lilac data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
             >
               <span aria-hidden="true" className="block h-px w-6 shrink-0 bg-accent/70" />
               {eyebrow || "تعرّف على مدرّبك"}
@@ -168,17 +177,18 @@ export function MeetInstructor({
             <h2
               data-enter=""
               style={{ transitionDelay: "80ms" }}
-              className="order-2 mt-4 max-w-[46ch] text-4xl leading-[1.12] text-paper data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:mt-5 min-[1080px]:text-5xl"
+              className="order-2 mt-4 max-w-[46ch] text-4xl leading-[1.12] text-white data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:mt-5 min-[1080px]:text-5xl"
             >
               {name || "الأستاذ علي العباد"}
             </h2>
 
-            {/* Muted tint of paper, not pure white — #fff on near-black
-                vibrates at body sizes. 74% lands at 9.5:1, well past AAA. */}
+            {/* Muted white, not pure white — #fff at body sizes on a dark
+                ground vibrates. 74% lands at 7.30:1 on ink, past AA by a
+                wide margin (pnpm check-contrast asserts it). */}
             <p
               data-enter=""
               style={{ transitionDelay: "160ms" }}
-              className="order-4 mt-8 max-w-[46ch] text-[18px] leading-[2] text-paper/74 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:mt-7 min-[1080px]:text-[19px]"
+              className="order-4 mt-8 max-w-[46ch] text-[18px] leading-[2] text-white/74 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:mt-7 min-[1080px]:text-[19px]"
             >
               {excerpt(aboutBody)}
             </p>
@@ -194,13 +204,13 @@ export function MeetInstructor({
                   key={m}
                   data-enter=""
                   style={{ transitionDelay: `${240 + i * 80}ms` }}
-                  className="border-t border-paper/10 py-4 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
+                  className="border-t border-white/10 py-4 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
                 >
-                  <p className="font-display text-[17px] font-bold text-paper/90">{m}</p>
+                  <p className="font-display text-[17px] font-bold text-white/90">{m}</p>
                   {/* Renders only once PILLAR_NOTES is filled in — see the TODO
                       at the top of this file. */}
                   {PILLAR_NOTES[i] ? (
-                    <p className="mt-1 text-[14px] leading-[1.7] text-paper/55">
+                    <p className="mt-1 text-[14px] leading-[1.7] text-white/55">
                       {PILLAR_NOTES[i]}
                     </p>
                   ) : null}
@@ -218,7 +228,10 @@ export function MeetInstructor({
             >
               <Link
                 href="/نبذة"
-                className="group inline-flex items-center rounded-full border border-paper/24 px-7 py-3 font-medium text-paper transition-colors duration-300 hover:border-accent"
+                className={cn(
+                  buttonClasses("outline", "md", true),
+                  "group rounded-full px-7 py-3 duration-300 hover:border-accent hover:bg-transparent",
+                )}
               >
                 <span className="block transition-transform duration-300 group-hover:-translate-y-0.5">
                   {ctaLabel || "نبذة عن الأستاذ"}
@@ -236,9 +249,12 @@ export function MeetInstructor({
  * The signature: ONE circle.
  *
  * The connection art in section 2 holds two circles in tension. Here they have
- * resolved into a single line whose stroke runs plum → coral: both colours, one
- * continuous stroke. There is deliberately no second circle and no label. Sized
- * larger than the column so it crops at the edges.
+ * resolved into a single line whose stroke runs lilac → coral: both colours,
+ * one continuous stroke. There is deliberately no second circle and no label.
+ * Sized larger than the column so it crops at the edges.
+ *
+ * Lilac rather than plum for the first stop — plum is 1.26:1 on ink. See the
+ * note on the section itself.
  *
  * NOTE: this arc originally closed a three-beat progression that began with the
  * hero's two ripple emitters. Those were removed at the owner's request, so the
@@ -254,7 +270,7 @@ function Signature({ circleRef }: { circleRef: RefObject<SVGCircleElement | null
       <svg viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`} fill="none" className="size-full">
         <defs>
           <linearGradient id="instructor-signature" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0" style={{ stopColor: "var(--color-plum)" }} />
+            <stop offset="0" style={{ stopColor: "var(--color-lilac)" }} />
             <stop offset="1" style={{ stopColor: "var(--color-coral)" }} />
           </linearGradient>
         </defs>

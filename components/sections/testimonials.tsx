@@ -24,7 +24,7 @@ export function Testimonials({
   if (testimonials.length === 0) return null;
 
   return (
-    <Section bg="surface" className="overflow-hidden">
+    <Section bg="lilac" className="overflow-hidden">
       <Reveal>
         {/* decorative quote flourish */}
         <QuoteMark className="mx-auto mb-4 text-center" />

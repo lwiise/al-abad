@@ -74,7 +74,7 @@ export function Footer({ settings }: { settings: SiteSettingsRow | null }) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-neutral-300 transition-colors hover:text-white"
                   >
-                    <WhatsappGlyph className="size-4 text-[#25D366]" />
+                    <WhatsappGlyph className="size-4 text-whatsapp" />
                     واتساب
                   </a>
                 </li>

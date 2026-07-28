@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "check-contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
