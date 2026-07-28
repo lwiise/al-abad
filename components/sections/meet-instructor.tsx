@@ -235,10 +235,15 @@ export function MeetInstructor({
 /**
  * The signature: ONE circle.
  *
- * The hero emits two ripples; the connection art in section 2 holds two circles
- * in tension. Here they have resolved into a single line whose stroke runs plum
- * → coral: both colours, one continuous stroke. There is deliberately no second
- * circle and no label. Sized larger than the column so it crops at the edges.
+ * The connection art in section 2 holds two circles in tension. Here they have
+ * resolved into a single line whose stroke runs plum → coral: both colours, one
+ * continuous stroke. There is deliberately no second circle and no label. Sized
+ * larger than the column so it crops at the edges.
+ *
+ * NOTE: this arc originally closed a three-beat progression that began with the
+ * hero's two ripple emitters. Those were removed at the owner's request, so the
+ * sequence now starts at section 2 — two circles resolving into one — rather
+ * than at the hero.
  */
 function Signature({ circleRef }: { circleRef: RefObject<SVGCircleElement | null> }) {
   return (

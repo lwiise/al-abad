@@ -407,10 +407,15 @@
    so an exit almost always lands on a frame that matches its resting value).
 
    Colour, stroke weight and easing are the hero's, not this section's: the two
-   circles are `--color-aubergine` and `--color-coral` at the same 1.25px
-   non-scaling stroke as the hero's two ripple emitters, and every transition
-   runs on `--ease-hero`, the curve the hero already shares with the nav. This
-   is the second appearance of the hero's idea, so nothing here is its own. */
+   circles are `--color-aubergine` and `--color-coral` at 1.25px non-scaling
+   stroke, and every transition runs on `--ease-hero`, the curve the hero
+   already shares with the nav.
+
+   NOTE: this originally echoed the hero's two ripple emitters, which used the
+   same colours and stroke weight. Those ripples were removed at the owner's
+   request, so the two circles here are now the first appearance of the idea
+   rather than the second. The pairing still reads on its own, but the lineage
+   it was built to continue no longer exists upstream. */
 
 @layer utilities {
   .ch-reveal,
@@ -753,28 +758,6 @@
   animation: hero-rise 820ms var(--ease-hero) forwards;
 }
 
-/* --- Ripples --------------------------------------------------------------
-   `r` is a CSS-animatable SVG geometry property, so the whole field is six
-   keyframed circles per emitter and no JS at all. 19s is deliberately long: if
-   it ever reads as "an animation" it is too fast. */
-@keyframes hero-ripple {
-  0% {
-    r: 30px;
-    opacity: 0;
-  }
-  7% {
-    opacity: 1;
-  }
-  100% {
-    r: 780px;
-    opacity: 0;
-  }
-}
-
-.hero-ripple {
-  animation: hero-ripple 19s linear infinite;
-}
-
 /* Texture to be felt, not looked at: masked to the lower-left, held at 5%. */
 .hero-najdi {
   background-image: var(--najdi-tile);
@@ -811,15 +794,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Entrance resolves instantly to its end state; the ripple field freezes at
-     the six fixed radii set inline on each circle. */
+  /* Entrance resolves instantly to its end state.
+     Nothing else in this section animates. */
   .hero-enter {
     animation: none;
     opacity: 1;
     transform: none;
-  }
-  .hero-ripple {
-    animation: none;
   }
   .nav-underline::after {
     transition: none;
