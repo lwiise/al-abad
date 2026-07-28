@@ -19,31 +19,25 @@
   --color-lilac: #ebe3f7; /* surface tint — alternating sections, soft fills   */
   --color-ink: #3a363d; /* primary text, dark sections, footer                */
 
-  /* --- Elevation palette (visual elevation plan §1) --------------------
-     Warm, grounded counterpart to the cold lavender above: purple stays the
-     brand but is demoted from background to accent, and gold becomes the single
-     thread running through the site.
+  /* --- RETIRED: the "elevation" palette --------------------------------
+     A warm second palette (paper #fbf9f7, sand #efe9e1, ink-deep #1c1725,
+     aubergine #3b2455, charcoal, violet-accent) was trialled here as a
+     counterpart to the cold lavender above. It was only ever applied to the
+     first four homepage sections, so the page ran warm to section 4 and cold
+     from section 5 — two off-whites clashing on hue, which is what made the
+     site read as inconsistent.
 
-     Named distinctly (-deep, -accent) rather than overwriting `--color-ink`
-     (#3a363d) and `--color-violet` (#a551fc) — every existing section, the
-     admin panel and CLAUDE.md depend on those. Currently applied in the hero
-     only; the rest of the site migrates once the direction is approved. */
-  --color-ink-deep: #1c1725; /* dark plum — footer, dark cards, final CTA     */
-  --color-aubergine: #3b2455; /* deep brand purple, not neon                  */
-  --color-violet-accent: #6d28d9; /* primary brand purple                     */
-  --color-charcoal: #2a2530; /* second card background only                   */
-  --color-sand: #efe9e1; /* warm neutral — replaces the cold lavender         */
-  --color-paper: #fbf9f7; /* page background                                  */
+     The direction was evaluated and dropped: the brand core above is the whole
+     palette. Do not reintroduce a second neutral family. If a section needs a
+     different ground, it takes one of the five `<Section bg>` tones.
 
-  /* NO gold. The revised direction drops it: coral (--color-coral, #e04f64)
-     already carries the accent across the CTA, course-card circles and blog
-     tags, and adding a sixth hue is the exact problem being fixed. The thread
-     and the calligraphic line therefore use coral.
+     What survived the rollback, because it was never about colour: the Najdi
+     relief tile and the grain overlay in the hero backdrop (see --najdi-tile
+     and --grain-tile below), and the layered structure of hero-backdrop.tsx. */
 
-     Note the revised palette specifies coral as #F4614E, ~20 points warmer than
-     the #e04f64 already in use. Migrating is a site-wide change (promo bar,
-     every CTA, badges), so this keeps the existing token rather than shipping
-     two near-identical corals — which would recreate the problem. */
+  /* NO gold, and no sixth hue generally. Coral (--color-coral) already carries
+     the accent across the CTA, course-card circles and blog tags; adding
+     another is the exact problem this palette keeps having. */
 
   /* --- Neutral ramp (purple-tuned) ------------------------------------ */
   --color-neutral-50: #f8f6fb;
@@ -407,7 +401,7 @@
    so an exit almost always lands on a frame that matches its resting value).
 
    Colour, stroke weight and easing are the hero's, not this section's: the two
-   circles are `--color-aubergine` and `--color-coral` at 1.25px non-scaling
+   circles are `--color-primary` and `--color-coral` at 1.25px non-scaling
    stroke, and every transition runs on `--ease-hero`, the curve the hero
    already shares with the nav.
 
@@ -621,15 +615,15 @@
   .ch-label {
     color: var(--color-foreground);
   }
-  /* Aubergine, not plum: the marker is meant to read as one of the diagram's
-     circles, so it takes the same emitter colour the hero uses. */
+  /* The marker is meant to read as one of the diagram's circles, so it takes
+     the same emitter colour: plum, matching the hero's upper-right pool. */
   .ch-row[aria-pressed="true"] .ch-marker {
-    background-color: var(--color-aubergine);
-    border-color: var(--color-aubergine);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
     scale: 1.15;
   }
   .ch-row[aria-pressed="true"] .ch-label {
-    color: var(--color-aubergine);
+    color: var(--color-primary);
     font-weight: 600;
   }
 }

@@ -26,7 +26,7 @@ export function HowItWorks({
   const items = steps.length ? steps : FALLBACK;
 
   return (
-    <Section bg="surface">
+    <Section bg="lilac">
       <Reveal>
         <SectionHeading
           title={heading || "كيف تبدأ؟"}

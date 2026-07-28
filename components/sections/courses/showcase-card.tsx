@@ -27,7 +27,7 @@ import { CARD_SURFACES, META_LABELS, formatPrice, slotsFor, type CourseSlots } f
  *
  * FOCUS. The global ring is violet (#a551fc) which only reaches 1.5–2.9:1 on
  * these grounds, so the cards take a white ring INSET by 4px: it lands on the
- * card colour, never on the paper section behind it, and measures 6.31–11.83:1.
+ * card colour, never on the white section behind it, and measures 6.31–11.83:1.
  */
 
 /**

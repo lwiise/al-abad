@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 
 /**
  * Decorative opening-quote flourish (testimonials). A large display-face quote
- * glyph filled with the brand plum→teal gradient — matches the section-heading
- * underline. Purely decorative (aria-hidden); `dir="ltr"` keeps the glyph
- * canonical under the page's RTL root.
+ * glyph in flat plum — matches the section-heading rule, which is also flat.
+ * It used to be filled with a plum→teal gradient via `bg-clip-text`; that
+ * gradient was the site's generic-template tic and is gone everywhere now.
+ * Purely decorative (aria-hidden); `dir="ltr"` keeps the glyph canonical under
+ * the page's RTL root.
  */
 export function QuoteMark({ className }: { className?: string }) {
   return (
@@ -13,7 +15,7 @@ export function QuoteMark({ className }: { className?: string }) {
       dir="ltr"
       className={cn(
         "block select-none font-display font-bold leading-none",
-        "bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent",
+        "text-primary/25",
         "text-7xl md:text-8xl",
         className,
       )}

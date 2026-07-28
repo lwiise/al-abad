@@ -108,22 +108,28 @@ export function formatPrice(course: CourseRow): string | null {
  * exception rather than five unrelated colours.
  *
  * The accent card is a DARKENED accent, not `--color-accent` itself. Measured
- * against the real tokens (WCAG 2.1, sRGB):
+ * against the real tokens (WCAG 2.1, sRGB) — `pnpm check-contrast` asserts
+ * every one of these, so they cannot silently go stale:
  *
  *   white on #e04f64 (accent)          → 3.84:1  ✗ fails AA for body text
  *   ink   on #e04f64                   → 3.08:1  ✗ worse
- *   white on the mix below (#9d3c4f)   → 6.57:1  ✓
- *   white/85 on the mix below          → 5.22:1  ✓  (eyebrow + meta row)
+ *   white on the mix below (#9e4554)   → 6.13:1  ✓
+ *   white/85 on the mix below          → 4.92:1  ✓  (eyebrow + meta row)
  *
  * The mix is derived from the two existing tokens rather than a new hex, so no
  * sixth hue enters the palette.
+ *
+ * Mixed against `--color-ink` at 60%. It was 66% against the retired elevation
+ * palette's `--color-ink-deep` (#1c1725), giving #9d3c4f; ink is lighter, so
+ * the ratio was re-tuned to land on a near-identical colour with comparable
+ * headroom rather than keeping a whole dark token alive for one card.
  */
 export const CARD_SURFACES = {
   /** flagship only */
   teal: "var(--color-teal)",
   plum: "var(--color-primary)",
   ink: "var(--color-ink)",
-  accent: "color-mix(in srgb, var(--color-accent) 66%, var(--color-ink-deep))",
+  accent: "color-mix(in srgb, var(--color-accent) 60%, var(--color-ink))",
 } as const;
 
 /**

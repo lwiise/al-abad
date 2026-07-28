@@ -21,7 +21,7 @@ export function BlogTeaser({
   if (posts.length === 0) return null;
 
   return (
-    <Section bg="surface">
+    <Section bg="lilac">
       <Reveal>
         <SectionHeading
           title={heading || "أحدث المقالات"}
