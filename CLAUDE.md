@@ -21,7 +21,8 @@ Next.js (App Router) + TypeScript + Tailwind v4 + Supabase (Postgres, Auth, Stor
 |---|---|---|---|
 | primary | `plum` / `primary` | `#583b66` | primary buttons, active nav, links, key emphasis |
 | secondary | `teal` / `secondary` | `#0d678b` | supporting accents, secondary buttons, icons, variety |
-| accent / CTA | `coral` / `accent` | `#e04f64` | promo bar + the single most important CTA per screen; sale/urgency only |
+| accent / CTA | `coral` / `accent` | `#e04f64` | **fills only** — promo bar + the single most important CTA per screen; sale/urgency |
+| accent as text | `accent-strong` | `#9e4554` | coral **as small text** on light grounds (badges, status, chips) |
 | highlight | `violet` / `highlight` | `#a551fc` | AI section + "new / قريباً" badges only — don't overuse |
 | surface tint | `lilac` / `surface-strong` | `#ebe3f7` | alternating section backgrounds, cards, soft fills |
 | ink | `ink` | `#3a363d` | primary text, dark sections, footer |
@@ -43,7 +44,9 @@ One non-palette token: `whatsapp` (#25d366) — WhatsApp's own brand green, for 
 **Do not alternate `background` with `surface`.** #ffffff against #f8f6fb is 1.07:1 — below the threshold of perception, so it produces no rhythm, just a page that looks flat. `lilac` is 1.25:1 against white, which reads. `surface` is for cards and insets.
 
 ### Rules
+- **Coral is a fill, never small text.** Contrast is symmetric, so coral-on-white and white-on-coral are the same 3.84:1 — it fails AA as body-size text on *every* ground (3.84 on white, 3.08 on ink). Use `text-accent-strong` on light grounds and `text-lilac` on ink. Coral fills stay: they clear the 3:1 UI/graphics threshold.
 - **Dark sections (ink background):** plum is unusable — 1.26:1 on ink. Use **lilac or white** for actions and text; **coral** for accents. **Violet is decorative-only on dark** (2.92:1) — never text.
+- **Buttons on dark grounds:** pass `light` to `Button` / `buttonClasses(variant, size, light)` — the same convention `SectionHeading` uses. Don't hand-roll a dark CTA; that is how the previous four dark treatments drifted apart.
 - **Never pure black** — use `ink` / the `neutral-*` ramp.
 - **Heading rules are flat, never gradients.** Use the shared `HeadingRule` from `components/sections/section.tsx`. There were once seven hand-copied `bg-gradient-to-r from-primary to-secondary` bars; an identical two-hue gradient under every heading is the clearest "generic template" signal a page can carry.
 - **No colour outside the tokens.** `pnpm lint` fails on arbitrary colour values (`bg-[#…]`), Tailwind's default numbered scales (`text-amber-300`), and raw hex. Note `bg-teal` is ours and legal while `bg-teal-500` is Tailwind's and is not.

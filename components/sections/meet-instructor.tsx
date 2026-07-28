@@ -3,6 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { buttonClasses } from "@/components/ui/button";
 
 const FALLBACK =
   "يجمع الأستاذ علي العباد في دوراته بين العمق العلمي والخبرة العملية، ليقدّم لك أدواتٍ واضحةً وقابلةً للتطبيق في حياتك الزوجية — منهجٌ يأخذ بيدك من فهم الذات إلى بناء علاقةٍ متوازنةٍ وسعيدة.";
@@ -166,7 +168,7 @@ export function MeetInstructor({
             <p
               data-enter=""
               style={{ transitionDelay: "0ms" }}
-              className="order-1 flex items-center gap-3 text-[13px] font-medium text-accent data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
+              className="order-1 flex items-center gap-3 text-[13px] font-medium text-lilac data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
             >
               <span aria-hidden="true" className="block h-px w-6 shrink-0 bg-accent/70" />
               {eyebrow || "تعرّف على مدرّبك"}
@@ -226,7 +228,10 @@ export function MeetInstructor({
             >
               <Link
                 href="/نبذة"
-                className="group inline-flex items-center rounded-full border border-white/24 px-7 py-3 font-medium text-white transition-colors duration-300 hover:border-accent"
+                className={cn(
+                  buttonClasses("outline", "md", true),
+                  "group rounded-full px-7 py-3 duration-300 hover:border-accent hover:bg-transparent",
+                )}
               >
                 <span className="block transition-transform duration-300 group-hover:-translate-y-0.5">
                   {ctaLabel || "نبذة عن الأستاذ"}

@@ -76,6 +76,21 @@
   --color-on-accent: #ffffff;
   --color-accent-hover: #cf3f54;
 
+  /* Coral AS TEXT. Contrast is symmetric, so coral-on-white and white-on-coral
+     are the same 3.84:1 — coral fails AA as body-size text on every ground
+     (3.84 on white, 3.08 on ink). It is a FILL colour, not a text colour.
+
+     This is that fill darkened until it reads: 6.13:1 on white. It is the same
+     value CARD_SURFACES.accent already derives in course-slots.ts
+     (accent 60% over ink), promoted to a token so the two cannot diverge.
+
+     This is a role split — fill vs text, like primary/on-primary — not a second
+     coral. Nothing here contradicts the "no near-identical corals" note above:
+     that was about two candidates for the same job.
+
+     On DARK grounds this is unusable (dark on dark). Use lilac there. */
+  --color-accent-strong: #9e4554;
+
   --color-highlight: #a551fc;
   --color-on-highlight: #ffffff;
   --color-highlight-hover: #9540ec;

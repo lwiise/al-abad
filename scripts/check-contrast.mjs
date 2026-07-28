@@ -97,6 +97,20 @@ for (const role of ["primary", "secondary", "accent", "highlight"]) {
   pairs.push([`on-${role} on ${role}-hover`, T(`on-${role}`), T(`${role}-hover`), AA]);
 }
 
+// Coral as TEXT. `accent` itself fails on every ground (see `known` below), so
+// small coral text uses `accent-strong` instead. These are the pairs that make
+// that split worth having — if they ever stop passing, the split is broken.
+for (const surface of ["background", "surface", "surface-strong"]) {
+  pairs.push([`accent-strong on ${surface}`, T("accent-strong"), T(surface), AA]);
+}
+// It is most often set on a coral-tinted chip rather than the bare surface.
+pairs.push([
+  "accent-strong on accent/10 over background",
+  T("accent-strong"),
+  over(T("accent"), T("background"), 0.1),
+  AA,
+]);
+
 // Dark sections. `ink` is the one dark surface after the elevation rollback.
 pairs.push(["white on ink", WHITE, T("ink"), AA]);
 pairs.push(["white/74 on ink", over(WHITE, T("ink"), 0.74), T("ink"), AA]);
@@ -104,6 +118,16 @@ pairs.push(["white/55 on ink", over(WHITE, T("ink"), 0.55), T("ink"), LARGE]);
 pairs.push(["lilac on ink", T("lilac"), T("ink"), AA]);
 pairs.push(["violet on ink", T("violet"), T("ink"), LARGE]);
 pairs.push(["coral on ink", T("coral"), T("ink"), LARGE]);
+
+// The on-dark button set (variantsOnDark in components/ui/button.tsx).
+pairs.push(["btn primary/dark — ink on lilac", T("ink"), T("lilac"), AA]);
+pairs.push([
+  "btn secondary/dark — white on white/10 over ink",
+  WHITE,
+  over(WHITE, T("ink"), 0.1),
+  AA,
+]);
+pairs.push(["btn outline+ghost/dark — white on ink", WHITE, T("ink"), AA]);
 
 // The focus ring is a real UI component under WCAG 1.4.11.
 pairs.push(["focus ring on background", T("focus"), T("background"), UI]);
@@ -148,11 +172,12 @@ for (const [name, bg] of Object.entries(cardSurfaces)) {
 const known = new Map([
   [
     "on-accent on accent",
-    "Coral #e04f64 is the brand accent and white-on-coral is 3.84:1. It clears AA " +
-      "for large text and UI, not for a normal-weight button label. Fixing it means " +
-      "darkening the brand accent site-wide (promo bar, every CTA, badges) — an owner " +
-      "decision, not a lint fix. Course cards already work around it: see the darkened " +
-      "mix in components/sections/courses/course-slots.ts.",
+    "Coral #e04f64 is the brand accent, and white-on-coral is 3.84:1. Contrast is " +
+      "symmetric, so this is the same number as coral-as-text — which is why coral is " +
+      "now a FILL colour only, with `accent-strong` carrying small coral text. As a " +
+      "fill it clears the 3:1 UI/large-text threshold and stays. Raising it to 4.5 " +
+      "needs #c94c5f, which dulls the one colour whose job is to be loud, and makes " +
+      "coral-on-ink worse. That is an owner decision, not a lint fix.",
   ],
   [
     "on-accent on accent-hover",

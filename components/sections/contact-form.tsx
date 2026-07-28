@@ -56,7 +56,7 @@ export function ContactForm() {
       </div>
 
       {state.status === "error" && (
-        <p role="status" aria-live="polite" className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">
+        <p role="status" aria-live="polite" className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent-strong">
           {state.message}
         </p>
       )}

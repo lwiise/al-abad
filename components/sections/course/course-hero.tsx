@@ -169,7 +169,7 @@ export function CourseHero({
                     <span className="pb-1 text-lg text-foreground-subtle line-through">
                       {formatPrice(priceOriginal as number, currency)}
                     </span>
-                    <span className="mb-1.5 rounded-full bg-accent/12 px-2.5 py-1 text-xs font-semibold text-accent">
+                    <span className="mb-1.5 rounded-full bg-accent/12 px-2.5 py-1 text-xs font-semibold text-accent-strong">
                       وفّر {discountPct}%
                     </span>
                   </>

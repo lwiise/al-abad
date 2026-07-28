@@ -74,7 +74,7 @@ export function LoginForm({
       </div>
 
       {error && (
-        <p className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">{error}</p>
+        <p className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent-strong">{error}</p>
       )}
 
       <Button type="submit" disabled={loading} className="w-full">

@@ -54,6 +54,7 @@ const SEMANTIC = [
   { token: "foreground-subtle", className: "bg-foreground-subtle", role: "بيانات وصفية فقط" },
   { token: "border", className: "bg-border", role: "حدود ناعمة" },
   { token: "border-strong", className: "bg-border-strong", role: "حدود أوضح" },
+  { token: "accent-strong", className: "bg-accent-strong", role: "coral كنصّ — على الفاتح فقط" },
   { token: "focus", className: "bg-focus", role: "حلقة التركيز" },
   { token: "whatsapp", className: "bg-whatsapp", role: "علامة طرف ثالث — لا تُستخدم لغير ذلك" },
 ];
@@ -171,7 +172,7 @@ export default function StyleguidePage() {
 
         <Group
           title="أدوار الأفعال"
-          note="لكل دور تعبئة، وحالة تمرير، ولون نص. الأبيض على coral هو ٣٫٨٤:١ — يمرّ للنص الكبير فقط، وهو مسجَّل استثناءً موثّقاً في سكربت التباين."
+          note="لكل دور تعبئة، وحالة تمرير، ولون نص. الأبيض على coral هو ٣٫٨٤:١ — التباين متماثل، فهذا نفس رقم coral كنصّ. لذلك coral لون تعبئة لا لون نص: النصّ الصغير يستعمل accent-strong (٦٫١٢:١ على الأبيض)، والتعبئة تبقى كما هي لأنها تمرّ عتبة ٣:١ للعناصر الرسومية."
         >
           <div className="grid gap-4 sm:grid-cols-2">
             {ACTIONS.map((a) => (
@@ -221,29 +222,37 @@ export default function StyleguidePage() {
         <div>
           <h2 className="text-xl font-bold text-white">الأزرار — على خلفية داكنة</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/74">
-            نفس الأنواع فوق ink. لا يوجد نوع مخصَّص للخلفيات الداكنة بعد، ولهذا تكتب الأقسام
-            الداكنة أزرارها يدوياً. الفجوة مقصود إظهارها هنا:{" "}
-            <span dir="ltr" className="font-mono">primary</span> يكاد يختفي (البنفسجي على ink هو
-            ١٫٢٦:١)، و<span dir="ltr" className="font-mono">outline</span> و
-            <span dir="ltr" className="font-mono">ghost</span> يستعملان ألوان نصٍّ فاتحة الخلفية.
+            نفس الأنواع مع <span dir="ltr" className="font-mono">light</span>. ليست نسخة تجميلية
+            من المجموعة الفاتحة: plum هو ١٫٢٦:١ على ink وteal هو ٢٫٧٨:١، فلا يمكن إعادة استعمالهما
+            — الأساسي على الداكن هو lilac. coral وحده يعمل على الأرضيتين.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {VARIANTS.map((v) => (
-              <Button key={v} variant={v}>
+              <Button key={v} variant={v} light>
+                {v}
+              </Button>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {VARIANTS.map((v) => (
+              <Button key={v} variant={v} light size="sm">
                 {v}
               </Button>
             ))}
           </div>
 
-          <h3 className="mt-10 text-base font-bold text-white">ما تستعمله الأقسام الداكنة فعلياً</h3>
+          <h3 className="mt-10 text-base font-bold text-white">
+            نفس الأنواع بدون <span dir="ltr" className="font-mono">light</span> — للمقارنة
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/74">
+            هذا ما كانت الأقسام الداكنة تضطر إلى الالتفاف حوله يدوياً.
+          </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-accent px-7 py-3 font-medium text-on-accent shadow-lg">
-              coral — الدعوة الأهم
-            </span>
-            <span className="inline-flex items-center rounded-full border border-white/24 px-7 py-3 font-medium text-white">
-              حدّ أبيض — ثانوي
-            </span>
-            <span className="rounded-full bg-lilac px-7 py-3 font-medium text-ink">lilac — بديل فاتح</span>
+            {VARIANTS.map((v) => (
+              <Button key={v} variant={v}>
+                {v}
+              </Button>
+            ))}
           </div>
 
           <h3 className="mt-10 text-base font-bold text-white">الرموز على الداكن</h3>
