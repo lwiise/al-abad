@@ -86,7 +86,12 @@ export function MeetInstructor({
       // the outsized padding is what makes the block read as deliberate.
       className="relative isolate overflow-hidden bg-ink-deep pt-24 pb-24 min-[1080px]:pt-40 min-[1080px]:pb-40"
     >
-      <Grain />
+      {/* The hero's own grain layer, same tile / opacity / blend mode. Dark
+          grounds band far more visibly than light ones, so this matters more
+          here, not less. Sits above the light pool (-z-10 vs -z-20) and below
+          the content, so it dithers the gradient without touching the portrait
+          or the type. */}
+      <div aria-hidden="true" className="hero-grain pointer-events-none absolute inset-0 -z-10" />
 
       <div className="mx-auto max-w-6xl px-6">
         <div
@@ -104,7 +109,7 @@ export function MeetInstructor({
           <figure
             data-enter=""
             style={{ transitionDelay: "0ms" }}
-            className="relative order-3 mt-8 h-[46svh] w-full data-[enter=hidden]:translate-y-8 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[900ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)] min-[1080px]:col-start-1 min-[1080px]:row-start-1 min-[1080px]:-ms-6 min-[1080px]:mt-0 min-[1080px]:-mb-[calc(10rem_+_8svh)] min-[1080px]:h-[70svh] min-[1080px]:self-end"
+            className="relative order-3 mt-8 h-[46svh] w-full data-[enter=hidden]:translate-y-8 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[900ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:col-start-1 min-[1080px]:row-start-1 min-[1080px]:-ms-6 min-[1080px]:mt-0 min-[1080px]:-mb-[calc(10rem_+_8svh)] min-[1080px]:h-[70svh] min-[1080px]:self-end"
           >
             {/* ONE light pool, brand purple, wide falloff — something for the
                 figure to stand in front of. There is no second one on the copy
@@ -117,15 +122,14 @@ export function MeetInstructor({
                   "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--color-aubergine) 62%, transparent) 0%, transparent 72%)",
               }}
             />
-            {/* Contact shadow — same idea as the hero's, but tighter and much
-                darker so it reads as weight against ink rather than a halo. */}
-            <div
+            {/* Contact shadow — the hero's blurred ellipse, but tighter
+                (inset 22% vs 12%) and darker, because on ink a #3a363d smudge
+                at 34% is invisible. Guarded the same way: it only ships with
+                the image. */}
+            <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-[14%] bottom-[13%] -z-20 h-[11%] min-[1080px]:bottom-[20%]"
-              style={{
-                background:
-                  "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, black 62%, var(--color-ink-deep)) 0%, transparent 70%)",
-              }}
+              className="pointer-events-none absolute inset-x-[22%] bottom-[13%] -z-20 h-[6%] rounded-[100%] blur-xl min-[1080px]:bottom-[20%]"
+              style={{ background: "rgb(9 6 14 / 0.72)" }}
             />
 
             <Signature circleRef={signature} />
@@ -155,7 +159,7 @@ export function MeetInstructor({
             <p
               data-enter=""
               style={{ transitionDelay: "0ms" }}
-              className="order-1 flex items-center gap-3 text-[13px] font-medium text-accent data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)]"
+              className="order-1 flex items-center gap-3 text-[13px] font-medium text-accent data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
             >
               <span aria-hidden="true" className="block h-px w-6 shrink-0 bg-accent/70" />
               {eyebrow || "تعرّف على مدرّبك"}
@@ -164,7 +168,7 @@ export function MeetInstructor({
             <h2
               data-enter=""
               style={{ transitionDelay: "80ms" }}
-              className="order-2 mt-4 max-w-[46ch] text-4xl leading-[1.12] text-paper data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)] min-[1080px]:mt-5 min-[1080px]:text-5xl"
+              className="order-2 mt-4 max-w-[46ch] text-4xl leading-[1.12] text-paper data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:mt-5 min-[1080px]:text-5xl"
             >
               {name || "الأستاذ علي العباد"}
             </h2>
@@ -174,7 +178,7 @@ export function MeetInstructor({
             <p
               data-enter=""
               style={{ transitionDelay: "160ms" }}
-              className="order-4 mt-8 max-w-[46ch] text-[18px] leading-[2] text-paper/74 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)] min-[1080px]:mt-7 min-[1080px]:text-[19px]"
+              className="order-4 mt-8 max-w-[46ch] text-[18px] leading-[2] text-paper/74 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:mt-7 min-[1080px]:text-[19px]"
             >
               {excerpt(aboutBody)}
             </p>
@@ -190,7 +194,7 @@ export function MeetInstructor({
                   key={m}
                   data-enter=""
                   style={{ transitionDelay: `${240 + i * 80}ms` }}
-                  className="border-t border-paper/10 py-4 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)]"
+                  className="border-t border-paper/10 py-4 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
                 >
                   <p className="font-display text-[17px] font-bold text-paper/90">{m}</p>
                   {/* Renders only once PILLAR_NOTES is filled in — see the TODO
@@ -210,7 +214,7 @@ export function MeetInstructor({
             <div
               data-enter=""
               style={{ transitionDelay: "480ms" }}
-              className="order-6 mt-10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[cubic-bezier(.22,1,.36,1)]"
+              className="order-6 mt-10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
             >
               <Link
                 href="/نبذة"
@@ -268,26 +272,6 @@ function Signature({ circleRef }: { circleRef: RefObject<SVGCircleElement | null
         />
       </svg>
     </div>
-  );
-}
-
-/**
- * Film grain, tiled. Dark grounds band far more visibly than light ones, so the
- * light pool above needs this more than anything on the light sections does.
- * Sits above the pool (-z-10 vs -z-20) and below the content, so it dithers the
- * gradient without touching the portrait or the type.
- */
-function Grain() {
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] mix-blend-overlay"
-      style={{
-        backgroundImage:
-          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E\")",
-        backgroundSize: "180px 180px",
-      }}
-    />
   );
 }
 
