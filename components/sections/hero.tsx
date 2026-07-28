@@ -1,34 +1,46 @@
-"use client";
-
-import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, Users, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { gsap, useGSAP } from "@/lib/gsap";
-import { useMagnetic } from "@/components/motion/use-magnetic";
+import type { CSSProperties } from "react";
 import type { StatRow } from "@/lib/database.types";
-
-const STAT_ICONS = [BookOpen, Users, Target];
+import { HeroBackdrop } from "./art/hero-backdrop";
 
 const DEFAULT_HEADLINE = "زواج أكثر وعياً… وعلاقة تدوم";
+
+/** Shown when the CMS has no stats. Editors still override these. */
+const FALLBACK_STATS = [
+  { value: "+١٥", label: "سنة خبرة" },
+  { value: "آلاف", label: "متدرب ومتدربة" },
+  { value: "+١٠٠ ألف", label: "ساعة تدريب" },
+];
 
 /**
  * Split the headline at the ellipsis so the tail can be set in Ruqʿah.
  *
- * The headline is CMS copy, so this cannot hard-code "علاقة تدوم" — an editor
- * may change it. Splitting on "…" keeps the calligraphic line editable and
- * degrades cleanly: no ellipsis means no second part, and the whole headline
- * renders in the display face with no calligraphy at all.
+ * The headline is CMS copy, so this cannot hard-code "وعلاقة تدوم" — an editor
+ * may change it. No ellipsis means no second line and no calligraphy.
  */
 function splitHeadline(value: string): { lead: string; calligraphic: string | null } {
   const i = value.indexOf("…");
   if (i === -1) return { lead: value, calligraphic: null };
-  const lead = value.slice(0, i + 1).trim();
-  const tail = value.slice(i + 1).trim();
-  return { lead, calligraphic: tail || null };
+  return { lead: value.slice(0, i + 1).trim(), calligraphic: value.slice(i + 1).trim() || null };
 }
 
+/** Entrance delay. One shared curve and duration; only the offset changes. */
+const enter = (ms: number): CSSProperties => ({ animationDelay: `${ms}ms` });
+
+/**
+ * Section 1 — nav and hero as one continuous surface.
+ *
+ * The nav is fixed and out of flow, so this section starts at y=0 and its
+ * background runs behind it. The negative margin cancels the nav clearance
+ * that the marketing layout puts on <main>; the matching padding then pushes
+ * the CONTENT back below the nav. Net result: one surface, no seam at any
+ * scroll position.
+ *
+ * A server component — the entrance is CSS keyframes, not JS, so there is no
+ * client bundle and nothing to hydrate. The only interactive piece in section
+ * 1 is the nav's observer.
+ */
 export function Hero({
   headline,
   subhead,
@@ -50,124 +62,40 @@ export function Hero({
   trustBadge?: string | null;
   stats?: StatRow[];
 }) {
-  const root = useRef<HTMLElement>(null);
-  const magnetic = useMagnetic<HTMLAnchorElement>();
-  const topStats = stats.slice(0, 3);
   const { lead, calligraphic } = splitHeadline(headline || DEFAULT_HEADLINE);
-
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-
-      // ONE entrance moment, per the motion spec. No per-word or per-letter
-      // text animation — Arabic is cursive and letter-level splitting breaks
-      // joining, and word-level here would be a fifth moment the spec doesn't
-      // call for.
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const tl = gsap.timeline();
-
-        tl.from("[data-hero-calligraphy]", {
-          opacity: 0,
-          scale: 0.96,
-          duration: 0.9,
-          ease: "power3.out",
-          transformOrigin: "100% 50%", // grows from the right — RTL reading order
-        });
-
-        // clip-path wipe from the right, matching RTL reading direction.
-        tl.from(
-          "[data-hero-visual]",
-          {
-            clipPath: "inset(0 0 0 100%)",
-            duration: 1.1,
-            ease: "power3.inOut",
-          },
-          0.12,
-        );
-
-        tl.from(
-          "[data-hero-rise]",
-          {
-            opacity: 0,
-            y: 18,
-            duration: 0.6,
-            ease: "power3.out",
-            stagger: 0.06,
-          },
-          0.2,
-        );
-
-        return () => tl.kill();
-      });
-
-      return () => mm.revert();
-    },
-    { scope: root },
-  );
+  const pills = stats.length
+    ? stats.slice(0, 3).map((s) => ({ value: s.value, label: s.label }))
+    : FALLBACK_STATS;
 
   return (
     <section
-      ref={root}
-      className="relative isolate overflow-hidden bg-ink-deep text-white"
+      className="relative isolate -mt-[var(--nav-h)] flex min-h-svh flex-col justify-center overflow-hidden pt-[var(--nav-h)]"
     >
-      {/* A single warm light source from the upper right — the whole lighting
-          idea of the art direction in one gradient. Deliberately not a
-          full-bleed violet wash. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(70% 55% at 82% 12%, color-mix(in oklab, var(--color-aubergine) 70%, transparent) 0%, transparent 68%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(38% 30% at 88% 6%, color-mix(in oklab, var(--color-coral) 22%, transparent) 0%, transparent 70%)",
-        }}
-      />
+      <HeroBackdrop className="-z-10" />
 
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-          {/* Text column */}
-          <div className="text-start">
-            <div
-              data-hero-rise
-              className="inline-flex w-fit items-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur"
+      <div className="mx-auto w-full max-w-6xl px-6 py-14 min-[1080px]:py-20">
+        <div className="flex flex-col items-center gap-10 min-[1080px]:grid min-[1080px]:grid-cols-[minmax(0,1.15fr)_minmax(0,0.9fr)_190px] min-[1080px]:items-center min-[1080px]:gap-8">
+          {/* --- Copy (right column in RTL) ------------------------------- */}
+          <div className="order-1 max-w-xl text-center min-[1080px]:text-start">
+            <p
+              className="hero-enter inline-flex items-center gap-2 rounded-full border border-border bg-[rgb(255_255_255_/_0.62)] px-4 py-1.5 text-sm text-foreground-muted backdrop-blur-sm"
+              style={enter(0)}
             >
-              <div className="flex flex-row-reverse">
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className={cn(
-                      "size-6 rounded-full bg-gradient-to-br from-aubergine to-violet-accent ring-2 ring-ink-deep",
-                      i > 0 && "-ms-2",
-                    )}
-                    aria-hidden="true"
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-white/70">
-                {trustBadge || "موثوق من آلاف المتدربين"}
-              </span>
-            </div>
+              <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
+              {trustBadge || "موثوق من آلاف المتدربين"}
+            </p>
 
-            <h1 className="mt-7 text-4xl font-extrabold sm:text-5xl lg:text-6xl">
-              <span data-hero-rise className="block text-white/90">
+            <h1 className="mt-6 text-4xl font-extrabold text-foreground sm:text-5xl min-[1080px]:text-6xl">
+              <span className="hero-enter block" style={enter(90)}>
                 {lead}
               </span>
               {calligraphic && (
                 <span
-                  data-hero-calligraphy
-                  // Ruqʿah needs far more vertical room than a sans: its
-                  // descenders and sweeping baseline sit well outside the em
-                  // box, so this carries its own generous leading and padding
-                  // rather than inheriting the heading scale's.
-                  className="mt-3 block font-calligraphy text-coral"
-                  style={{ lineHeight: 1.9, paddingBottom: "0.15em" }}
+                  className="hero-enter mt-2 block font-calligraphy text-primary"
+                  // Ruqʿah sits far outside the em box — its descenders and
+                  // sweeping baseline need this leading and the padding, or the
+                  // top line clips against the block above.
+                  style={{ ...enter(90), lineHeight: 1.72, paddingBottom: "0.14em" }}
                 >
                   {calligraphic}
                 </span>
@@ -175,146 +103,81 @@ export function Hero({
             </h1>
 
             <p
-              data-hero-rise
-              className="mt-6 max-w-lg leading-relaxed text-white/65"
+              className="hero-enter mt-5 text-lg leading-relaxed text-foreground-muted"
+              style={enter(180)}
             >
               {subhead ||
                 "تعلّم — مع الأستاذ علي العباد — كيف تفهم نفسك وشريكك، وتبني علاقةً متوازنةً وسعيدة."}
             </p>
 
-            <div data-hero-rise className="mt-9 flex flex-wrap gap-3">
-              {/* On an ink ground plum is too close to the background — the
-                  primary action takes the warm neutral, with coral reserved for
-                  the thread and the hover accent. */}
+            <div
+              className="hero-enter mt-8 flex flex-wrap justify-center gap-3 min-[1080px]:justify-start"
+              style={enter(270)}
+            >
               <Link
-                ref={magnetic}
                 href={primaryUrl || "#courses"}
-                className="rounded-full bg-sand px-7 py-3 font-medium text-ink-deep transition-colors hover:bg-white"
+                className="rounded-full bg-primary px-7 py-3 font-medium text-on-primary transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-[0_10px_24px_-8px_rgb(88_59_102_/_0.55)]"
               >
                 {primaryLabel || "ابدأ رحلتك"}
               </Link>
               <Link
                 href={secondaryUrl || "/نبذة"}
-                className="group relative rounded-full border border-white/20 px-6 py-3 font-medium text-white/90 transition-colors hover:border-white/40"
+                className="rounded-full border border-border-strong px-6 py-3 font-medium text-foreground transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-[0_10px_24px_-10px_rgb(58_54_61_/_0.35)]"
               >
                 {secondaryLabel || "تعرّف على الأستاذ علي"}
               </Link>
             </div>
-
-            {topStats.length > 0 && (
-              <ul data-hero-rise className="mt-12 flex flex-wrap gap-x-10 gap-y-5">
-                {topStats.map((s, i) => {
-                  const Icon = STAT_ICONS[i % STAT_ICONS.length];
-                  return (
-                    <li key={s.id} className="flex items-center gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/8 text-coral">
-                        <Icon className="size-4" />
-                      </span>
-                      <span>
-                        <span className="block text-xl font-extrabold tabular-nums text-white">
-                          {s.value}
-                        </span>
-                        <span className="block text-xs text-white/50">{s.label}</span>
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
           </div>
 
-          {/* Visual column */}
-          <div data-hero-visual className="relative">
-            {imageUrl ? (
-              // The CMS images are transparent CUTOUTS — the live hero asset is
-              // 24.5% alpha-zero with all four corners transparent. So: no
-              // frame, no crop, `object-contain`, and a soft halo behind it.
-              // `object-cover` inside a rounded box (which this briefly had)
-              // crops a cutout's empty margins and puts a visible edge around a
-              // subject that is meant to float.
-              <div className="relative mx-auto aspect-[4/5] w-full max-w-sm lg:max-w-none">
-                <div
+          {/* --- Portrait (centre column) ---------------------------------
+              Two things stop the cutout floating: a drop-shadow that follows
+              its alpha edge, and the blurred ellipse beneath it standing in for
+              contact with a floor. */}
+          <div
+            className="hero-enter relative order-3 w-full max-w-[19rem] min-[1080px]:order-2 min-[1080px]:max-w-none"
+            style={enter(180)}
+          >
+            {imageUrl && (
+              <div className="relative aspect-[4/5] w-full">
+                {/* Contact shadow. Guarded with the image — on its own it is a
+                    dark smudge sitting under nothing. */}
+                <span
                   aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 top-6 -z-10 rounded-[100%] blur-3xl"
-                  style={{
-                    background:
-                      "linear-gradient(to bottom, color-mix(in oklab, var(--color-aubergine) 85%, transparent), transparent 75%)",
-                  }}
+                  className="absolute inset-x-[12%] bottom-[2%] h-[7%] rounded-[100%] blur-xl"
+                  style={{ background: "rgb(58 54 61 / 0.34)" }}
                 />
                 <Image
                   src={imageUrl}
                   alt="الأستاذ علي العباد"
                   fill
                   priority
-                  sizes="(max-width: 1024px) 80vw, 460px"
+                  sizes="(max-width: 1080px) 76vw, 420px"
                   className="object-contain object-bottom"
+                  style={{ filter: "drop-shadow(0 18px 26px rgb(58 54 61 / 0.22))" }}
                 />
               </div>
-            ) : (
-              <MashrabiyaLight />
             )}
           </div>
+
+          {/* --- Stat pills (left column) --------------------------------- */}
+          <ul
+            className="hero-enter order-2 flex w-full flex-row flex-wrap justify-center gap-3 min-[1080px]:order-3 min-[1080px]:w-auto min-[1080px]:flex-col min-[1080px]:justify-start"
+            style={enter(360)}
+          >
+            {pills.map((s) => (
+              <li
+                key={s.label}
+                className="rounded-xl border border-[rgb(255_255_255_/_0.7)] bg-[rgb(255_255_255_/_0.78)] px-4 py-3 text-center shadow-sm backdrop-blur-md min-[1080px]:text-start"
+              >
+                <span className="block text-xl font-extrabold tabular-nums text-foreground">
+                  {s.value}
+                </span>
+                <span className="mt-0.5 block text-xs text-foreground-subtle">{s.label}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
-  );
-}
-
-/**
- * Stand-in for the hero portrait until real photography of the coach exists.
- *
- * Deliberately architectural rather than figurative: the art direction forbids
- * generating a face or Gulf dress, and a flat placeholder block reads worse on
- * near-black than it does on white. A mashrabiya screen with light behind it is
- * the approved vocabulary, and drawn in code it costs nothing and ships now.
- *
- * Replace wholesale once a real portrait lands in the CMS.
- */
-function MashrabiyaLight() {
-  return (
-    <div
-      aria-hidden="true"
-      className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-white/10 lg:max-w-none"
-    >
-      {/* light source behind the screen */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 45% at 50% 22%, color-mix(in oklab, var(--color-coral) 32%, transparent) 0%, transparent 70%), linear-gradient(180deg, var(--color-aubergine) 0%, var(--color-ink-deep) 72%)",
-        }}
-      />
-      {/* the screen itself — an eight-point geometric lattice */}
-      <svg className="absolute inset-0 size-full" viewBox="0 0 200 250" fill="none">
-        <defs>
-          <pattern id="mashrabiya" width="25" height="25" patternUnits="userSpaceOnUse">
-            <path
-              d="M12.5 0 L25 12.5 L12.5 25 L0 12.5 Z M12.5 6 L19 12.5 L12.5 19 L6 12.5 Z"
-              stroke="var(--color-sand)"
-              strokeOpacity="0.22"
-              strokeWidth="0.6"
-              fill="none"
-            />
-            <path
-              d="M0 0 L6 6 M25 0 L19 6 M0 25 L6 19 M25 25 L19 19"
-              stroke="var(--color-sand)"
-              strokeOpacity="0.14"
-              strokeWidth="0.6"
-            />
-          </pattern>
-          <linearGradient id="mashrabiya-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="white" stopOpacity="0.9" />
-            <stop offset="0.65" stopColor="white" stopOpacity="0.35" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
-          </linearGradient>
-          <mask id="mashrabiya-mask">
-            <rect width="200" height="250" fill="url(#mashrabiya-fade)" />
-          </mask>
-        </defs>
-        <rect width="200" height="250" fill="url(#mashrabiya)" mask="url(#mashrabiya-mask)" />
-      </svg>
-      {/* settle the base into the section ground */}
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink-deep to-transparent" />
-    </div>
   );
 }

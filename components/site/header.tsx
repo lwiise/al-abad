@@ -8,17 +8,36 @@ import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { NAV, LMS_URL } from "./nav";
 
+/**
+ * Fixed, fully transparent at rest, frosting in after 24px of scroll.
+ *
+ * Fixed — not sticky — is what lets the hero own the background and run
+ * underneath: a fixed nav is out of flow, so the hero starts at y=0 and there
+ * is only ever one surface. Sticky reserved 64px of flow, which is exactly
+ * what produced the white band above the hero.
+ *
+ * State comes from an IntersectionObserver on a 1px sentinel rather than a
+ * scroll listener: no work on the scroll thread, and no listener firing on
+ * every frame of a fling.
+ */
 export function Header() {
   const pathname = decodeURIComponent(usePathname() || "/");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const sentinel = document.querySelector("[data-nav-sentinel]");
+    if (!sentinel) return;
+    // The sentinel is 1px tall and parked 24px down the document, so it stops
+    // intersecting exactly at the 24px trigger point.
+    const io = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting), {
+      threshold: 0,
+    });
+    io.observe(sentinel);
+    return () => io.disconnect();
   }, []);
+
+  const frosted = scrolled || open;
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
@@ -26,14 +45,22 @@ export function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 transition-colors",
-        scrolled || open
-          ? "border-b border-border bg-background/90 backdrop-blur"
-          : "border-b border-transparent bg-background/0",
+        "fixed inset-x-0 top-0 z-50",
+        frosted ? "border-b border-[rgb(58_54_61_/_0.07)]" : "border-b border-transparent",
       )}
+      style={{
+        height: frosted ? "var(--nav-h-scrolled)" : "var(--nav-h)",
+        backgroundColor: frosted
+          ? "color-mix(in oklab, var(--color-paper) 84%, transparent)"
+          : "transparent",
+        backdropFilter: frosted ? "blur(16px) saturate(1.5)" : "none",
+        WebkitBackdropFilter: frosted ? "blur(16px) saturate(1.5)" : "none",
+        transition:
+          "height 280ms var(--ease-hero), background-color 280ms var(--ease-hero), border-color 280ms var(--ease-hero), backdrop-filter 280ms var(--ease-hero)",
+      }}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
-        {/* Logo */}
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
+        {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-lg font-extrabold text-on-primary">
             ع
@@ -51,7 +78,7 @@ export function Header() {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-lg px-3 py-2 text-sm transition-colors",
+                "nav-underline relative rounded-lg px-3 py-2 text-sm transition-colors",
                 isActive(item.href)
                   ? "font-medium text-primary"
                   : "text-foreground-muted hover:text-foreground",
@@ -90,7 +117,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile dropdown panel */}
+      {/* Mobile panel */}
       {open && (
         <div className="absolute inset-x-0 top-full border-b border-border bg-background shadow-lg lg:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4" aria-label="التنقل للجوال">
@@ -115,7 +142,7 @@ export function Header() {
               rel="noopener noreferrer"
               className="rounded-lg px-3 py-2.5 text-sm text-foreground-muted hover:bg-surface"
             >
-              تسجيل الدخول (المنصة)
+              تسجيل الدخول
             </a>
             <Link
               href="/#courses"
