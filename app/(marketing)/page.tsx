@@ -68,6 +68,7 @@ export default async function HomePage() {
         heading={settings?.courses_heading}
         subhead={settings?.courses_subhead}
         viewAllLabel={settings?.courses_view_all_label}
+        instructorImageUrl={settings?.instructor_image_url ?? settings?.hero_image_url}
       />
       <HowItWorks
         steps={steps}
