@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type Bg = "background" | "surface" | "lilac" | "ink" | "plum";
+type Bg = "background" | "surface" | "sand" | "lilac" | "ink" | "plum";
 
 const bgMap: Record<Bg, string> = {
   background: "bg-background",
   surface: "bg-surface",
+  // Warm neutral from the elevation palette — the counterpart to the cold
+  // `surface`/`lilac` tints. Flat, never gradient.
+  sand: "bg-sand",
   lilac: "bg-surface-strong",
   ink: "bg-ink",
   plum: "bg-primary",

@@ -377,6 +377,314 @@
   }
 }
 
+/* --- قسم التحديات: the challenges diagram + list -------------------------
+   Two overlapping sources — two people, and the interference where they meet.
+   Each challenge drives the diagram to its own state via `data-state` on the
+   SVG root, so all five states are CSS: no animation library, one state hook.
+
+   THE RULE THAT SHAPES ALL OF THIS: a state change must animate from whatever
+   is on screen, never snap. Two things follow from it.
+
+   1. Channels are kept apart, because CSS applies translate → scale → transform
+      in that order and they compose:
+        translate → drift apart, the oscillation, the pressure dots
+        scale     → breathing, which therefore never has to stop
+        transform → each state's reshaping of the overlap
+      Nothing is ever both animated and transitioned on the same channel.
+
+   2. Anything a state change has to interrupt is a TRANSITION, not a keyframe
+      animation. CSS will not start a transition for a property an animation was
+      driving — the animation simply stops contributing and the value drops in
+      one frame — so تكرار الخلافات's oscillation is driven by `data-phase`,
+      flipped from the component every 600ms, with the movement itself left to
+      the same transitions every other state uses. Leaving mid-cycle therefore
+      eases out of wherever the circles are, and فتور العلاقة's drift-apart
+      glides even when it follows the oscillation.
+
+   What stays a keyframe animation is only what never needs interrupting: the
+   breathing (always on, every state), the dash march (invisible once the line
+   has morphed back to solid) and the heart's flicker (mostly at full opacity,
+   so an exit almost always lands on a frame that matches its resting value).
+
+   Colour, stroke weight and easing are the hero's, not this section's: the two
+   circles are `--color-aubergine` and `--color-coral` at the same 1.25px
+   non-scaling stroke as the hero's two ripple emitters, and every transition
+   runs on `--ease-hero`, the curve the hero already shares with the nav. This
+   is the second appearance of the hero's idea, so nothing here is its own. */
+
+@layer utilities {
+  .ch-reveal,
+  .ch-diagram {
+    --ch-ease: var(--ease-hero);
+    --ch-move: 650ms;
+    --ch-row-move: 240ms;
+  }
+
+  /* Entrance: 24px rise + fade, once — the site's reveal machinery, this
+     section's timing. */
+  .ch-reveal[data-reveal="hidden"] {
+    transform: translateY(24px);
+  }
+  .ch-reveal[data-reveal="shown"] {
+    transition-duration: 0.5s;
+  }
+
+  .ch-diagram {
+    width: 100%;
+    max-width: 15rem;
+    margin-inline: auto;
+  }
+
+  .ch-a,
+  .ch-b,
+  .ch-ghost,
+  .ch-lens,
+  .ch-heart {
+    transform-box: view-box;
+    transition:
+      translate var(--ch-move) var(--ch-ease),
+      transform var(--ch-move) var(--ch-ease),
+      scale var(--ch-move) var(--ch-ease),
+      opacity var(--ch-move) var(--ch-ease),
+      fill var(--ch-move) var(--ch-ease),
+      stroke-dasharray var(--ch-move) var(--ch-ease),
+      stroke-dashoffset var(--ch-move) var(--ch-ease);
+  }
+
+  /* Idle: both sources breathe, offset by half a cycle so the overlap pulses.
+     Nothing else moves. `scale` is reserved for this, so breathing survives
+     every state change untouched. */
+  .ch-a {
+    transform-origin: 155px 170px;
+    animation: ch-breathe 6s ease-in-out infinite;
+  }
+  .ch-b {
+    transform-origin: 245px 170px;
+    animation: ch-breathe 6s ease-in-out -3s infinite;
+  }
+  .ch-ghost {
+    transform-origin: 245px 170px;
+    opacity: 0;
+  }
+  .ch-heart {
+    transform-origin: 200px 170px;
+  }
+
+  /* The lens is scaled about its own centre, and every size below is the real
+     geometry of two r=100 circles at that separation — so it shrinks and swells
+     exactly as the circles do. It pulses at double the breathing frequency
+     because the two sources breathe in antiphase. */
+  .ch-lens {
+    fill: var(--color-coral);
+    fill-opacity: 0.14;
+    transform-origin: 200px 170px;
+    animation: ch-breathe-lens 3s ease-in-out infinite;
+  }
+
+  /* Set so it can interpolate to a dash pattern — 628 ≈ the circumference, so
+     this renders solid but the line can visibly break up. */
+  .ch-stroke {
+    stroke-dasharray: 628 0;
+  }
+
+  /* The dots press in and hold, over a longer beat than a state change — the
+     brief asks for a slow press, not a pulse, and a transition (rather than an
+     animation) is what lets them retract from wherever they got to. */
+  .ch-dots circle {
+    transform-box: view-box;
+    opacity: 0;
+    transition:
+      translate 1.6s var(--ch-ease),
+      opacity var(--ch-move) var(--ch-ease);
+  }
+
+  /* ضعف التواصل — the strokes break into travelling dashes; the overlap fades. */
+  .ch-diagram[data-state="communication"] .ch-stroke {
+    stroke-dasharray: 12 14;
+  }
+  .ch-diagram[data-state="communication"] .ch-a {
+    animation: ch-breathe 6s ease-in-out infinite, ch-march 5s linear infinite;
+  }
+  .ch-diagram[data-state="communication"] .ch-b {
+    animation: ch-breathe 6s ease-in-out -3s infinite, ch-march 5s linear infinite;
+  }
+  .ch-diagram[data-state="communication"] .ch-lens {
+    opacity: 0.4;
+  }
+
+  /* تكرار الخلافات — the two push together (phase 0) and pull apart (phase 1)
+     on a ~1.2s cycle, while the heart flickers. Each lens size is the real
+     overlap at that separation: 28 apart the two circles meet over 138 × 190,
+     150 apart over 50 × 132, against 110 × 179 at rest. */
+  .ch-diagram[data-state="conflict"] {
+    --ch-move: 600ms;
+  }
+  .ch-diagram[data-state="conflict"] .ch-a {
+    translate: 14px 0;
+  }
+  .ch-diagram[data-state="conflict"] .ch-b {
+    translate: -14px 0;
+  }
+  .ch-diagram[data-state="conflict"] .ch-lens {
+    transform: scale(1.254, 1.064);
+  }
+  .ch-diagram[data-state="conflict"][data-phase="1"] .ch-a {
+    translate: -30px 0;
+  }
+  .ch-diagram[data-state="conflict"][data-phase="1"] .ch-b {
+    translate: 30px 0;
+  }
+  .ch-diagram[data-state="conflict"][data-phase="1"] .ch-lens {
+    transform: scale(0.455, 0.741);
+  }
+  .ch-diagram[data-state="conflict"] .ch-heart {
+    animation: ch-flicker 1.2s linear infinite;
+  }
+
+  /* حيرة الاختيار — the second source splits into faint alternatives and the
+     overlap stops being one clear place. */
+  .ch-diagram[data-state="choice"] .ch-ghost {
+    opacity: 0.34;
+  }
+  .ch-diagram[data-state="choice"] .ch-ghost-1 {
+    translate: -20px -14px;
+  }
+  .ch-diagram[data-state="choice"] .ch-ghost-2 {
+    translate: 15px 17px;
+  }
+  .ch-diagram[data-state="choice"] .ch-lens {
+    opacity: 0.45;
+  }
+
+  /* فتور العلاقة — warmth leaves the overlap, the two drift apart until it
+     nearly vanishes, the heart shrinks. At 46 units apart each way the overlap
+     is 18 wide × 83 tall. */
+  .ch-diagram[data-state="distance"] .ch-a {
+    translate: -46px 0;
+  }
+  .ch-diagram[data-state="distance"] .ch-b {
+    translate: 46px 0;
+  }
+  .ch-diagram[data-state="distance"] .ch-lens {
+    transform: scale(0.164, 0.464);
+    fill: var(--color-neutral-400);
+    opacity: 0.6;
+  }
+  .ch-diagram[data-state="distance"] .ch-heart {
+    scale: 0.5;
+    opacity: 0.5;
+  }
+
+  /* القلق والضغوط — six dots press inward and squeeze both out of round. */
+  .ch-diagram[data-state="anxiety"] .ch-a,
+  .ch-diagram[data-state="anxiety"] .ch-b {
+    transform: scale(1.05, 0.92);
+  }
+  .ch-diagram[data-state="anxiety"] .ch-lens {
+    transform: scale(1.06, 0.9);
+  }
+  .ch-diagram[data-state="anxiety"] .ch-dots circle {
+    opacity: 1;
+    translate: var(--ch-dx) var(--ch-dy);
+  }
+  /* Inward direction per dot — each points at the centre, in the order the
+     dots appear in the SVG, and stops just short of the circle it presses. */
+  .ch-dots circle:nth-child(1) { --ch-dx: 22px; --ch-dy: 20px; }
+  .ch-dots circle:nth-child(2) { --ch-dx: 0px; --ch-dy: 30px; }
+  .ch-dots circle:nth-child(3) { --ch-dx: -22px; --ch-dy: 20px; }
+  .ch-dots circle:nth-child(4) { --ch-dx: -22px; --ch-dy: -20px; }
+  .ch-dots circle:nth-child(5) { --ch-dx: 0px; --ch-dy: -30px; }
+  .ch-dots circle:nth-child(6) { --ch-dx: 22px; --ch-dy: -20px; }
+
+  /* The list — the marker echoes the diagram's circles and fills when its row
+     is the one driving them. */
+  .ch-row {
+    min-height: 3.5rem;
+    cursor: pointer;
+  }
+  .ch-marker,
+  .ch-label {
+    transition:
+      background-color var(--ch-row-move) var(--ch-ease),
+      border-color var(--ch-row-move) var(--ch-ease),
+      color var(--ch-row-move) var(--ch-ease),
+      scale var(--ch-row-move) var(--ch-ease);
+  }
+  .ch-marker {
+    border-color: var(--color-border-strong);
+  }
+  .ch-label {
+    color: var(--color-foreground);
+  }
+  /* Aubergine, not plum: the marker is meant to read as one of the diagram's
+     circles, so it takes the same emitter colour the hero uses. */
+  .ch-row[aria-pressed="true"] .ch-marker {
+    background-color: var(--color-aubergine);
+    border-color: var(--color-aubergine);
+    scale: 1.15;
+  }
+  .ch-row[aria-pressed="true"] .ch-label {
+    color: var(--color-aubergine);
+    font-weight: 600;
+  }
+}
+
+/* Plain media queries so the ordering against the 1080px layout switch is
+   explicit — see the note where the diagram is rendered. */
+@media (min-width: 640px) {
+  .ch-diagram { max-width: 22rem; }
+}
+@media (min-width: 1080px) {
+  .ch-diagram { max-width: 27rem; }
+}
+
+@keyframes ch-breathe {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.015; }
+}
+@keyframes ch-breathe-lens {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.014 1.008; }
+}
+@keyframes ch-march {
+  to { stroke-dashoffset: -52px; }
+}
+/* A flicker is mostly on, with brief dips — which is also what keeps leaving
+   the state clean: nearly every frame it could be interrupted on already sits
+   at the resting opacity. */
+@keyframes ch-flicker {
+  0%, 40% { opacity: 1; }
+  43% { opacity: 0.25; }
+  46% { opacity: 1; }
+  62% { opacity: 1; }
+  64% { opacity: 0.3; }
+  67% { opacity: 0.95; }
+  69% { opacity: 0.35; }
+  72%, 100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch-diagram,
+  .ch-diagram *,
+  .ch-marker,
+  .ch-label {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* The oscillation never starts (the component checks the same preference), so
+     تكرار الخلافات gets one static frame of the two pulled apart — enough to
+     stay distinguishable from the other four. Both selectors are listed so a
+     `data-phase` left over from a mid-session preference change can't win. */
+  .ch-diagram[data-state="conflict"][data-phase] .ch-a,
+  .ch-diagram[data-state="conflict"] .ch-a { translate: -24px 0; }
+  .ch-diagram[data-state="conflict"][data-phase] .ch-b,
+  .ch-diagram[data-state="conflict"] .ch-b { translate: 24px 0; }
+  .ch-diagram[data-state="conflict"][data-phase] .ch-lens,
+  .ch-diagram[data-state="conflict"] .ch-lens { transform: scale(0.56, 0.81); }
+  .ch-diagram[data-state="conflict"] .ch-heart { opacity: 0.4; }
+}
+
 /* Radix accordion expand/collapse */
 @keyframes accordion-down {
   from {
