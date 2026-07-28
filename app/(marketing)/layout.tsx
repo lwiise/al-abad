@@ -22,8 +22,20 @@ export default async function MarketingLayout({ children }: { children: ReactNod
         text={settings?.promo_bar_text}
         code={settings?.promo_code}
       />
+      {/* 1px sentinel parked 24px down the document. The nav observes it with
+          an IntersectionObserver instead of a scroll listener, and it stops
+          intersecting exactly at the 24px trigger point. Absolutely positioned
+          so it costs no layout. */}
+      <div
+        data-nav-sentinel
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-6 h-px"
+      />
       <Header />
-      <main id="main" tabIndex={-1}>
+      {/* The nav is fixed, so it reserves no space — every page needs its own
+          clearance. The hero cancels this with a matching negative margin,
+          which is how it alone runs underneath the nav with no seam. */}
+      <main id="main" tabIndex={-1} className="pt-[var(--nav-h)]">
         {children}
       </main>
       <Footer settings={settings} />
