@@ -49,9 +49,6 @@ const contrast = (fg, bg) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-/** `color-mix(in srgb, a <pct>%, b)` — matches how the CSS function resolves. */
-const mix = (a, b, pct) => a.map((c, i) => (c * pct + b[i] * (100 - pct)) / 100);
-
 /** Composite a translucent foreground over an opaque background. */
 const over = (fg, bg, alpha) => fg.map((c, i) => c * alpha + bg[i] * (1 - alpha));
 
@@ -144,23 +141,18 @@ pairs.push(["focus ring on surface", T("focus"), T("surface"), UI]);
  */
 
 /**
- * Course-card surfaces — mirrors CARD_SURFACES in
- * components/sections/courses/course-slots.ts. Ratios are kept in sync by this
- * script: change a mix there, change it here, re-run.
+ * Course cards (components/sections/course-card.tsx) put type over a photo, so
+ * the only thing keeping them legible is the scrim. Both pairs are measured
+ * against the WORST CASE — a fully white image underneath — because the images
+ * come from the CMS and cannot be assumed dark.
  *
- * Cards carry white body text and a white/85 eyebrow + meta row.
+ * An earlier design used four flat saturated card surfaces with their own
+ * measured ratios; that section was reverted upstream and its module deleted,
+ * so those pairs are gone rather than being asserted against a dead file.
  */
-const cardSurfaces = {
-  teal: T("teal"),
-  plum: T("primary"),
-  ink: T("ink"),
-  accent: mix(T("accent"), T("ink"), 60),
-};
-
-for (const [name, bg] of Object.entries(cardSurfaces)) {
-  pairs.push([`white on card:${name}`, WHITE, bg, AA]);
-  pairs.push([`white/85 on card:${name}`, over(WHITE, bg, 0.85), bg, AA]);
-}
+const scrim = over(T("ink"), WHITE, 0.85); // from-ink/85 over the lightest possible photo
+pairs.push(["card title — white on ink/85 scrim", WHITE, scrim, AA]);
+pairs.push(["card price badge — ink on white/90", T("ink"), over(WHITE, T("ink"), 0.9), AA]);
 
 // ---------------------------------------------------------------------------
 // Known, accepted failures
