@@ -26,15 +26,30 @@ Next.js (App Router) + TypeScript + Tailwind v4 + Supabase (Postgres, Auth, Stor
 | surface tint | `lilac` / `surface-strong` | `#ebe3f7` | alternating section backgrounds, cards, soft fills |
 | ink | `ink` | `#3a363d` | primary text, dark sections, footer |
 
-Text colours: `text-foreground` (#3a363d, brief's *text-primary*), `text-foreground-muted` (#5f566a, *text-secondary*), `text-foreground-subtle` (#8b8392, *text-tertiary*).
+Text colours: `text-foreground` (#3a363d, brief's *text-primary*), `text-foreground-muted` (#5f566a, *text-secondary*), `text-foreground-subtle` (#8b8392, *text-tertiary* — metadata only, it does not clear AA).
 Surfaces: `bg-background` (#fff), `bg-surface` (#f8f6fb), `bg-surface-strong` (#ebe3f7).
 Borders: `border-border` (#e6e1ee), `border-border-strong` (#d3cdde). Focus ring: `ring-focus`/outline `#a551fc`.
 Each action role has `-hover` and `on-*` (label) variants, e.g. `bg-primary hover:bg-primary-hover text-on-primary`.
+One non-palette token: `whatsapp` (#25d366) — WhatsApp's own brand green, for their glyphs only.
+
+**There is no second palette.** A warm "elevation" set (paper / sand / ink-deep / aubergine / charcoal / violet-accent) was trialled and retired — it only ever reached the first four homepage sections, so the page ran warm to section 4 and cold from section 5, which is what made the site read as inconsistent. Don't reintroduce a second neutral family; if a section needs a different ground it takes one of the five `<Section bg>` tones.
+
+### Section rhythm
+
+`<Section bg>` accepts `background · surface · lilac · ink · plum`. The homepage alternates **white ↔ lilac** with **ink** as the single dark anchor at section 3 (التعريف):
+
+`hero · lilac · INK · white · lilac · white · white · lilac · white · white · lilac`
+
+**Do not alternate `background` with `surface`.** #ffffff against #f8f6fb is 1.07:1 — below the threshold of perception, so it produces no rhythm, just a page that looks flat. `lilac` is 1.25:1 against white, which reads. `surface` is for cards and insets.
 
 ### Rules
-- **Dark sections (ink background):** plum is too close to the background — use **lilac or white** for primary actions there, and let **coral / violet / teal** carry accents.
+- **Dark sections (ink background):** plum is unusable — 1.26:1 on ink. Use **lilac or white** for actions and text; **coral** for accents. **Violet is decorative-only on dark** (2.92:1) — never text.
 - **Never pure black** — use `ink` / the `neutral-*` ramp.
-- Use `bg-surface` and `bg-surface-strong` (lilac) for alternating section backgrounds — rhythm without harsh dividers.
+- **Heading rules are flat, never gradients.** Use the shared `HeadingRule` from `components/sections/section.tsx`. There were once seven hand-copied `bg-gradient-to-r from-primary to-secondary` bars; an identical two-hue gradient under every heading is the clearest "generic template" signal a page can carry.
+- **No colour outside the tokens.** `pnpm lint` fails on arbitrary colour values (`bg-[#…]`), Tailwind's default numbered scales (`text-amber-300`), and raw hex. Note `bg-teal` is ours and legal while `bg-teal-500` is Tailwind's and is not.
+- **CSS variables do not resolve in SVG presentation attributes.** Use `style={{ stopColor: "var(--color-primary)" }}`, not `stopColor="var(…)"`.
+- **`pnpm check-contrast`** measures every real fg/bg pair against WCAG 2.1 AA and fails on a regression. Known, accepted failures are listed in the script with a reason each — the main one is white-on-coral at 3.84:1, which would need an owner decision to fix since coral is the brand accent.
+- **`/styleguide`** (noindex) renders every token, variant and section tone on one page. Check it after any colour change.
 - **Type:** **Readex Pro** for display/headings (`--font-display`, applied to `h1–h6`) + **IBM Plex Sans Arabic** for body (`--font-sans`); both via `next/font/google`. Body 400 with generous line-height (~1.8 for Arabic). Modular scale + soft radii/shadows are tokenised in `@theme`. (Replaced the original Tajawal in Phase 2.1.)
 
 ## RTL / Arabic conventions
@@ -75,4 +90,4 @@ Hosting is **Netlify**. The Next.js runtime (`@netlify/plugin-nextjs` / OpenNext
 - `.env.local` remains for local `pnpm dev` only.
 
 ## Commands
-- `pnpm dev` — dev server · `pnpm build` — build · `pnpm lint` — eslint · `pnpm type-check` — tsc
+- `pnpm dev` — dev server · `pnpm build` — build · `pnpm lint` — eslint (incl. the palette rules) · `pnpm type-check` — tsc · `pnpm check-contrast` — WCAG AA audit of every colour pair
