@@ -18,6 +18,68 @@ function db(): SupabaseClient {
   return createAdminClient() as unknown as SupabaseClient;
 }
 
+// ---------------------------------------------------------------------------
+// Error reporting
+// ---------------------------------------------------------------------------
+// PostgREST hands back failures as PLAIN OBJECTS — { message, details, hint,
+// code } — not Error instances. So `e instanceof Error` is false for every
+// database failure in this file, and the ternary that guarded on it threw away
+// the only useful part: the owner saw "تعذّر حفظ الإعدادات" no matter what had
+// actually gone wrong. Anything that surfaces a Supabase failure goes through
+// here instead.
+
+type DbError = { message?: string; details?: string; hint?: string; code?: string };
+
+function asDbError(e: unknown): DbError | null {
+  return e && typeof e === "object" && "message" in e ? (e as DbError) : null;
+}
+
+/** `redirect()` / `notFound()` signal by throwing; never treat one as a failure. */
+function rethrowControlFlow(e: unknown): void {
+  const digest = (e as { digest?: unknown } | null)?.digest;
+  if (typeof digest === "string" && /^NEXT_(REDIRECT|NOT_FOUND|HTTP_ERROR)/.test(digest)) {
+    throw e;
+  }
+}
+
+function describeDbError(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  const err = asDbError(e);
+  if (!err) return "خطأ غير معروف";
+  return [err.message, err.hint, err.code && `(${err.code})`].filter(Boolean).join(" — ");
+}
+
+/** Log with context and rethrow as a real Error, so the message survives. */
+function dbFail(context: string, e: unknown): never {
+  rethrowControlFlow(e);
+  console.error(`${context}:`, e);
+  throw new Error(`${context}: ${describeDbError(e)}`);
+}
+
+/**
+ * Name of the column a write failed on because the deployed database does not
+ * have it — i.e. it is behind supabase/migrations. PostgREST reports this as
+ * PGRST204 from its schema cache; Postgres itself reports 42703.
+ */
+function missingColumn(e: unknown): string | null {
+  const err = asDbError(e);
+  if (!err) return null;
+  const message = err.message ?? "";
+  if (err.code === "PGRST204" || /schema cache/i.test(message)) {
+    return /'([^']+)' column/.exec(message)?.[1] ?? null;
+  }
+  if (err.code === "42703") {
+    // Two wordings: `column site_settings.x does not exist` (select) and
+    // `column "x" of relation "site_settings" does not exist` (insert/update).
+    return (
+      /column "?(?:[\w.]+\.)?([a-z_][a-z0-9_]*)"?(?:\s+of relation "?[\w.]+"?)? does not exist/i.exec(
+        message,
+      )?.[1] ?? null
+    );
+  }
+  return null;
+}
+
 // Revalidate the PUBLIC marketing routes affected by a content change so admin
 // edits show up on the live site immediately (300s ISR is the fallback).
 // Public routes live in English folders (Arabic URLs are rewritten to them in
@@ -46,7 +108,7 @@ async function uploadImage(file: File, folder: string): Promise<string> {
   const { error } = await client.storage
     .from("media")
     .upload(path, file, { contentType: file.type || undefined, upsert: false });
-  if (error) throw error;
+  if (error) dbFail(`رفع ${file.name}`, error);
   return client.storage.from("media").getPublicUrl(path).data.publicUrl;
 }
 
@@ -116,11 +178,11 @@ export async function saveResource(
 
   if (id) {
     const { error } = await client.from(resource.table).update(payload).eq("id", id);
-    if (error) throw error;
+    if (error) dbFail(`تعذّر تحديث ${resource.singular}`, error);
   } else {
     if (resource.sortable) payload.sort_order = await nextSortOrder(client, resource.table);
     const { error } = await client.from(resource.table).insert(payload);
-    if (error) throw error;
+    if (error) dbFail(`تعذّر إنشاء ${resource.singular}`, error);
   }
 
   revalidatePath(`/admin/${resource.key}`);
@@ -134,7 +196,7 @@ export async function deleteResource(resourceKey: string, id: string) {
   const resource = getResource(resourceKey);
   if (!resource) throw new Error(`Unknown resource: ${resourceKey}`);
   const { error } = await db().from(resource.table).delete().eq("id", id);
-  if (error) throw error;
+  if (error) dbFail(`تعذّر حذف ${resource.singular}`, error);
   revalidatePath(`/admin/${resource.key}`);
   revalidatePath("/admin");
   revalidatePublic(resource.key);
@@ -148,7 +210,7 @@ export async function togglePublish(resourceKey: string, id: string, current: bo
     .from(resource.table)
     .update({ is_published: !current })
     .eq("id", id);
-  if (error) throw error;
+  if (error) dbFail(`تعذّر تغيير حالة النشر لـ${resource.singular}`, error);
   revalidatePath(`/admin/${resource.key}`);
   revalidatePublic(resource.key);
 }
@@ -187,6 +249,65 @@ export type SettingsPage = "home" | "about" | "blog" | "contact";
 
 const SETTINGS_PAGES: SettingsPage[] = ["home", "about", "blog", "contact"];
 
+// Bounded so a table that is missing everything fails fast instead of walking
+// the payload one round-trip at a time.
+const MAX_DROPPED_COLUMNS = 16;
+
+/**
+ * Write the single site_settings row, tolerating a database that is behind
+ * supabase/migrations. Returns the columns that had to be dropped.
+ *
+ * PostgREST rejects the WHOLE row when it names a column the table lacks, so
+ * one un-applied migration silently bricked an entire editor page — that is how
+ * the الرئيسية editor stopped saving (full_setup.sql was missing 0005/0006).
+ * The schema is repaired now, but the owner edits a live site: a future column
+ * added ahead of its migration must cost that one field, not the save. Each
+ * rejected column is dropped and the write retried, and the caller tells the
+ * owner exactly which fields did not land.
+ */
+async function writeSettings(
+  client: SupabaseClient,
+  payload: Record<string, unknown>,
+): Promise<string[]> {
+  // Oldest row wins. site_settings is single-row by convention, not by
+  // constraint, and the previous code inserted a fresh row whenever the read
+  // came back empty — including when it came back empty because it errored.
+  // Ordering makes reads and writes agree on which row is canonical even if a
+  // duplicate already exists.
+  const { data: existing, error: readError } = await client
+    .from("site_settings")
+    .select("id")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (readError) throw readError;
+
+  const body = { ...payload };
+  const skipped: string[] = [];
+
+  for (let attempt = 0; attempt <= MAX_DROPPED_COLUMNS; attempt++) {
+    const { error } = existing?.id
+      ? await client.from("site_settings").update(body).eq("id", existing.id)
+      : await client.from("site_settings").insert(body);
+    if (!error) return skipped;
+
+    const column = missingColumn(error);
+    if (!column || !(column in body)) throw error;
+    console.warn(
+      `site_settings.${column} does not exist — dropping it from the save. ` +
+        "Run supabase/full_setup.sql against the project to apply pending migrations.",
+    );
+    delete body[column];
+    skipped.push(column);
+    if (Object.keys(body).length === 0) throw error;
+  }
+
+  throw new Error(
+    "site_settings: too many missing columns — the database is far behind " +
+      "supabase/migrations. Run supabase/full_setup.sql in the Supabase SQL editor.",
+  );
+}
+
 export async function saveSettings(formData: FormData) {
   await requireAdmin();
   const client = db();
@@ -219,8 +340,12 @@ export async function saveSettings(formData: FormData) {
       try {
         url = await uploadImage(file, "site");
       } catch (e) {
+        rethrowControlFlow(e);
         console.error(`${k} upload failed:`, e);
-        redirect(`${backTo}?error=${encodeURIComponent("تعذّر رفع الصورة. جرّب صورة أصغر.")}`);
+        const why = describeDbError(e);
+        redirect(
+          `${backTo}?error=${encodeURIComponent(`تعذّر رفع الصورة: ${why}`.slice(0, 200))}`,
+        );
       }
     }
     return url;
@@ -318,30 +443,26 @@ export async function saveSettings(formData: FormData) {
     });
   }
 
+  let skipped: string[] = [];
   try {
-    const { data: existing } = await client.from("site_settings").select("id").limit(1).maybeSingle();
-    if (existing?.id) {
-      const { error } = await client.from("site_settings").update(payload).eq("id", existing.id);
-      if (error) throw error;
-    } else {
-      const { error } = await client.from("site_settings").insert(payload);
-      if (error) throw error;
-    }
+    skipped = await writeSettings(client, payload);
   } catch (e) {
+    rethrowControlFlow(e);
     console.error("saveSettings failed:", e);
-    const msg = e instanceof Error ? e.message : "تعذّر حفظ الإعدادات";
-    redirect(`${backTo}?error=${encodeURIComponent(msg.slice(0, 200))}`);
+    redirect(`${backTo}?error=${encodeURIComponent(describeDbError(e).slice(0, 200))}`);
   }
 
   revalidatePath(backTo);
   revalidatePath("/", "layout"); // settings drive header/footer/promo site-wide
-  redirect(`${backTo}?saved=1`);
+  redirect(
+    `${backTo}?saved=1${skipped.length ? `&skipped=${encodeURIComponent(skipped.join(","))}` : ""}`,
+  );
 }
 
 export async function deleteWaitlistEntry(id: string) {
   await requireAdmin();
   const { error } = await db().from("ai_waitlist").delete().eq("id", id);
-  if (error) throw error;
+  if (error) dbFail("تعذّر حذف المشترك", error);
   revalidatePath("/admin/waitlist");
 }
 

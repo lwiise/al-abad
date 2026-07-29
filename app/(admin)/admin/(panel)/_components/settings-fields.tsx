@@ -13,7 +13,15 @@ import { saveSettings, type SettingsPage } from "../../_lib/actions";
  */
 
 export async function loadSettings() {
-  const { data } = await adminDb().from("site_settings").select("*").limit(1).maybeSingle();
+  // Same ordering as lib/data.ts getSettings and writeSettings — all three must
+  // agree on which row is canonical, or the editor shows one row and saves another.
+  const { data, error } = await adminDb()
+    .from("site_settings")
+    .select("*")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (error) console.error("loadSettings failed:", error);
   const s = (data ?? {}) as Record<string, unknown>;
   return {
     raw: s,
@@ -90,22 +98,39 @@ export function SettingsForm({
   page,
   saved,
   error,
+  skipped,
   children,
 }: {
   page: SettingsPage;
   saved?: string;
   error?: string;
+  /** Columns the database does not have yet — see writeSettings in _lib/actions. */
+  skipped?: string;
   children: React.ReactNode;
 }) {
+  const skippedFields = skipped ? skipped.split(",").filter(Boolean) : [];
+
   return (
     <form action={saveSettings} encType="multipart/form-data" className="space-y-4">
       <input type="hidden" name="page" value={page} />
       {children}
-      <div className="sticky bottom-0 -mx-6 flex items-center gap-3 border-t border-border bg-surface/80 px-6 py-4 backdrop-blur">
+      <div className="sticky bottom-0 -mx-6 flex flex-wrap items-center gap-3 border-t border-border bg-surface/80 px-6 py-4 backdrop-blur">
         <Button type="submit">حفظ التغييرات</Button>
-        {saved && (
+        {saved && skippedFields.length === 0 && (
           <span className="rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary">
             تم الحفظ ✓
+          </span>
+        )}
+        {saved && skippedFields.length > 0 && (
+          // Saved, but the database is behind the code: PostgREST rejected these
+          // columns, so they were dropped to let the rest of the page through.
+          <span
+            title={skippedFields.join("، ")}
+            className="rounded-full border border-border-strong bg-surface-strong px-3 py-1 text-sm font-medium text-primary"
+          >
+            تم الحفظ — عدا {skippedFields.length} حقلاً: شغّل ملف
+            <code className="mx-1 font-mono text-xs">supabase/full_setup.sql</code>
+            في محرّر SQL
           </span>
         )}
         {error && (

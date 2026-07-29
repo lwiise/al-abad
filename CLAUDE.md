@@ -90,9 +90,11 @@ What separates section 7 from section 6 — also white — is therefore **not a 
 ### Applying the schema to a hosted project
 1. Create a project at supabase.com. Copy URL + anon key + service-role key into `.env.local` (see `.env.local.example`).
 2. Apply schema + seed — either:
-   - **Dashboard:** paste `supabase/migrations/0001_init.sql` then `supabase/seed.sql` into the SQL editor and run; or
+   - **Dashboard:** paste `supabase/full_setup.sql` into the SQL editor and run. It is the flattened equivalent of every migration plus starter content, and is idempotent — **re-run it after any new migration**; or
    - **CLI:** `npx supabase link --project-ref <ref>` then `npx supabase db push` (migrations) and run the seed.
 3. Create the owner: `node scripts/create-admin.mjs <email> <password>` (reads service-role env). Then sign in at `/admin/login`.
+
+**`full_setup.sql` must never fall behind `migrations/`.** It did — 0003, 0005 and 0006 were never folded in — and that is what broke the admin panel: PostgREST rejects the **entire row** when a write names a column the table lacks (`PGRST204`), so three missing `final_cta_*` columns took down the whole الرئيسية editor, and 0005 took down المدونة and التواصل with it. `pnpm check-schema` now diffs the two files (and checks that every column `saveSettings` writes actually exists); run it whenever either side changes. Belt and braces, `saveSettings` also drops a rejected column and retries rather than losing the save, then reports which fields were skipped.
 
 ### Deploying to Netlify
 
@@ -104,4 +106,4 @@ Hosting is **Netlify**. The Next.js runtime (`@netlify/plugin-nextjs` / OpenNext
 - `.env.local` remains for local `pnpm dev` only.
 
 ## Commands
-- `pnpm dev` — dev server · `pnpm build` — build · `pnpm lint` — eslint (incl. the palette rules) · `pnpm type-check` — tsc · `pnpm check-contrast` — WCAG AA audit of every colour pair
+- `pnpm dev` — dev server · `pnpm build` — build · `pnpm lint` — eslint (incl. the palette rules) · `pnpm type-check` — tsc · `pnpm check-contrast` — WCAG AA audit of every colour pair · `pnpm check-schema` — `full_setup.sql` vs `migrations/` drift audit

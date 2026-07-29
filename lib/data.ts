@@ -22,7 +22,14 @@ import type {
 
 export const getSettings = cache(async (): Promise<SiteSettingsRow | null> => {
   const supabase = createPublicClient();
-  const { data } = await supabase.from("site_settings").select("*").limit(1).maybeSingle();
+  // Oldest row wins — site_settings is single-row by convention, not by
+  // constraint, so ordering keeps the site and the admin panel on the same row.
+  const { data } = await supabase
+    .from("site_settings")
+    .select("*")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
   return data ?? null;
 });
 

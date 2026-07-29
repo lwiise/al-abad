@@ -10,9 +10,9 @@ import {
 export const metadata = { title: "صفحة المدونة" };
 
 export default async function BlogPageSettings(props: {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; skipped?: string }>;
 }) {
-  const { saved, error } = await props.searchParams;
+  const { saved, error, skipped } = await props.searchParams;
   const { str } = await loadSettings();
 
   return (
@@ -28,7 +28,7 @@ export default async function BlogPageSettings(props: {
         </p>
       </header>
 
-      <SettingsForm page="blog" saved={saved} error={error}>
+      <SettingsForm page="blog" saved={saved} error={error} skipped={skipped}>
         <Section title="ترويسة الصفحة">
           <TextField name="blog_page_heading" label="العنوان" defaultValue={str("blog_page_heading")} placeholder="المدونة" />
           <AreaField name="blog_page_subhead" label="العنوان الفرعي" defaultValue={str("blog_page_subhead")} rows={2} />

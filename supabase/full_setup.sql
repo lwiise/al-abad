@@ -3,6 +3,15 @@
 -- Paste this ENTIRE file into the Supabase SQL Editor and run once.
 -- Safe to re-run (idempotent).
 -- ============================================================================
+-- This file is the FLATTENED equivalent of supabase/migrations/*.sql. Every
+-- column those migrations add must exist here too — a column the admin panel
+-- writes but the database lacks makes PostgREST reject the whole row
+-- (PGRST204), so ONE missing column takes down an entire editor page. That is
+-- exactly what happened: 0003 / 0005 / 0006 were never folded in, so the
+-- الرئيسية, المدونة and التواصل editors could not save at all.
+-- `pnpm check-schema` now diffs this file against the migrations and fails on
+-- drift. Run it after touching either side.
+-- ============================================================================
 
 -- updated_at trigger function
 create or replace function public.set_updated_at()
@@ -33,6 +42,30 @@ create table if not exists public.courses (
   updated_at     timestamptz not null default now()
 );
 create index if not exists courses_sort_order_idx on public.courses (sort_order);
+
+-- courses: sales-page fields (0003). Kept as add-if-not-exists rather than
+-- inlined above, because `create table if not exists` is a no-op on a database
+-- that was provisioned before these existed.
+alter table public.courses
+  add column if not exists price_original    numeric,   -- anchor price (struck through)
+  add column if not exists video_preview_url text,      -- YouTube preview (optional)
+  add column if not exists guarantee_text    text,      -- risk-reversal line
+  add column if not exists outcomes          jsonb;     -- ["...","..."] — "ماذا ستتعلّم"
+
+-- course_modules — curriculum rows for the course-page accordion (0003)
+create table if not exists public.course_modules (
+  id           uuid primary key default gen_random_uuid(),
+  course_id    uuid not null references public.courses (id) on delete cascade,
+  title        text not null,
+  lessons      int,
+  duration     text,
+  sort_order   int not null default 0,
+  is_published boolean not null default true,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+create index if not exists course_modules_course_sort_idx
+  on public.course_modules (course_id, sort_order);
 
 -- blog_posts
 create table if not exists public.blog_posts (
@@ -169,8 +202,8 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'courses','blog_posts','testimonials','faqs','stats','how_it_works_steps',
-    'site_settings','contact_submissions','ai_waitlist','admin_users'
+    'courses','course_modules','blog_posts','testimonials','faqs','how_it_works_steps',
+    'stats','site_settings','contact_submissions','ai_waitlist','admin_users'
   ]
   loop
     execute format('drop trigger if exists trg_%1$s_updated_at on public.%1$s;', t);
@@ -183,6 +216,7 @@ end $$;
 
 -- Row Level Security
 alter table public.courses             enable row level security;
+alter table public.course_modules      enable row level security;
 alter table public.blog_posts          enable row level security;
 alter table public.testimonials        enable row level security;
 alter table public.faqs                enable row level security;
@@ -193,7 +227,8 @@ alter table public.contact_submissions enable row level security;
 alter table public.ai_waitlist         enable row level security;
 alter table public.admin_users         enable row level security;
 
-drop policy if exists "read published courses"      on public.courses;
+drop policy if exists "read published courses"        on public.courses;
+drop policy if exists "read published course_modules" on public.course_modules;
 drop policy if exists "read published blog_posts"   on public.blog_posts;
 drop policy if exists "read published testimonials" on public.testimonials;
 drop policy if exists "read published faqs"         on public.faqs;
@@ -203,7 +238,8 @@ drop policy if exists "read site_settings"          on public.site_settings;
 drop policy if exists "insert contact"              on public.contact_submissions;
 drop policy if exists "insert waitlist"             on public.ai_waitlist;
 
-create policy "read published courses"      on public.courses            for select to anon, authenticated using (is_published = true);
+create policy "read published courses"        on public.courses        for select to anon, authenticated using (is_published = true);
+create policy "read published course_modules" on public.course_modules for select to anon, authenticated using (is_published = true);
 create policy "read published blog_posts"   on public.blog_posts         for select to anon, authenticated using (is_published = true);
 create policy "read published testimonials" on public.testimonials       for select to anon, authenticated using (is_published = true);
 create policy "read published faqs"         on public.faqs               for select to anon, authenticated using (is_published = true);
@@ -299,7 +335,16 @@ alter table public.site_settings
   add column if not exists faq_help_cta_label       text,
   add column if not exists blog_heading             text,
   add column if not exists blog_subhead             text,
-  add column if not exists blog_view_all_label      text;
+  add column if not exists blog_view_all_label      text,
+  -- /blog and /contact page headers (0005)
+  add column if not exists blog_page_heading        text,
+  add column if not exists blog_page_subhead        text,
+  add column if not exists contact_heading          text,
+  add column if not exists contact_subhead          text,
+  -- closing CTA card copy (0006)
+  add column if not exists final_cta_eyebrow        text,
+  add column if not exists final_cta_subhead        text,
+  add column if not exists final_cta_proof          text;
 
 update public.site_settings set
   hero_trust_badge      = coalesce(hero_trust_badge,      'موثوق من آلاف المتدربين'),
@@ -329,7 +374,17 @@ update public.site_settings set
   faq_help_cta_label    = coalesce(faq_help_cta_label,    'تواصل معنا'),
   blog_heading          = coalesce(blog_heading,          'أحدث المقالات'),
   blog_subhead          = coalesce(blog_subhead,          'مقالاتٌ تثري وعيك حول العلاقة الزوجية.'),
-  blog_view_all_label   = coalesce(blog_view_all_label,   'عرض جميع المقالات');
+  blog_view_all_label   = coalesce(blog_view_all_label,   'عرض جميع المقالات'),
+  blog_page_heading     = coalesce(blog_page_heading,     'المدونة'),
+  blog_page_subhead     = coalesce(blog_page_subhead,     'مقالاتٌ تثري وعيك حول العلاقة الزوجية.'),
+  contact_heading       = coalesce(contact_heading,       'تواصل معنا'),
+  contact_subhead       = coalesce(contact_subhead,       'سؤال عن دورة؟ أو رغبة في التسجيل؟ نحن هنا لمساعدتك.'),
+  final_cta_eyebrow     = coalesce(final_cta_eyebrow,     'لا تؤجّل البداية'),
+  final_cta_subhead     = coalesce(
+    final_cta_subhead,
+    'اختر الدورة التي تناسب مرحلتك، أو راسلنا على واتساب وسنساعدك في اختيار الأنسب لك.'
+  ),
+  final_cta_proof       = coalesce(final_cta_proof,       'انضم إلى آلاف المتدربين والمتدربات');
 
 -- Stats
 insert into public.stats (label, value, sort_order, is_published)

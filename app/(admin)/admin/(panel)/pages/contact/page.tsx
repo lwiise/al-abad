@@ -9,9 +9,9 @@ import {
 export const metadata = { title: "صفحة التواصل" };
 
 export default async function ContactPageSettings(props: {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; skipped?: string }>;
 }) {
-  const { saved, error } = await props.searchParams;
+  const { saved, error, skipped } = await props.searchParams;
   const { str, social } = await loadSettings();
 
   return (
@@ -23,7 +23,7 @@ export default async function ContactPageSettings(props: {
         </p>
       </header>
 
-      <SettingsForm page="contact" saved={saved} error={error}>
+      <SettingsForm page="contact" saved={saved} error={error} skipped={skipped}>
         <Section title="ترويسة الصفحة">
           <TextField name="contact_heading" label="العنوان" defaultValue={str("contact_heading")} placeholder="تواصل معنا" />
           <AreaField name="contact_subhead" label="العنوان الفرعي" defaultValue={str("contact_subhead")} rows={2} />

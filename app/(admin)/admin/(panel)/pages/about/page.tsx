@@ -10,9 +10,9 @@ import {
 export const metadata = { title: "صفحة من نحن" };
 
 export default async function AboutPageSettings(props: {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; skipped?: string }>;
 }) {
-  const { saved, error } = await props.searchParams;
+  const { saved, error, skipped } = await props.searchParams;
   const { str } = await loadSettings();
 
   return (
@@ -21,7 +21,7 @@ export default async function AboutPageSettings(props: {
         <h1 className="text-2xl font-bold text-foreground">صفحة من نحن</h1>
       </header>
 
-      <SettingsForm page="about" saved={saved} error={error}>
+      <SettingsForm page="about" saved={saved} error={error} skipped={skipped}>
         <Section title="النبذة">
           <MarkdownField name="about_body" label="نبذة (about)" defaultValue={str("about_body")} />
         </Section>

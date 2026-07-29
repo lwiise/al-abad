@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "check-contrast": "node scripts/check-contrast.mjs"
+    "check-contrast": "node scripts/check-contrast.mjs",
+    "check-schema": "node scripts/check-schema.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -11,9 +11,9 @@ export const metadata = { title: "الصفحة الرئيسية" };
 
 // Sections appear in the exact order they render on the public homepage.
 export default async function HomePageSettings(props: {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; skipped?: string }>;
 }) {
-  const { saved, error } = await props.searchParams;
+  const { saved, error, skipped } = await props.searchParams;
   const { bool, str, listVal } = await loadSettings();
 
   return (
@@ -25,7 +25,7 @@ export default async function HomePageSettings(props: {
         </p>
       </header>
 
-      <SettingsForm page="home" saved={saved} error={error}>
+      <SettingsForm page="home" saved={saved} error={error} skipped={skipped}>
         <Section title="الشريط الترويجي">
           <label className="flex items-center gap-3">
             <input
