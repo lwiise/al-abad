@@ -33,16 +33,32 @@ export function Section({
   bg = "background",
   className,
   containerClassName,
+  bleed,
   children,
 }: {
   id?: string;
   bg?: Bg;
   className?: string;
   containerClassName?: string;
+  /**
+   * Decorative layer painted edge to edge, outside the centered container.
+   *
+   * Anything passed as `children` is bounded by `max-w-6xl`, so a texture put
+   * there stops at the content column and re-draws the card edge we may be
+   * trying to get rid of. This slot renders before the container and the band
+   * gets `relative isolate`, so an absolutely positioned child with `-z-10`
+   * sits above the band's own background and below the content — full width,
+   * no stacking surprises. Pass `aria-hidden` markup only.
+   */
+  bleed?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <section id={id} className={cn(bgMap[bg], "py-20 md:py-24", className)}>
+    <section
+      id={id}
+      className={cn(bgMap[bg], "py-20 md:py-24", bleed && "relative isolate", className)}
+    >
+      {bleed}
       <div className={cn("mx-auto max-w-6xl px-6", containerClassName)}>{children}</div>
     </section>
   );
