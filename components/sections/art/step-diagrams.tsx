@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
  * under `.hiw-*` and is applied ONLY while the step is the one on screen, so
  * every diagram starts from its first frame each time its step comes round.
  *
- * The one number that runs through all three is `--hiw-on`: how "arrived" a
+ * The one number that runs through all three is `--art-on`: how "arrived" a
  * part is — chosen, watched, achieved. Lift, coral fill and the check are all
  * derived from it, so a keyframe that moves one number moves the whole look.
  * Each diagram's RESTING pose (no animation) is its finished state, which is
@@ -33,7 +33,7 @@ function Frame({
     <svg
       viewBox="0 0 400 340"
       data-active={active ? "true" : undefined}
-      className={cn("hiw-art", className)}
+      className={cn("art", className)}
       fill="none"
       aria-hidden="true"
     >
