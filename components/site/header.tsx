@@ -19,6 +19,20 @@ import { NAV, LMS_URL } from "./nav";
  * State comes from an IntersectionObserver on a 1px sentinel rather than a
  * scroll listener: no work on the scroll thread, and no listener firing on
  * every frame of a fling.
+ *
+ * FROSTING IS THREE THINGS, and the shadow is the one that was missing: the
+ * blur, the hairline, and `--shadow-nav` under it. At rest the bar takes none
+ * of them — it is not a surface then, it is a hole onto the hero, and a shadow
+ * cast by nothing is the single clearest way to make a transparent nav look
+ * like a mistake. Frosted it is a surface the page runs beneath, and the
+ * hairline alone could not say so: #e6e1ee is 1.16:1 on white, and the bar is
+ * 84% opaque over a blur, so the content underneath stayed faintly visible
+ * THROUGH the thing that was supposed to be in front of it. box-shadow joins
+ * the transition list so it arrives on the same 280ms curve as the rest.
+ *
+ * The mobile panel keeps its own `shadow-lg` and is unaffected: it is full
+ * width and opaque and starts exactly at this bar's bottom edge, so it covers
+ * this shadow completely and its own takes over below.
  */
 export function Header() {
   const pathname = decodeURIComponent(usePathname() || "/");
@@ -46,7 +60,16 @@ export function Header() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50",
-        frosted ? "border-b border-border" : "border-b border-transparent",
+        // Shadow rides alongside the border because they are one gesture, and
+        // as a CLASS rather than an inline `var(--shadow-nav)`: Tailwind emits a
+        // theme variable only where it sees it used, so a lone inline reference
+        // would sit one unrelated refactor away from resolving to nothing and
+        // silently dropping the shadow. `shadow-none` keeps box-shadow declared
+        // in both states, which is what gives the transition something to run
+        // between rather than snapping on.
+        frosted
+          ? "border-b border-border shadow-nav"
+          : "border-b border-transparent shadow-none",
       )}
       style={{
         height: frosted ? "var(--nav-h-scrolled)" : "var(--nav-h)",
@@ -56,7 +79,7 @@ export function Header() {
         backdropFilter: frosted ? "blur(16px) saturate(1.5)" : "none",
         WebkitBackdropFilter: frosted ? "blur(16px) saturate(1.5)" : "none",
         transition:
-          "height 280ms var(--ease-hero), background-color 280ms var(--ease-hero), border-color 280ms var(--ease-hero), backdrop-filter 280ms var(--ease-hero)",
+          "height 280ms var(--ease-hero), background-color 280ms var(--ease-hero), border-color 280ms var(--ease-hero), backdrop-filter 280ms var(--ease-hero), box-shadow 280ms var(--ease-hero)",
       }}
     >
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">

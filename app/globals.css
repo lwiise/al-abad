@@ -141,6 +141,28 @@
   --shadow-lg: 0 12px 32px -8px rgb(58 54 61 / 0.12);
   --shadow-xl: 0 24px 56px -12px rgb(88 59 102 / 0.18);
 
+  /* Overlay BARS — the frosted site header and the course page's sticky buy
+     bar. Both are full-bleed and fixed, and neither is a card, which is why
+     they take their own token rather than `--shadow-md`: a card shadow spans
+     ~360px and reads as depth, the same shadow spanning the whole viewport
+     reads as a grey smear under the bar. So the blur is pulled tight by a
+     spread nearly half of it and the alpha carries the weight instead of the
+     distance. Measured off the rendered page: −10/255 luminance in the row
+     directly beneath the bar, decaying to nothing by ~11px, and 0 change
+     inside the bar itself. That is a step you can see and not a gradient the
+     eye has to travel down.
+
+     It exists because a hairline is not elevation. Both bars had only
+     `border-b border-border` — #e6e1ee, 1.16:1 on white — so content slid
+     under them with nothing to say it was passing beneath rather than being
+     clipped, and the frosted header's own 84%-opacity blur made that worse by
+     letting the page show faintly through the bar it was meant to be behind.
+
+     Ink-tinted like its neighbours, so it is for LIGHT grounds only — which is
+     all either bar ever sits on. See the note in `ai-assistant-preview.tsx`
+     for why an ink shadow on a dark plate is simply invisible. */
+  --shadow-nav: 0 8px 24px -14px rgb(58 54 61 / 0.16);
+
   /* --- Animations (Radix accordion) ---------------------------------- */
   --animate-accordion-down: accordion-down 0.22s ease-out;
   --animate-accordion-up: accordion-up 0.22s ease-out;

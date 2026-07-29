@@ -50,10 +50,22 @@ export function Faq({
         </div>
 
         <div>
+          {/* `shadow-sm`, because this is a white card on a WHITE band — 1.0:1,
+              no ground step at all, the only card on the page with none. It was
+              held by a #e6e1ee hairline alone, so on a wide screen the rounded
+              corners were the sole hint that the questions were a surface
+              rather than just an indented list.
+
+              This is also the card CLAUDE.md's section 8·9·10 note is about: it
+              permits three white bands in a row on the grounds that "a card
+              carries a border and a shadow and a band cannot" — which was true
+              of الآراء's testimonial cards and not of this one. Now it is true
+              of both, and the الآراء → الأسئلة boundary rests on what that note
+              claims it rests on. */}
           <Accordion
             type="single"
             collapsible
-            className="rounded-2xl border border-border bg-background px-5"
+            className="rounded-2xl border border-border bg-background px-5 shadow-sm"
           >
             {faqs.map((f) => (
               <AccordionItem key={f.id} value={f.id} data-seq-item>
