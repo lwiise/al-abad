@@ -384,6 +384,15 @@ export function MeetInstructor({
                       // true whoever named it. Section 2 keeps `aria-pressed`
                       // and is still correct: nothing but the pointer and the
                       // keyboard drives it there.
+                      //
+                      // Measured, so nobody has to re-derive it: Chromium's AX
+                      // tree lists no state property for these rows now (only
+                      // `focusable`, where `pressed` used to appear), so do not
+                      // expect aria-current to carry the whole load — NVDA and
+                      // JAWS do announce "current", but what actually gives a
+                      // screen-reader user feedback here is the live region
+                      // below, which turns `polite` exactly when they take a
+                      // hold and reads the artifact's description out.
                       data-active={isActive}
                       aria-current={isActive ? "true" : undefined}
                       className="mi-row flex w-full items-center gap-4 py-4 text-start"

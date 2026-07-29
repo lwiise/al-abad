@@ -7,22 +7,42 @@ import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /**
- * The band, measured on the element's CENTRE against fractions of the viewport
- * height: the first step lands when the centre is 88% down the screen (or as
- * soon as the block has finished entering, whichever is later — see below) and
- * the last one when it reaches 22%.
+ * THE BAND IS ANCHORED TO THE STICKY NAV, NOT TO A FRACTION OF THE VIEWPORT.
  *
- * Centre, not top-and-bottom. The obvious version — start when the top crosses
- * a low line, finish when the bottom crosses a high one — makes the travel a
- * function of the element's height, so a block taller than the band scrolls its
- * own top off the screen before the last step arrives. That is exactly the
- * failure mode for a block whose art sits ABOVE its list: the last step would
- * light up with its artifact already gone off the top. Two thirds of a viewport
- * of travel, centred, keeps the whole block in view from first step to last at
- * any height that fits the screen, and degrades symmetrically when it doesn't.
+ * The last step lands when the block's TOP has travelled up to just under the
+ * nav — because "the art is about to slide under the bar" is the actual
+ * constraint on when a step may still be presented. The first step lands at
+ * `START_FRACTION` down the screen, or as soon as the block has fully entered
+ * from the bottom, whichever comes later (`idle` is not a resting pose, it is an
+ * empty slot, so a block sitting fully visible with nothing drawn in it reads as
+ * broken).
+ *
+ * The version this replaced put both ends on viewport fractions (centre at 0.88
+ * → 0.22) and it failed, measured, on every short viewport: at 844×390 all three
+ * artifacts played with the art under the nav, and at 320×568 and 720×450 (a
+ * 1440×900 laptop at 200% zoom) the last one or two did. A fraction cannot know
+ * where the nav ends, and on a short screen 22% of the viewport is above it.
+ *
+ * Travel is then clamped into [MIN_TRAVEL, MAX_TRAVEL] × viewport height, and
+ * WHICH END MOVES when it is clamped is the whole subtlety:
+ *   - too little room (block TALLER than the space under the nav — a landscape
+ *     phone is 336px of block in 322px of room): the floor moves the START
+ *     earlier, keeping the end just under the nav. Part of the list is off screen
+ *     there whatever we do; this spends that unavoidable clipping on the rows and
+ *     keeps the art, which is the thing that moves, on screen for every step.
+ *   - too much room (a tall window): the cap moves the END earlier, keeping the
+ *     start where the block finishes entering. Capping the start instead — which
+ *     is what this did first — put the band's beginning ABOVE the point where the
+ *     block is fully visible, so a 1440×1440 window showed the whole block with
+ *     an empty art slot for ~200px of scroll (measured: 3 of 15 samples). Since
+ *     `idle` is not a resting pose but an empty tile, that reads as broken.
  */
-const START_LINE = 0.88;
-const END_LINE = 0.22;
+const START_FRACTION = 0.88;
+const MIN_TRAVEL = 0.35;
+const MAX_TRAVEL = 0.66;
+
+/** Slack under the nav, so the last step lands clear of it rather than touching. */
+const SAFE_SLACK = 16;
 
 /**
  * Minimum time a step stays applied before the next one may take over — and,
@@ -47,18 +67,23 @@ const MIN_HOLD_MS = 620;
  * `data-state` string for CSS.
  *
  * NO STEP IS EVER SKIPPED, and that is the whole point — the brief was "one by
- * one". A rate limiter alone does not deliver it: at three steps in two thirds
- * of a viewport, one step is ~200px of scroll, and one wheel gesture or any
- * phone flick crosses that in well under `MIN_HOLD_MS`. So the scroll sets a
- * TARGET and the hook marches to it one step per hold, which means a fast
- * scroll makes the art lag rather than skip — it finishes the sequence within
- * count × MIN_HOLD_MS of the scroll stopping, and the last step holds anyway.
- * The old behaviour (jump to wherever the scroll ended) silently dropped the
- * middle step on every ordinary wheel scroll.
+ * one". A rate limiter alone does not deliver it: one step is 60–320px of scroll
+ * depending on the window, and a single wheel gesture or any phone flick crosses
+ * that in well under `MIN_HOLD_MS`. So the scroll sets a TARGET and the hook
+ * marches to it one step per hold, which means a fast scroll makes the art lag
+ * rather than skip — it finishes the sequence within count × MIN_HOLD_MS of the
+ * scroll stopping, and the last step holds anyway. The behaviour this replaced
+ * (jump to wherever the scroll ended) silently dropped the middle step on every
+ * ordinary wheel scroll.
  *
- * Reduced motion resolves to step 0 and never moves — with transitions
- * stripped, a scroll-driven change is a snap, not an animation. The other steps
- * stay reachable by pointer or keyboard, which is the caller's business.
+ * Reduced motion resolves to step 0 and never moves — with transitions stripped,
+ * a scroll-driven change is a snap, not an animation. The other steps stay
+ * reachable by pointer or keyboard, which is the caller's business.
+ *
+ * KNOWN LIMIT: the band ends with the block near the top of the window, so a
+ * block sitting at the very bottom of a short page — with no scroll left to
+ * bring it up there — never reaches its last step. Fine for a section in the
+ * middle of a long page, which is what this is for.
  *
  * Sibling to use-scroll-deck.ts, which is the heavier tool: that one grows a
  * track, pins a stage and deals cards; this one just follows along.
@@ -87,6 +112,19 @@ export function useScrollStep(
     // trigger, and the reason this hook can be added to a section without
     // putting a rect read in every scroll frame of every other page.
     let near = false;
+    let safeTop = 0;
+
+    /** `--nav-h` is the nav's UNSCROLLED height (84px / 68px below 768px); it
+     *  shrinks to `--nav-h-scrolled` once the page moves, which is exactly when
+     *  this band is in play — so reading the taller value is the conservative
+     *  choice and needs no scroll state. Re-read on resize, since it is a media
+     *  query away from changing. */
+    const readSafeTop = () => {
+      const raw = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--nav-h"),
+      );
+      safeTop = (Number.isFinite(raw) ? raw : 0) + SAFE_SLACK;
+    };
 
     /** One step toward the target — never a jump past an unplayed step. */
     const nextToward = (from: number | null, to: number | null): number | null => {
@@ -122,21 +160,27 @@ export function useScrollStep(
       const vh = window.innerHeight || 0;
       if (count < 1 || vh <= 0) return;
       const rect = el.getBoundingClientRect();
-      // Start at the line, OR as soon as the block has finished entering from
-      // the bottom, whichever comes later. Without the second clause a tall
-      // window shows the whole block — art slot included — with nothing drawn
-      // in it for a couple of hundred px of scroll, since `idle` is not a
-      // resting pose, it is empty.
-      const start = Math.min(vh * START_LINE, vh - rect.height / 2);
-      const travel = start - vh * END_LINE;
-      if (travel <= 0) return;
-      const progress = (start - (rect.top + rect.height / 2)) / travel;
+      // Both ends as block-top positions: the first step lands at the low line or
+      // as soon as the block has fully entered (later wins), the last one with the
+      // block's top just clear of the nav.
+      let startTop = Math.min(vh * START_FRACTION, vh - rect.height);
+      let endTop = safeTop;
+      const room = startTop - endTop;
+      if (room > vh * MAX_TRAVEL) endTop = startTop - vh * MAX_TRAVEL;
+      else if (room < vh * MIN_TRAVEL) startTop = endTop + vh * MIN_TRAVEL;
+      const travel = startTop - endTop;
+      const progress = (startTop - rect.top) / travel;
       commit(progress < 0 ? null : Math.min(count - 1, Math.floor(progress * count)));
     };
 
     const onScroll = () => {
       if (!near || frame) return;
       frame = requestAnimationFrame(measure);
+    };
+
+    const onResize = () => {
+      readSafeTop();
+      onScroll();
     };
 
     const io =
@@ -152,6 +196,8 @@ export function useScrollStep(
             // stepping can feel.
             { root: null, rootMargin: "100% 0px 100% 0px", threshold: 0 },
           );
+
+    readSafeTop();
     if (io) io.observe(el);
     else {
       // No IO → measure unconditionally rather than never.
@@ -160,11 +206,11 @@ export function useScrollStep(
     }
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
     return () => {
       io?.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       if (frame) cancelAnimationFrame(frame);
       if (hold) clearTimeout(hold);
     };
