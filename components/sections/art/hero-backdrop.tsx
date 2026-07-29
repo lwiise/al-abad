@@ -41,13 +41,24 @@ export function HeroBackdrop({ className }: { className?: string }) {
              Violet rather than coral at the lower pool: it is the halo the
              plate's END corner sits in, and violet is what the plate's own
              glow is made of. Decorative light, never text — on this ground it
-             is a lilac haze, which is the point. */}
+             is a lilac haze, which is the point.
+
+             This pool IS the glow, and it belongs here rather than beside the
+             plate one level up. Painted there it sat above layer 4 and so was
+             never washed out: it held full strength all the way down and the
+             section's overflow-hidden sheared it into a hard horizontal edge
+             above section 2. Below layer 4 it dissolves into #f8f6fb instead.
+
+             It reaches high and wide for the same reason — the bottom 10rem is
+             the fade zone, so a pool centred low would be almost entirely
+             erased. Most of its body sits above that, and only its skirt is
+             taken by the ramp. */}
       <div
         className="absolute inset-0"
         style={{
           background:
             "radial-gradient(58% 52% at 88% 12%, color-mix(in oklab, var(--color-primary) 14%, transparent) 0%, transparent 72%)," +
-            "radial-gradient(50% 46% at 8% 84%, color-mix(in oklab, var(--color-violet) 20%, transparent) 0%, transparent 68%)",
+            "radial-gradient(52% 58% at 4% 78%, color-mix(in oklab, var(--color-violet) 42%, transparent) 0%, transparent 72%)",
         }}
       />
 

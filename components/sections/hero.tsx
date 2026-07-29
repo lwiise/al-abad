@@ -84,22 +84,13 @@ export function Hero({
       {/* The plate's margin. The ground shows through here — that is what the
           inset is for, and it is where the glow escapes to. */}
       <div className="relative mx-auto flex w-full max-w-[104rem] flex-1 flex-col px-3 pb-5 pt-3 sm:px-5 sm:pb-7 xl:px-8 xl:pb-10 xl:pt-4">
-        {/* Glow, on the END side — the same side as the stats card, as in the
-            reference. It sits OUTSIDE the plate so the plate's own
-            overflow-hidden cannot clip it, and before the plate in DOM order so
-            it paints above the backdrop and below the plate with no z-index
-            needed: both are positioned, both are z-auto, so document order
-            decides. Violet is legal here precisely because it is light and not
-            text — on ink it measures 2.92:1 and could never be either. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(38% 46% at 9% 92%, color-mix(in oklab, var(--color-violet) 46%, transparent) 0%, transparent 72%)",
-          }}
-        />
-
+        {/* The glow that escapes the plate's END corner lives in HeroBackdrop,
+            NOT here. It was a sibling of the plate at this level, which put it
+            above the backdrop's bottom fade — so it never washed out, ran at
+            full strength to the section's edge, and the section's
+            overflow-hidden cut it off in a hard horizontal line just above
+            section 2. Painted below the fade instead, it dissolves into
+            #f8f6fb and the join stays invisible. */}
         <div className="hero-plate relative isolate flex flex-1 flex-col overflow-hidden rounded-2xl">
           {/* Relief, START corner — the ground below carries the same tile at
               the opposite one. */}
