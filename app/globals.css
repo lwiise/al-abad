@@ -383,12 +383,13 @@
 /* ===========================================================================
    Section 7 — the assistant band
    ===========================================================================
-   A plain white band, full width, like every other section. It used to be an
-   inset `bg-surface` panel — a hairline border and a shadow doing the
-   separating — but boxing the content inside a column narrower than the page
-   made it read as a widget dropped onto the site rather than part of it.
-   What marks the section now is the dot texture in the gutters, the violet
-   app-icon tile and the violet headline tail.
+   A full-width `surface` band. The tone is the one the section always had —
+   it used to belong to an inset panel with a hairline border and a shadow —
+   but boxing the content inside a column narrower than the page made it read
+   as a widget dropped onto the site, so the band carries the tone instead.
+   The dot texture, the violet app-icon tile and the violet headline tail mark
+   the section alongside it; section 6 above is white, and at 1.07:1 that
+   boundary is faint by design. See the bg map in `section.tsx`.
    ------------------------------------------------------------------------- */
 
 /* Dotted texture, faded INWARD from the rim: transparent across the middle and
@@ -409,7 +410,7 @@
    The second layer fades the dots out at the top and bottom rather than letting
    them butt into the neighbouring bands; `mask-composite` intersects the two.
    Its own layer, never the band itself — mask-image masks background-color too,
-   so masking the section would eat its white along with the dots.
+   so masking the section would eat the surface tone along with the dots.
    22px is the pitch media-fallback.tsx already uses: one dot rhythm sitewide.
    Static and decorative; nothing here to switch off for reduced motion. */
 .dot-grid {
