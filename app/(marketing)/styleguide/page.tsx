@@ -72,7 +72,7 @@ const TONES = ["published", "draft", "highlight", "neutral"] as const;
 /** Homepage order — keep in sync with app/(marketing)/page.tsx. */
 const RHYTHM: { n: number; name: string; bg: string; tone: string }[] = [
   { n: 1, name: "الواجهة", bg: "bg-background", tone: "أبيض + تدرّج خفيف" },
-  { n: 2, name: "المشكلة", bg: "bg-surface-strong", tone: "lilac" },
+  { n: 2, name: "المشكلة", bg: "section-hero-surface", tone: "امتداد سطح الواجهة" },
   { n: 3, name: "التعريف", bg: "bg-ink", tone: "ink — المرساة الداكنة" },
   { n: 4, name: "الدورات", bg: "bg-background", tone: "background" },
   { n: 5, name: "كيف نعمل", bg: "bg-surface-strong", tone: "lilac" },
@@ -113,7 +113,7 @@ export default function StyleguidePage() {
       <Section bg="surface">
         <Group
           title="إيقاع الأقسام"
-          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، مع ink مرساةً داكنة واحدة. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك."
+          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، مع ink مرساةً داكنة واحدة. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك. القسم ٢ استثناء مقصود: يواصل لون surface نفسه — وهو اللون الذي تنتهي عليه الواجهة — فيقرآن ورقةً واحدة بلا خطّ فاصل."
         >
           <ul className="overflow-hidden rounded-2xl border border-border-strong">
             {RHYTHM.map((r) => (
