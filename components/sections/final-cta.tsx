@@ -1,6 +1,6 @@
 import type { TestimonialRow } from "@/lib/database.types";
 import { WhatsappGlyph } from "@/components/site/icons";
-import { Reveal } from "@/components/motion/reveal";
+import { Sequence } from "@/components/motion/sequence";
 import { MagneticLink } from "@/components/motion/magnetic-link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonClasses } from "@/components/ui/button";
@@ -60,18 +60,28 @@ export function FinalCta({
 
   return (
     <Section bg="background">
-      <Reveal>
+      {/* The mat and the sheet hold still; only what is printed on them moves.
+          This is the page's closing ask, so the order is the argument —
+          eyebrow, then the headline's Ruqʿah tail, then the reassurance, then
+          the button, then the faces backing it up. */}
+      <Sequence>
         {/* The card sits in a soft mat rather than directly on the page: the
             sheet is only 1.25:1 against white at its strongest, so a bare edge
             reads as a rendering artefact. The mat gives it a deliberate one. */}
         <div className="rounded-[2.75rem] border border-border bg-surface-strong/40 p-2 sm:p-3">
           <div className="cta-sheet relative overflow-hidden rounded-[2.25rem] px-6 py-14 text-center sm:px-10 md:py-20">
-            <p className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-4 py-1.5 text-sm text-foreground-muted shadow-sm backdrop-blur-sm">
+            <p
+              data-seq-item
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-4 py-1.5 text-sm text-foreground-muted shadow-sm backdrop-blur-sm"
+            >
               <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
               {eyebrow || DEFAULT_EYEBROW}
             </p>
 
-            <h2 className="mx-auto mt-6 max-w-2xl text-3xl font-bold text-foreground sm:text-4xl md:text-5xl">
+            <h2
+              data-seq-item
+              className="mx-auto mt-6 max-w-2xl text-3xl font-bold text-foreground sm:text-4xl md:text-5xl"
+            >
               <span className="block">{lead}</span>
               {tail && (
                 <span
@@ -86,11 +96,14 @@ export function FinalCta({
               )}
             </h2>
 
-            <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-foreground-muted">
+            <p
+              data-seq-item
+              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-foreground-muted"
+            >
               {subhead || DEFAULT_SUBHEAD}
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <div data-seq-item className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <MagneticLink
                 href={primaryUrl || "/الدورات"}
                 className={cn(
@@ -121,7 +134,10 @@ export function FinalCta({
                 a footnote to the ask, not a competing block. Rendered only
                 when there are real testimonials to put faces to. */}
             {faces.length > 0 && (
-              <div className="mt-14 flex items-center justify-center gap-3 md:mt-16 md:justify-start">
+              <div
+                data-seq-item
+                className="mt-14 flex items-center justify-center gap-3 md:mt-16 md:justify-start"
+              >
                 <div className="flex flex-row-reverse">
                   {faces.map((t, i) => (
                     <Avatar
@@ -142,7 +158,7 @@ export function FinalCta({
             )}
           </div>
         </div>
-      </Reveal>
+      </Sequence>
     </Section>
   );
 }

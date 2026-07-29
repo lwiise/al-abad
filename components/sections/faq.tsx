@@ -7,7 +7,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { Markdown } from "@/components/ui/markdown";
-import { Reveal } from "@/components/motion/reveal";
+import { Sequence } from "@/components/motion/sequence";
 import { Section } from "./section";
 
 export function Faq({
@@ -27,9 +27,14 @@ export function Faq({
 
   return (
     <Section bg="background">
-      <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-        <Reveal>
-          <div className="lg:sticky lg:top-24">
+      {/* One observer for both columns, so the questions cascade out of the
+          heading instead of the two halves arriving as separate slabs. The
+          sticky column is marked as a single item — the questions are the list,
+          and cascading the heading's own three lines as well would double the
+          motion in one glance. */}
+      <Sequence className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+        <div>
+          <div data-seq-item className="lg:sticky lg:top-24">
             <p className="text-sm font-medium text-secondary">{eyebrow || "الأسئلة الشائعة"}</p>
             <h2 className="mt-2 text-3xl font-bold text-foreground md:text-4xl">
               {heading || "إجاباتٌ عن أكثر ما يُسأل"}
@@ -42,16 +47,16 @@ export function Faq({
               .
             </p>
           </div>
-        </Reveal>
+        </div>
 
-        <Reveal>
+        <div>
           <Accordion
             type="single"
             collapsible
             className="rounded-2xl border border-border bg-background px-5"
           >
             {faqs.map((f) => (
-              <AccordionItem key={f.id} value={f.id}>
+              <AccordionItem key={f.id} value={f.id} data-seq-item>
                 <AccordionTrigger>{f.question}</AccordionTrigger>
                 {f.answer && (
                   <AccordionContent>
@@ -63,8 +68,8 @@ export function Faq({
               </AccordionItem>
             ))}
           </Accordion>
-        </Reveal>
-      </div>
+        </div>
+      </Sequence>
     </Section>
   );
 }
