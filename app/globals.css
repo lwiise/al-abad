@@ -1030,12 +1030,12 @@
 }
 
 /* ===========================================================================
-   «كيف تبدأ؟» — one step at a time, told by the scroll
+   The scroll deck — one card at a time, handed over by the scroll
    ===========================================================================
-   Three cards side by side said everything at once and so said nothing: every
-   step got a third of the attention and an icon. Here each step takes the
-   screen alone, with a diagram that draws what it actually says, and the
-   scroll is what hands over to the next one.
+   Shared by «كيف تبدأ؟» and «ماذا ستكتسب؟». Both sections used to say
+   everything at once — three cards side by side, four in a grid — so every
+   item got a fraction of the attention and an icon. Here each takes the screen
+   alone, with a diagram that draws what it actually says.
 
    Deliberately NOT wrapped in @layer — same reason as the nav/hero block
    above: Tailwind v4 treats rules inside `@layer utilities` as utility
@@ -1044,57 +1044,76 @@
 
    TWO RULES SHAPE THE MOTION.
 
-   1. The layout switch is CSS, the state is JS. The section renders as an
-      ordinary list of steps and only becomes a sticky stage once the client
-      has confirmed it can honour the motion (`data-hiw`), so no-JS and
-      reduced-motion readers keep every step, in order, fully visible.
+   1. The layout switch is CSS, the state is JS. A section renders as an
+      ordinary list and only becomes a sticky stage once the client has
+      confirmed it can honour the motion (`data-deck`), so no-JS and
+      reduced-motion readers keep every card, in order, fully visible.
 
-   2. A diagram only animates while its step is the one on screen, so it plays
-      from its first frame every time that step comes round. This is also the
+   2. A diagram only animates while its card is the one on screen, so it plays
+      from its first frame every time that card comes round. This is also the
       only reason these may be keyframe animations at all — the challenges
       diagram had to transition everything because its states interrupt each
-      other mid-flight, whereas here leaving a step REMOVES the animation and
+      other mid-flight, whereas here leaving a card REMOVES the animation and
       the value snaps back to the resting pose while the card is already
       fading out. Nobody ever sees the snap. That resting pose is the finished
-      state of each diagram — chosen, watched, achieved — which is exactly the
-      still image reduced motion should be left with.
+      state of each diagram — chosen, watched, achieved, understood — which is
+      exactly the still image reduced motion should be left with.
    ------------------------------------------------------------------------- */
 
 /* How far "arrived" a part of a diagram is: 0 = waiting, 1 = chosen / watched
-   / achieved. Lift, coral fill, the check and the heart's size are all derived
-   from this one number, so a keyframe that moves it moves the whole look and
-   every diagram states its idea the same way.
+   / achieved / understood. Lift, coral fill, the check, the heart's size, how
+   much of a line has been written — all derived from this one number, so a
+   keyframe that moves it moves the whole look and every diagram states its
+   idea the same way.
 
    Registered so it INTERPOLATES rather than flipping. Where @property is
-   missing the maths still resolves — it just steps instead of easing. */
-@property --hiw-on {
+   missing the maths still resolves — it just steps instead of easing.
+
+   Two idioms recur, both worth knowing before reading any diagram below:
+
+     one number, N parts in sequence
+       clamp(0, var(--art-on) * N - k, 1) is part k's own 0→1, so a single
+       ramp writes three lines, draws three roots or closes three stitches
+       one after another without three keyframe sets.
+
+     one number, a path drawn
+       stroke-dashoffset: calc((1 - …) * 100) with pathLength="100" on the
+       path, so a draw is written as a percentage and the geometry can change
+       without the CSS having to be recomputed. */
+@property --art-on {
   syntax: "<number>";
   inherits: true;
   initial-value: 0;
 }
 
-.hiw-track {
-  --hiw-ease: var(--ease-hero);
-  /* Scroll distance each step holds the stage before handing over. */
-  --hiw-hold: 62svh;
-  --hiw-swap: 560ms;
+.art {
+  --art-ease: var(--ease-hero);
 }
 
-/* --- Static: every step visible, one under another ----------------------- */
-.hiw-deck {
+.deck-track {
+  --art-ease: var(--ease-hero);
+  /* Scroll distance each card holds the stage before handing over. Steps are
+     read (title + a line of description), outcomes are glanced at (a title and
+     a diagram), so «ماذا ستكتسب؟» sets a shorter hold — see its section. */
+  --deck-hold: 62svh;
+  --deck-swap: 560ms;
+}
+
+/* --- Static: every card visible, one under another ----------------------- */
+.deck-cards {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
 /* --- Scroll: the stage sticks and the cards are dealt into one cell ------ */
-.hiw-track[data-hiw="scroll"] {
+.deck-track[data-deck="scroll"] {
   /* min-height, not height: if a card is ever taller than the viewport the
      track grows with it instead of letting the stage overrun the section. */
-  min-height: calc(100svh + var(--hiw-count) * var(--hiw-hold));
+  min-height: calc(100svh + var(--deck-count) * var(--deck-hold));
 }
 
-.hiw-track[data-hiw="scroll"] .hiw-stage {
+.deck-track[data-deck="scroll"] .deck-stage {
   position: sticky;
   top: 0;
   display: flex;
@@ -1102,18 +1121,18 @@
   justify-content: center;
   min-height: 100svh;
   /* The nav is fixed, so the stage has to clear it itself — the scrolled
-     height, since the section is never reached before the nav has shrunk. */
+     height, since neither section is ever reached before the nav has shrunk. */
   padding-block: calc(var(--nav-h-scrolled) + 1rem) 2rem;
 }
 
 /* One grid cell, every card in it: the deck is as tall as the tallest card
    without a hand-set height, and the cards cross-fade in place. */
-.hiw-track[data-hiw="scroll"] .hiw-deck {
+.deck-track[data-deck="scroll"] .deck-cards {
   display: grid;
   gap: 0;
 }
 
-.hiw-track[data-hiw="scroll"] .hiw-card {
+.deck-track[data-deck="scroll"] .deck-card {
   grid-area: 1 / 1;
   opacity: 0;
   translate: 0 44px;
@@ -1123,81 +1142,163 @@
      stacked in the same cell, so a fade as long as the travel leaves both
      diagrams legible over each other for half a second. */
   transition:
-    opacity calc(var(--hiw-swap) * 0.6) var(--hiw-ease),
-    translate var(--hiw-swap) var(--hiw-ease),
-    scale var(--hiw-swap) var(--hiw-ease);
+    opacity calc(var(--deck-swap) * 0.6) var(--art-ease),
+    translate var(--deck-swap) var(--art-ease),
+    scale var(--deck-swap) var(--art-ease);
 }
-/* Steps already taken lift away upward; the ones still to come wait below. */
-.hiw-track[data-hiw="scroll"] .hiw-card[data-state="past"] {
+/* Cards already passed lift away upward; the ones still to come wait below. */
+.deck-track[data-deck="scroll"] .deck-card[data-state="past"] {
   translate: 0 -44px;
 }
-.hiw-track[data-hiw="scroll"] .hiw-card[data-state="current"] {
+.deck-track[data-deck="scroll"] .deck-card[data-state="current"] {
   opacity: 1;
   translate: 0 0;
   scale: 1;
   pointer-events: auto;
 }
 
-/* --- The rail: where you are, and a way to skip ------------------------- */
-.hiw-rail-item {
+/* --- The rail: where you are, and a way to skip -------------------------- */
+.deck-rail {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+}
+@media (min-width: 768px) {
+  .deck-rail[data-rail="x"] {
+    gap: 1.25rem;
+  }
+}
+.deck-rail-item {
+  flex: 1;
   cursor: pointer;
+  text-align: start;
 }
-/* Fills from the start edge — RTL, like the nav underline above. Driven
-   straight off scroll progress (set as --hiw-p every frame), so it needs no
-   transition of its own: it is already continuous. */
-.hiw-rail-fill {
+.deck-rail-track {
+  display: block;
+  overflow: hidden;
+  border-radius: 9999px;
+  background-color: var(--color-border-strong);
+  height: 3px;
+}
+.deck-rail-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background-color: var(--color-accent);
+  /* Fills from the start edge — RTL, like the nav underline above. Driven
+     straight off scroll progress (set as --deck-p every frame), so it needs no
+     transition of its own: it is already continuous. */
   transform-origin: 100% 50%;
-  transform: scaleX(clamp(0, calc(var(--hiw-p, 0) * var(--hiw-count) - var(--hiw-i)), 1));
+  transform: scaleX(clamp(0, calc(var(--deck-p, 0) * var(--deck-count) - var(--deck-i)), 1));
 }
-.hiw-rail-label {
-  transition: color 240ms var(--hiw-ease);
+.deck-rail-label {
+  display: block;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  color: var(--color-foreground-muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 240ms var(--art-ease);
 }
-.hiw-rail-item[aria-current="step"] .hiw-rail-label {
+.deck-rail-item[aria-current] .deck-rail-label {
   color: var(--color-foreground);
   font-weight: 600;
 }
+
+/* Narrow screens have nowhere to put a title beside a number. */
+@media (max-width: 639.98px) {
+  .deck-rail-title {
+    display: none;
+  }
+}
+
+/* A vertical rail runs down the START edge of the stage, numbers only, and
+   the stage centres the deck around it rather than beside it — the card is
+   what the section is, the rail is an index in the margin. Below md there is
+   no margin to spare, so it stays the horizontal rail above. */
+@media (min-width: 768px) {
+  .deck-rail[data-rail="y"] {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    translate: 0 -50%;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0;
+  }
+  .deck-rail[data-rail="y"] .deck-rail-item {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .deck-rail[data-rail="y"] .deck-rail-track {
+    width: 3px;
+    height: 2.75rem;
+  }
+  .deck-rail[data-rail="y"] .deck-rail-fill {
+    transform-origin: 50% 0;
+    transform: scaleY(clamp(0, calc(var(--deck-p, 0) * var(--deck-count) - var(--deck-i)), 1));
+  }
+  .deck-rail[data-rail="y"] .deck-rail-label {
+    margin-top: 0;
+  }
+  .deck-rail[data-rail="y"] .deck-rail-title {
+    display: none;
+  }
+}
+
+/* ===========================================================================
+   «كيف تبدأ؟» — the three diagrams
+   ===========================================================================
+   Browsing, watching, arriving. Each is keyed to `data-active` on its own SVG
+   root and holds its finished pose when nothing is driving it.
+   ------------------------------------------------------------------------- */
 
 /* --- 1 · اختر دورتك ------------------------------------------------------
    Attention slides along the three courses, right to left; whichever it rests
    on lifts, warms and takes the check. Resting pose: the first one chosen. */
 .hiw-opt {
-  --hiw-on: 0;
+  --art-on: 0;
   transform-box: view-box;
-  opacity: calc(0.55 + 0.45 * var(--hiw-on));
-  translate: 0 calc(-16px * var(--hiw-on));
+  opacity: calc(0.55 + 0.45 * var(--art-on));
+  translate: 0 calc(-16px * var(--art-on));
 }
 .hiw-opt-1 {
-  --hiw-on: 1;
+  --art-on: 1;
 }
 .hiw-opt-ring,
 .hiw-opt-wash {
-  opacity: var(--hiw-on);
+  opacity: var(--art-on);
 }
 .hiw-opt-check {
   /* fill-box: each badge scales about its own centre, so the three cards share
      one rule instead of carrying three transform-origins. */
   transform-box: fill-box;
   transform-origin: center;
-  opacity: var(--hiw-on);
-  scale: calc(0.55 + 0.45 * var(--hiw-on));
+  opacity: var(--art-on);
+  scale: calc(0.55 + 0.45 * var(--art-on));
 }
 .hiw-pick {
   transform-box: view-box;
 }
 
-.hiw-art[data-active="true"] .hiw-opt {
+.art[data-active="true"] .hiw-opt {
   /* backwards: during its delay a card holds the first frame (waiting), not
      the resting pose it was authored with. */
-  animation: hiw-on 4.5s var(--hiw-ease) infinite backwards;
+  animation: hiw-on 4.5s var(--art-ease) infinite backwards;
 }
-.hiw-art[data-active="true"] .hiw-opt-2 {
+.art[data-active="true"] .hiw-opt-2 {
   animation-delay: 1.5s;
 }
-.hiw-art[data-active="true"] .hiw-opt-3 {
+.art[data-active="true"] .hiw-opt-3 {
   animation-delay: 3s;
 }
-.hiw-art[data-active="true"] .hiw-pick {
-  animation: hiw-pick 4.5s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-pick {
+  animation: hiw-pick 4.5s var(--art-ease) infinite;
 }
 
 /* --- 2 · سجّل وتعلّم على راحتك ---------------------------------------------
@@ -1212,35 +1313,35 @@
   transform-origin: center;
 }
 .hiw-lesson {
-  --hiw-on: 0;
+  --art-on: 0;
 }
 .hiw-lesson-1,
 .hiw-lesson-2 {
-  --hiw-on: 1;
+  --art-on: 1;
 }
 .hiw-lesson-fill,
 .hiw-lesson-check {
-  opacity: var(--hiw-on);
+  opacity: var(--art-on);
 }
 .hiw-lesson-line {
-  opacity: calc(0.4 + 0.6 * var(--hiw-on));
+  opacity: calc(0.4 + 0.6 * var(--art-on));
 }
 
-.hiw-art[data-active="true"] .hiw-ring {
+.art[data-active="true"] .hiw-ring {
   /* linear: a pace, not a flourish. */
   animation: hiw-fill 6s linear infinite;
 }
-.hiw-art[data-active="true"] .hiw-play {
+.art[data-active="true"] .hiw-play {
   animation: hiw-beat 2.4s ease-in-out infinite;
 }
-.hiw-art[data-active="true"] .hiw-lesson-1 {
-  animation: hiw-lesson-1 6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-lesson-1 {
+  animation: hiw-lesson-1 6s var(--art-ease) infinite;
 }
-.hiw-art[data-active="true"] .hiw-lesson-2 {
-  animation: hiw-lesson-2 6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-lesson-2 {
+  animation: hiw-lesson-2 6s var(--art-ease) infinite;
 }
-.hiw-art[data-active="true"] .hiw-lesson-3 {
-  animation: hiw-lesson-3 6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-lesson-3 {
+  animation: hiw-lesson-3 6s var(--art-ease) infinite;
 }
 
 /* --- 3 · طبّق وحقّق نتائج --------------------------------------------------
@@ -1255,77 +1356,77 @@
   stroke-dashoffset: 0;
 }
 .hiw-mark {
-  --hiw-on: 1;
+  --art-on: 1;
 }
 .hiw-mark-fill,
 .hiw-mark-check {
-  opacity: var(--hiw-on);
+  opacity: var(--art-on);
 }
 .hiw-summit {
-  --hiw-on: 1;
+  --art-on: 1;
 }
 .hiw-heart {
   transform-box: fill-box;
   transform-origin: center;
   /* Two channels on purpose: `transform` is the growth that comes with
      arriving, `scale` is the beat — so the beat never has to stop. */
-  transform: scale(calc(0.82 + 0.36 * var(--hiw-on)));
+  transform: scale(calc(0.82 + 0.36 * var(--art-on)));
   /* Present from the start, but only faintly: what the climb is for is
      visible before it is reached, and fills in on arrival. */
-  opacity: calc(0.32 + 0.68 * var(--hiw-on));
+  opacity: calc(0.32 + 0.68 * var(--art-on));
 }
 .hiw-halo {
   transform-box: fill-box;
   transform-origin: center;
-  opacity: calc(0.12 * var(--hiw-on));
-  transform: scale(calc(0.7 + 0.3 * var(--hiw-on)));
+  opacity: calc(0.12 * var(--art-on));
+  transform: scale(calc(0.7 + 0.3 * var(--art-on)));
 }
 .hiw-spark {
   transform-box: fill-box;
   transform-origin: center;
-  opacity: calc(0.85 * var(--hiw-on));
+  opacity: calc(0.85 * var(--art-on));
 }
 
-.hiw-art[data-active="true"] .hiw-climb {
-  animation: hiw-draw 6.6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-climb {
+  animation: hiw-draw 6.6s var(--art-ease) infinite;
 }
-.hiw-art[data-active="true"] .hiw-mark-1 {
-  animation: hiw-mark-1 6.6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-mark-1 {
+  animation: hiw-mark-1 6.6s var(--art-ease) infinite;
 }
-.hiw-art[data-active="true"] .hiw-mark-2 {
-  animation: hiw-mark-2 6.6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-mark-2 {
+  animation: hiw-mark-2 6.6s var(--art-ease) infinite;
 }
-.hiw-art[data-active="true"] .hiw-mark-3 {
-  animation: hiw-mark-3 6.6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-mark-3 {
+  animation: hiw-mark-3 6.6s var(--art-ease) infinite;
 }
-.hiw-art[data-active="true"] .hiw-summit {
-  animation: hiw-summit 6.6s var(--hiw-ease) infinite;
+.art[data-active="true"] .hiw-summit {
+  animation: hiw-summit 6.6s var(--art-ease) infinite;
 }
-.hiw-art[data-active="true"] .hiw-heart {
+.art[data-active="true"] .hiw-heart {
   animation: hiw-beat 1.9s ease-in-out infinite;
 }
-.hiw-art[data-active="true"] .hiw-spark {
+.art[data-active="true"] .hiw-spark {
   animation: hiw-twinkle 2.6s ease-in-out infinite;
 }
-.hiw-art[data-active="true"] .hiw-spark-2 {
+.art[data-active="true"] .hiw-spark-2 {
   animation-delay: 0.5s;
 }
-.hiw-art[data-active="true"] .hiw-spark-3 {
+.art[data-active="true"] .hiw-spark-3 {
   animation-delay: 1s;
 }
 
 /* --- Keyframes ---------------------------------------------------------- */
 @keyframes hiw-on {
   0% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   8%,
   27% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   34%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 
@@ -1393,43 +1494,43 @@
 @keyframes hiw-lesson-1 {
   0%,
   22% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   28%,
   86% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   93%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 @keyframes hiw-lesson-2 {
   0%,
   42% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   48%,
   86% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   93%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 @keyframes hiw-lesson-3 {
   0%,
   61% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   67%,
   86% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   93%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 
@@ -1460,57 +1561,57 @@
 /* Met at the climb's start, third and two-thirds; the heart once it arrives. */
 @keyframes hiw-mark-1 {
   0% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   4%,
   92% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   96%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 @keyframes hiw-mark-2 {
   0%,
   21% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   27%,
   92% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   96%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 @keyframes hiw-mark-3 {
   0%,
   44% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   50%,
   92% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   96%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 @keyframes hiw-summit {
   0%,
   66% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
   76%,
   92% {
-    --hiw-on: 1;
+    --art-on: 1;
   }
   96%,
   100% {
-    --hiw-on: 0;
+    --art-on: 0;
   }
 }
 
@@ -1533,14 +1634,318 @@
   }
 }
 
+/* ===========================================================================
+   «ماذا ستكتسب؟» — the four diagrams
+   ===========================================================================
+   One number each, both idioms from the property note above: a ramp writes
+   three lines, draws three roots, closes three clasps. Resting pose is always
+   the outcome achieved — said and heard, understood, held, settled.
+   ------------------------------------------------------------------------- */
+
+/* --- 1 · مهارات تواصل أعمق ------------------------------------------------
+   One says, the other hears, and the channel between them closes back into a
+   solid line — section two's ضعف التواصل run backwards, where the strokes
+   broke INTO travelling dashes. */
+.out-bubble {
+  --art-on: 1;
+  opacity: calc(0.5 + 0.5 * var(--art-on));
+}
+.out-bubble-wash {
+  opacity: calc(0.9 * var(--art-on));
+}
+/* Written from the right, the direction Arabic starts — fill-box so all six
+   lines share one origin rule regardless of where each one sits. Opacity is
+   tied to the same number because a round cap at scaleX(0) still draws a dot. */
+.out-line {
+  transform-box: fill-box;
+  transform-origin: 100% 50%;
+  transform: scaleX(var(--line-on, 1));
+  opacity: var(--line-on, 1);
+}
+.out-line-1 {
+  --line-on: clamp(0, calc(var(--art-on) * 3), 1);
+}
+.out-line-2 {
+  --line-on: clamp(0, calc(var(--art-on) * 3 - 1), 1);
+}
+.out-line-3 {
+  --line-on: clamp(0, calc(var(--art-on) * 3 - 2), 1);
+}
+.out-channel {
+  stroke-dasharray: 64 0;
+}
+.out-msg {
+  transform-box: view-box;
+  opacity: 0;
+}
+
+.art[data-active="true"] .out-said {
+  animation: out-said 5.4s var(--art-ease) infinite;
+}
+.art[data-active="true"] .out-heard {
+  animation: out-heard 5.4s var(--art-ease) infinite;
+}
+.art[data-active="true"] .out-channel {
+  animation: out-channel 5.4s var(--art-ease) infinite;
+}
+.art[data-active="true"] .out-msg {
+  animation: out-msg 5.4s var(--art-ease) infinite;
+}
+
+/* --- 2 · فهمٌ لدوافع السلوك -------------------------------------------------
+   What you see never changes — one shape, above the line, identical at the
+   start and at the end. What understanding adds is everything under it. */
+.out-under {
+  --art-on: 1;
+}
+.out-soil {
+  opacity: calc(0.8 * var(--art-on));
+}
+.out-strand-1 {
+  --root-on: clamp(0, calc(var(--art-on) * 3), 1);
+}
+.out-strand-2 {
+  --root-on: clamp(0, calc(var(--art-on) * 3 - 1), 1);
+}
+.out-strand-3 {
+  --root-on: clamp(0, calc(var(--art-on) * 3 - 2), 1);
+}
+.out-root {
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc((1 - var(--root-on, 1)) * 100);
+}
+.out-branch {
+  stroke-dashoffset: calc((1 - clamp(0, calc(var(--root-on, 1) * 2 - 1), 1)) * 100);
+}
+/* The motive lands in the last quarter of its own root: what is driving the
+   behaviour is legible only once you have followed the whole way down. */
+.out-motive {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: clamp(0, calc(var(--root-on, 1) * 4 - 3), 1);
+  scale: calc(0.5 + 0.5 * clamp(0, calc(var(--root-on, 1) * 4 - 3), 1));
+}
+
+.art[data-active="true"] .out-under {
+  animation: out-under 6s var(--art-ease) infinite;
+}
+
+/* --- 3 · أدوات عملية لحل الخلافات -------------------------------------------
+   The two halves carry the SAME jagged seam, so closing them interlocks
+   exactly: the disagreement does not disappear, it is held. */
+.out-mend {
+  --art-on: 1;
+}
+.out-half {
+  transform-box: view-box;
+}
+.out-half-a {
+  translate: calc(-20px * (1 - var(--art-on))) 0;
+}
+.out-half-b {
+  translate: calc(20px * (1 - var(--art-on))) 0;
+}
+.out-clasp-1 {
+  --clasp-on: clamp(0, calc(var(--art-on) * 3), 1);
+}
+.out-clasp-2 {
+  --clasp-on: clamp(0, calc(var(--art-on) * 3 - 1), 1);
+}
+.out-clasp-3 {
+  --clasp-on: clamp(0, calc(var(--art-on) * 3 - 2), 1);
+}
+.out-clasp {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: var(--clasp-on, 1);
+  scale: calc(0.55 + 0.45 * var(--clasp-on, 1));
+}
+
+.art[data-active="true"] .out-mend {
+  animation: out-mend 5.4s var(--art-ease) infinite;
+}
+
+/* --- 4 · ثقة في قراراتك الزوجية ---------------------------------------------
+   Confidence drawn as steadiness rather than certainty: the needle swings
+   wide, narrows, settles — and the ring closes around it as it does. */
+.out-dial {
+  --art-on: 1;
+}
+.out-arc {
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc((1 - var(--art-on)) * 100);
+}
+.out-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: calc(0.1 * var(--art-on));
+  transform: scale(calc(0.72 + 0.28 * var(--art-on)));
+}
+.out-needle {
+  transform-box: view-box;
+  transform-origin: 200px 170px;
+}
+.out-needle-head {
+  fill-opacity: calc(0.3 + 0.6 * var(--art-on));
+}
+
+.art[data-active="true"] .out-dial {
+  animation: out-settle 6.6s var(--art-ease) infinite;
+}
+.art[data-active="true"] .out-needle {
+  /* A pendulum eases at both ends, so this one curve is not the shared one. */
+  animation: out-swing 6.6s ease-in-out infinite;
+}
+
+/* --- Keyframes ---------------------------------------------------------- */
+@keyframes out-said {
+  0%,
+  6% {
+    --art-on: 0;
+  }
+  26%,
+  90% {
+    --art-on: 1;
+  }
+  97%,
+  100% {
+    --art-on: 0;
+  }
+}
+@keyframes out-heard {
+  0%,
+  42% {
+    --art-on: 0;
+  }
+  60%,
+  90% {
+    --art-on: 1;
+  }
+  97%,
+  100% {
+    --art-on: 0;
+  }
+}
+/* Solid only after it has gone both ways — which is the whole claim of the
+   outcome, so it is the last thing to happen and the first to be given up. */
+@keyframes out-channel {
+  0%,
+  66% {
+    stroke-dasharray: 4 8;
+    opacity: 0.5;
+  }
+  78%,
+  90% {
+    stroke-dasharray: 64 0;
+    opacity: 1;
+  }
+  97%,
+  100% {
+    stroke-dasharray: 4 8;
+    opacity: 0.5;
+  }
+}
+@keyframes out-msg {
+  0%,
+  28% {
+    translate: 0 0;
+    opacity: 0;
+  }
+  32% {
+    translate: 0 0;
+    opacity: 1;
+  }
+  42%,
+  56% {
+    translate: -56px 32px;
+    opacity: 1;
+  }
+  66%,
+  70% {
+    translate: 0 0;
+    opacity: 1;
+  }
+  76%,
+  100% {
+    translate: 0 0;
+    opacity: 0;
+  }
+}
+@keyframes out-under {
+  0%,
+  8% {
+    --art-on: 0;
+  }
+  66%,
+  88% {
+    --art-on: 1;
+  }
+  96%,
+  100% {
+    --art-on: 0;
+  }
+}
+@keyframes out-mend {
+  0%,
+  8% {
+    --art-on: 0;
+  }
+  70%,
+  88% {
+    --art-on: 1;
+  }
+  96%,
+  100% {
+    --art-on: 0;
+  }
+}
+@keyframes out-settle {
+  0%,
+  34% {
+    --art-on: 0;
+  }
+  48%,
+  88% {
+    --art-on: 1;
+  }
+  96%,
+  100% {
+    --art-on: 0;
+  }
+}
+@keyframes out-swing {
+  0% {
+    rotate: -38deg;
+  }
+  10% {
+    rotate: 26deg;
+  }
+  18% {
+    rotate: -17deg;
+  }
+  26% {
+    rotate: 10deg;
+  }
+  33% {
+    rotate: -5deg;
+  }
+  42%,
+  88% {
+    rotate: 0deg;
+  }
+  100% {
+    rotate: -38deg;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  /* The stage never switches to scroll mode (the component checks the same
+  /* Neither stage ever switches to scroll mode (useScrollDeck checks the same
      preference), so all that is left is to hold every diagram at its resting
-     pose — the finished state of its step. */
-  .hiw-art,
-  .hiw-art *,
-  .hiw-card,
-  .hiw-rail-label {
+     pose — the finished state of its step or its outcome. */
+  .art,
+  .art *,
+  .deck-card,
+  .deck-rail-label {
     animation: none !important;
     transition: none !important;
   }
