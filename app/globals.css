@@ -776,8 +776,8 @@
 }
 
 /* --- قسم التعريف: the drawn forms + مرتكزات -------------------------------
-   One drawn artifact per مرتكز — an open book, a set of implements, a
-   travelled route — and each مرتكز drives its own via `data-state` on the SVG
+   One drawn artifact per مرتكز — an open book, a racked set of implements,
+   ground in section — and each مرتكز drives its own via `data-state` on the SVG
    root, the same one-attribute contract قسم التحديات uses.
 
    THIS SECTION NO LONGER DRAWS LINES. Two earlier passes animated abstract
@@ -794,8 +794,8 @@
    1. Channels are kept apart, because CSS applies translate → rotate → scale →
       transform in that order and they compose:
         rotate    → the book's pages settling onto the stack
-        translate → the implements rising into place
-        scale     → the waypoints filling in
+        translate → the implements rising out of the rack
+        scale     → the ground's layers spreading as they are laid down
       No element is ever driven on two channels, and nothing is both animated
       and transitioned on the same one.
 
@@ -822,13 +822,13 @@
   /* Whole-form visibility. Only the active مرتكز's artifact is on screen. */
   .mi-book,
   .mi-tools,
-  .mi-route {
+  .mi-field {
     opacity: 0;
     transition: opacity var(--mi-move) var(--mi-ease);
   }
   .mi-art[data-state="method"] .mi-book,
   .mi-art[data-state="tools"] .mi-tools,
-  .mi-art[data-state="field"] .mi-route {
+  .mi-art[data-state="field"] .mi-field {
     opacity: 1;
   }
 
@@ -851,7 +851,16 @@
 
   /* --- أدوات عملية: the implements rise --------------------------------
      Equal rise, equal spacing, staggered arrival: a set being laid out, which
-     is the whole claim. Uneven would read as spillage. */
+     is the whole claim. Uneven would read as spillage.
+
+     The rise is 34px and it is a MOTION AGAINST THE RACK, not a drift in empty
+     space — at rest each implement's head sits inside the rack it comes out of,
+     and the rack is painted over the handles so the emergence reads. The 34 is
+     duplicated as TOOL_RISE in art/instructor-signature.tsx, where the clip
+     assertion checks the low position; change one, change both.
+
+     nth-child counts the four .mi-tool groups. The rack is child 5 of the same
+     group — deliberately unstaggered, because the holder is already there. */
   .mi-tool {
     transform-box: view-box;
     translate: 0 34px;
@@ -869,28 +878,34 @@
   .mi-tool:nth-child(3) { transition-delay: 180ms; }
   .mi-tool:nth-child(4) { transition-delay: 270ms; }
 
-  /* --- خبرة ميدانية: the waypoints fill in ------------------------------
-     fill-box, not view-box: each waypoint scales about ITSELF, and fill-box is
-     what makes `transform-origin: center` mean the element's own centre. The
-     ribbon never draws — it is a filled shape that simply arrives. */
-  .mi-wp {
+  /* --- خبرة ميدانية: the ground is laid down ----------------------------
+     fill-box, not view-box: each layer spreads about ITSELF, and fill-box is
+     what makes `transform-origin: center` mean the element's own centre.
+
+     X ONLY — `scale: 0 1`, never a bare `scale: 0`. A layer that also grew in
+     height would inflate, and inflating is not depositing; spreading outward
+     from the middle at full thickness is the whole read. The deepest layer is
+     first in the DOM, so the stagger builds the mass from underneath and
+     finishes at the surface. Nothing here draws a path — see the note in
+     art/instructor-signature.tsx about the route this replaced. */
+  .mi-stratum {
     transform-box: fill-box;
     transform-origin: center;
-    scale: 0;
+    scale: 0 1;
     transition:
       scale var(--mi-move) var(--mi-ease),
       opacity var(--mi-move) var(--mi-ease);
     opacity: 0;
   }
-  .mi-art[data-state="field"] .mi-wp {
-    scale: 1;
+  .mi-art[data-state="field"] .mi-stratum {
+    scale: 1 1;
     opacity: 1;
   }
-  .mi-wp:nth-child(2) { transition-delay: 80ms; }
-  .mi-wp:nth-child(3) { transition-delay: 180ms; }
-  .mi-wp:nth-child(4) { transition-delay: 280ms; }
-  .mi-wp:nth-child(5) { transition-delay: 380ms; }
-  .mi-wp:nth-child(6) { transition-delay: 480ms; }
+  .mi-stratum:nth-child(2) { transition-delay: 70ms; }
+  .mi-stratum:nth-child(3) { transition-delay: 140ms; }
+  .mi-stratum:nth-child(4) { transition-delay: 210ms; }
+  .mi-stratum:nth-child(5) { transition-delay: 280ms; }
+  .mi-stratum:nth-child(6) { transition-delay: 350ms; }
 
   /* The list — the marker echoes the circle and fills when its row is the one
      driving it. Lilac, not plum: this sits on ink, where plum is 1.26:1. */

@@ -61,8 +61,8 @@ const STACKED = "(max-width: 1079.98px)";
 const SIGNATURE_DESCRIPTION: Record<SignatureState, string> = {
   idle: "لا رسم — تظهر صورة كلّ مرتكزٍ عند اختياره.",
   method: "كتابٌ مفتوح، تنطبق صفحاته على بعضها واحدةً تلو الأخرى.",
-  tools: "أربع أدواتٍ متجاورة، ترتفع كلٌّ منها إلى موضعها تباعاً.",
-  field: "طريقٌ مرسوم، تمتلئ محطّاته واحدةً بعد الأخرى على امتداده.",
+  tools: "طقمُ أدواتٍ قائمٌ في حاملِه، تُسحب كلُّ أداةٍ إلى موضعها تباعاً.",
+  field: "أرضٌ مقطوعة، تُرصَف طبقاتُها من الأعمق صعوداً حتى السطح.",
 };
 
 /** The layout is external state, so read it as such rather than in an effect. */
@@ -95,10 +95,10 @@ const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : use
  * (#1c1725) while that direction was being trialled.
  *
  * The art each مرتكز drives is in art/instructor-signature.tsx. It is drawn
- * FILLED — an open book, a set of implements, a travelled route — and nothing
- * in this section strokes or draws a line any more. A scroll-drawn ring used
- * to sit behind the portrait with an ~80-line hook scrubbing its dash; both
- * went when the art did. On ink, lilac carries the forms (9.50:1) and coral
+ * FILLED — an open book, a racked set of implements, ground in section — and
+ * nothing in this section strokes or draws a line any more. A scroll-drawn
+ * ring used to sit behind the portrait with an ~80-line hook scrubbing its
+ * dash; both went when the art did. On ink, lilac carries the forms (9.50:1) and coral
  * accents them (3.08:1); plum is 1.26:1 here and unusable.
  *
  * No GSAP. One IntersectionObserver drives the entrance; everything else is a
