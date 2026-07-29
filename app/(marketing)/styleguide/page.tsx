@@ -71,7 +71,7 @@ const TONES = ["published", "draft", "highlight", "neutral"] as const;
 
 /** Homepage order — keep in sync with app/(marketing)/page.tsx. */
 const RHYTHM: { n: number; name: string; bg: string; tone: string }[] = [
-  { n: 1, name: "الواجهة", bg: "bg-background", tone: "أبيض + تدرّج خفيف" },
+  { n: 1, name: "الواجهة", bg: "bg-background", tone: "أرضية فاتحة + لوح neutral-900" },
   { n: 2, name: "المشكلة", bg: "section-hero-surface", tone: "امتداد سطح الواجهة" },
   { n: 3, name: "التعريف", bg: "bg-ink", tone: "ink — المرساة الداكنة" },
   { n: 4, name: "الدورات", bg: "bg-background", tone: "background" },

@@ -126,6 +126,33 @@ pairs.push([
 ]);
 pairs.push(["btn outline+ghost/dark — white on ink", WHITE, T("ink"), AA]);
 
+/**
+ * The hero plate (`.hero-plate`, section 1) — neutral-900, the ramp's darkest
+ * step. A second dark surface, but not a second palette: it is the same ramp
+ * `ink` comes from, chosen a step darker so section 3's ink band still reads as
+ * an arrival rather than a repeat of the hero.
+ *
+ * The plate's own oversized ground word (white/20) is NOT asserted. It is
+ * decorative and aria-hidden — the same exemption HeadingRule takes above. It
+ * exists to be a texture behind the portrait; at a ratio that passed for text
+ * it would compete with the headline sitting on top of it.
+ */
+const PLATE = T("neutral-900");
+pairs.push(["hero headline — white on plate", WHITE, PLATE, AA]);
+pairs.push(["hero calligraphic line — lilac on plate", T("lilac"), PLATE, AA]);
+pairs.push(["hero lede — neutral-300 on plate", T("neutral-300"), PLATE, AA]);
+// The trust badge's dot. A fill, so the 3:1 graphics threshold, not 4.5:1 —
+// which is exactly why the label beside it is lilac and not coral.
+pairs.push(["hero badge dot — coral on plate", T("coral"), PLATE, UI]);
+// The stats card: white/10 fill, and the two type sizes sitting on it.
+const statsCard = over(WHITE, PLATE, 0.1);
+pairs.push(["hero stat value — white on card over plate", WHITE, statsCard, AA]);
+pairs.push(["hero stat label — neutral-300 on card over plate", T("neutral-300"), statsCard, AA]);
+pairs.push(["hero card title — lilac on card over plate", T("lilac"), statsCard, AA]);
+// Both hero CTAs come from buttonClasses(…, light), on the plate rather than ink.
+pairs.push(["hero btn primary — ink on lilac", T("ink"), T("lilac"), AA]);
+pairs.push(["hero btn outline — white on plate", WHITE, PLATE, AA]);
+
 // The focus ring is a real UI component under WCAG 1.4.11.
 pairs.push(["focus ring on background", T("focus"), T("background"), UI]);
 pairs.push(["focus ring on surface", T("focus"), T("surface"), UI]);

@@ -957,6 +957,51 @@
   mix-blend-mode: overlay;
 }
 
+/* --- The hero plate -------------------------------------------------------
+   Section 1 is a dark card floating on the light ground, not a dark band. The
+   ground underneath is unchanged and still fades to --color-surface over its
+   last 10rem, so the seam contract with section 2 (see below) is untouched and
+   the nav keeps its dark-on-light text.
+
+   neutral-900 rather than ink, and the distinction matters: ink is section 3's
+   band. Two dark surfaces one screen apart at the same value would make the
+   anchor there read as a repeat instead of an arrival. This is the existing
+   ramp's darkest step, not a new neutral family — and it is not pure black.
+
+   Two lights, both wide: a cool top wash so the plate reads as lit rather than
+   as a flat rectangle, and a plum pool low on the end side that the figure
+   stands in front of. */
+.hero-plate {
+  background-color: var(--color-neutral-900);
+  background-image:
+    radial-gradient(
+      124% 68% at 50% -4%,
+      color-mix(in oklab, var(--color-lilac) 13%, transparent) 0%,
+      transparent 64%
+    ),
+    radial-gradient(
+      74% 56% at 16% 104%,
+      color-mix(in oklab, var(--color-primary) 46%, transparent) 0%,
+      transparent 72%
+    );
+}
+
+/* The same Najdi relief as the ground below, inverted. The tile's own stroke is
+   #3a363d, which is invisible against neutral-900; inverting it lifts the
+   strokes without introducing a second tile or a second colour. Masked to the
+   START corner (the ground's copy sits at the opposite one), so the two read as
+   the same plaster catching light from two directions rather than as one
+   texture stamped twice. */
+.hero-plate-najdi {
+  background-image: var(--najdi-tile);
+  background-size: 72px 62px;
+  background-repeat: repeat;
+  filter: invert(1);
+  opacity: 0.045;
+  -webkit-mask-image: radial-gradient(104% 96% at 94% 6%, #000 0%, #000 26%, transparent 68%);
+  mask-image: radial-gradient(104% 96% at 94% 6%, #000 0%, #000 26%, transparent 68%);
+}
+
 /* --- Section 2 continues section 1's surface ------------------------------
    The hero's last layer before the grain is an opaque `to top` fade to
    --color-surface over its bottom 10rem, so the hero's final row is exactly
