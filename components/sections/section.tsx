@@ -1,10 +1,11 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type Bg = "background" | "surface" | "lilac" | "ink" | "plum" | "hero";
+type Bg = "background" | "surface" | "lilac" | "ink" | "night" | "plum" | "hero";
 
 /**
- * The section rhythm is white ↔ lilac, with ink as the dark anchor.
+ * The section rhythm is white ↔ lilac, with two dark anchors: section 3 on
+ * `ink` and section 7 on `night`.
  *
  * `surface` (#f8f6fb) is for cards and insets and is NOT the alternating band:
  * measured against #ffffff it is 1.07:1, which is below the threshold of
@@ -12,23 +13,38 @@ type Bg = "background" | "surface" | "lilac" | "ink" | "plum" | "hero";
  * looks flat and slightly dirty. `lilac` (#ebe3f7) is 1.25:1 against white,
  * a step you can actually see. Verify with `pnpm check-contrast`.
  *
- * Section 7 (الذكاء) is the one band that takes `surface`, by owner decision:
- * the tone was its inset panel's, and the panel was dropped in favour of
- * carrying it edge to edge. It sits under section 6's `background`, so that one
- * boundary is deliberately faint and the dot texture and violet fills do the
- * marking. It is an exception, not a licence to alternate the two.
+ * `night` is neutral-900 (#29262d), the ramp's darkest step, and it belongs to
+ * section 7 (الذكاء) — see the note in `ai-teaser.tsx` for why that section is
+ * dark at all. Two things make it a separate tone rather than a second use of
+ * `ink`:
  *
- * `hero` is the other exception, and it is the opposite intent: it holds the tone
- * section 1 ends on instead of stepping away from it, so section 2 reads as the
- * same sheet of paper the hero is printed on. It belongs to section 2 alone —
- * see `.section-hero-surface` in globals.css. Anywhere else it would just be
- * the invisible white/surface alternation the paragraph above rules out.
+ *   - Section 7's headline sits over a live dot field. Legibility there is a
+ *     question of how much light the FIELD adds, and every millisecond of
+ *     headroom the darker plate buys goes into the dots being allowed to be
+ *     brighter. On ink the same field would have to be dimmed until it stopped
+ *     reading as one.
+ *   - Section 3 is ink, four sections earlier. Same value, and the two would
+ *     read as the same band returning; a step apart, and section 7 reads as its
+ *     own place. It is the same argument `.hero-plate` already makes for
+ *     section 1 — and it is deliberately the SAME value as that plate, so the
+ *     site has one deep dark rather than three.
+ *
+ * It is a flat token colour with no gradient of its own: the field is the art,
+ * and a bloom under it would both mute the dots and eat the contrast headroom
+ * the previous paragraph just bought.
+ *
+ * `hero` is the other special tone, and it is the opposite intent: it holds the
+ * tone section 1 ends on instead of stepping away from it, so section 2 reads
+ * as the same sheet of paper the hero is printed on. It belongs to section 2
+ * alone — see `.section-hero-surface` in globals.css. Anywhere else it would
+ * just be the invisible white/surface alternation the paragraph above rules out.
  */
 const bgMap: Record<Bg, string> = {
   background: "bg-background",
   surface: "bg-surface",
   lilac: "bg-surface-strong",
   ink: "bg-ink",
+  night: "bg-neutral-900",
   plum: "bg-primary",
   hero: "section-hero-surface",
 };

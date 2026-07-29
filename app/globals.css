@@ -319,7 +319,7 @@
 
 /* --- Moving sheen — shared by the two brand gradient bands --------------- */
 /* Section 10's final CTA and the vision band. Section 7 used to be the third;
-   see the "Section 7 — the assistant panel" block below for why it no longer
+   see the "Section 7 — the assistant band" block below for why it no longer
    is, and why .ai-shimmer went with it. */
 @keyframes shimmer {
   0% {
@@ -386,64 +386,30 @@
 /* ===========================================================================
    Section 7 — the assistant band
    ===========================================================================
-   A full-width `surface` band. The tone is the one the section always had —
-   it used to belong to an inset panel with a hairline border and a shadow —
-   but boxing the content inside a column narrower than the page made it read
-   as a widget dropped onto the site, so the band carries the tone instead.
-   The dot texture, the violet app-icon tile and the violet headline tail mark
-   the section alongside it; section 6 above is white, and at 1.07:1 that
-   boundary is faint by design. See the bg map in `section.tsx`.
+   A full-width `night` band (neutral-900) whose ground is a live lattice of
+   dots pushed around by travelling waves — the reference clip the owner asked
+   this section to look like, drawn in the palette rather than in its black and
+   white. The field is a canvas, not CSS: see components/sections/art/
+   ai-particle-field.tsx for the drawing and why it cannot be either CSS or SVG,
+   and ai-teaser.tsx for why the section went dark to carry it.
+
+   THERE IS NO SECTION-7 GROUND CSS ANY MORE, deliberately. The band is a flat
+   token colour (`bg-neutral-900`, via the `night` tone in section.tsx) and the
+   field is the whole of the art. A bloom under it would mute the dots and eat
+   the contrast headroom the darker plate exists to buy; the section's one glow
+   lives down behind the device mockup, where everything near it is opaque.
+
+   WHAT USED TO BE HERE. `.dot-grid` — a static CSS dot texture masked so it
+   faded INWARD, opaque in the gutters and transparent across the `max-w-6xl`
+   column, because a full-bleed dot field is the stock SaaS background and that
+   mask was the only thing stopping it reading as one. The rule survives; the
+   CSS does not. It is now `GUARD` in the field component, enforced per dot as a
+   smooth ellipse around the type, which damps the lattice instead of deleting
+   it and so keeps working on a phone — the mask clamped itself off entirely
+   below 72rem, having no gutters left to live in. If a future section wants a
+   quiet static dot texture, write it fresh against that section's ground; do
+   not resurrect a plum-tinted one that was measured for #f8f6fb.
    ------------------------------------------------------------------------- */
-
-/* Dotted texture, faded INWARD from the rim: transparent across the middle and
-   opaque at the edges, so the dots frame the content instead of sitting behind
-   the type. A full-bleed dot field is the stock SaaS background, and this mask
-   is the one move that stops it reading as one.
-
-   The horizontal stops are absolute, not percentages, and 36rem is exactly half
-   of the `max-w-6xl` (72rem) content column: the transparent zone IS the column,
-   so dots only ever live in the gutters beside it and fade to full strength at
-   the viewport edge. That also makes the texture self-disabling — below 72rem
-   there are no gutters, `calc(50% - 36rem)` goes negative, the browser clamps
-   the stops and the whole band comes out transparent. Which is what we want:
-   the previous mask was a viewport-relative radial, and on a phone (narrow band,
-   tall content) its ellipse covered so little of the band that the dots ran
-   straight behind the headline.
-
-   The second layer fades the dots out at the top and bottom rather than letting
-   them butt into the neighbouring bands; `mask-composite` intersects the two.
-   Its own layer, never the band itself — mask-image masks background-color too,
-   so masking the section would eat the surface tone along with the dots.
-   22px is the pitch media-fallback.tsx already uses: one dot rhythm sitewide.
-   Static and decorative; nothing here to switch off for reduced motion. */
-.dot-grid {
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    color-mix(in oklab, var(--color-primary) 24%, transparent) 1px,
-    transparent 0
-  );
-  background-size: 22px 22px;
-  -webkit-mask-image:
-    linear-gradient(
-      to right,
-      #000 0,
-      transparent calc(50% - 36rem),
-      transparent calc(50% + 36rem),
-      #000 100%
-    ),
-    linear-gradient(to bottom, transparent 0, #000 20%, #000 80%, transparent 100%);
-  mask-image:
-    linear-gradient(
-      to right,
-      #000 0,
-      transparent calc(50% - 36rem),
-      transparent calc(50% + 36rem),
-      #000 100%
-    ),
-    linear-gradient(to bottom, transparent 0, #000 20%, #000 80%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
 
 /* App-icon tile. The violet glow is what makes a filled square read as an icon
    rather than a swatch; the shared --shadow-lg is ink-tinted and reads as a

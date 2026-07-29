@@ -36,6 +36,24 @@ const variantsOnDark: Record<Variant, string> = {
   danger: "bg-accent text-on-accent hover:bg-accent-hover",
 };
 
+/**
+ * The focus ring, restated for dark grounds.
+ *
+ * A button does NOT set `outline-none` — unlike a field, which suppresses the
+ * global outline and indicates focus by turning its border — so the outline in
+ * `globals.css` IS a button's whole focus indicator, and it is violet. Violet
+ * is 2.92:1 on ink and 3.68:1 on night, and the night figure only holds on bare
+ * plate: under section 7's dot field a guarded dot drops it to 2.34:1. WCAG
+ * 1.4.11 wants 3:1 against what the indicator sits on, so on dark it takes the
+ * same colour every other bright thing here takes — lilac, 9.50:1 on ink and
+ * 7.61:1 at the worst pixel the field can put behind it.
+ *
+ * The 2px offset means the ring never touches the button it surrounds, so the
+ * lilac `primary` fill being lilac too costs nothing: both of the ring's
+ * neighbours are the band. Asserted in `pnpm check-contrast`.
+ */
+const focusOnDark = "focus-visible:outline-lilac";
+
 const sizes: Record<Size, string> = {
   sm: "px-3 py-1.5 text-sm",
   md: "px-5 py-2.5 text-base",
@@ -43,7 +61,12 @@ const sizes: Record<Size, string> = {
 
 /** Shared classes so links can look like buttons too. */
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", light = false) {
-  return cn(base, (light ? variantsOnDark : variants)[variant], sizes[size]);
+  return cn(
+    base,
+    (light ? variantsOnDark : variants)[variant],
+    light && focusOnDark,
+    sizes[size],
+  );
 }
 
 export function Button({
