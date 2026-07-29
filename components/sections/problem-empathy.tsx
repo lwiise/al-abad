@@ -25,8 +25,11 @@ export function ProblemEmpathy({
 }) {
   const items = points.length ? points : FALLBACK;
 
+  // `hero` is section 1's surface, continued: the hero's bottom fade lands on
+  // --color-surface and this holds exactly that tone, so the two sections read
+  // as one sheet rather than as a hero followed by a lilac band.
   return (
-    <Section bg="lilac">
+    <Section bg="hero">
       {/* One entrance for the whole section — rise + fade on intersection,
           once. The diagram's own motion starts from there. */}
       <Reveal className="ch-reveal">

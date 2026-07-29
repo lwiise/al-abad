@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type Bg = "background" | "surface" | "lilac" | "ink" | "plum";
+type Bg = "background" | "surface" | "lilac" | "ink" | "plum" | "hero";
 
 /**
  * The section rhythm is white ↔ lilac, with ink as the dark anchor.
@@ -11,6 +11,12 @@ type Bg = "background" | "surface" | "lilac" | "ink" | "plum";
  * perception — alternating the two produces no rhythm at all, just a page that
  * looks flat and slightly dirty. `lilac` (#ebe3f7) is 1.25:1 against white,
  * a step you can actually see. Verify with `pnpm check-contrast`.
+ *
+ * `hero` is the one exception, and it is the opposite intent: it holds the tone
+ * section 1 ends on instead of stepping away from it, so section 2 reads as the
+ * same sheet of paper the hero is printed on. It belongs to section 2 alone —
+ * see `.section-hero-surface` in globals.css. Anywhere else it would just be
+ * the invisible white/surface alternation the paragraph above rules out.
  */
 const bgMap: Record<Bg, string> = {
   background: "bg-background",
@@ -18,6 +24,7 @@ const bgMap: Record<Bg, string> = {
   lilac: "bg-surface-strong",
   ink: "bg-ink",
   plum: "bg-primary",
+  hero: "section-hero-surface",
 };
 
 /** Full-width band + centered max-width container. Drives section rhythm. */

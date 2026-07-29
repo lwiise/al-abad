@@ -118,9 +118,9 @@ export function ChallengesBoard({
 
       {/* Stacked: sticks below the header so it stays in view while the list
           scrolls. Ground of its own so rows pass behind it, not through — must
-          match the section's band (lilac), or the diagram sits in a visible
-          rectangle as the list scrolls under it. */}
-      <div className="sticky top-20 z-10 -mx-2 bg-surface-strong px-2 pb-4 min-[1080px]:static min-[1080px]:z-auto min-[1080px]:mx-0 min-[1080px]:col-start-2 min-[1080px]:row-start-1 min-[1080px]:row-end-3 min-[1080px]:self-center min-[1080px]:px-0 min-[1080px]:pb-0">
+          match the section's band, which is now section 1's surface, or the
+          diagram sits in a visible rectangle as the list scrolls under it. */}
+      <div className="sticky top-20 z-10 -mx-2 bg-surface px-2 pb-4 min-[1080px]:static min-[1080px]:z-auto min-[1080px]:mx-0 min-[1080px]:col-start-2 min-[1080px]:row-start-1 min-[1080px]:row-end-3 min-[1080px]:self-center min-[1080px]:px-0 min-[1080px]:pb-0">
         {/* Sized in globals.css, not with responsive utilities: the 1080px
             breakpoint has to be an arbitrary variant, and Tailwind orders those
             ahead of the named ones, so `sm:` would win at desktop widths. */}

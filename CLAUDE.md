@@ -37,11 +37,13 @@ One non-palette token: `whatsapp` (#25d366) — WhatsApp's own brand green, for 
 
 ### Section rhythm
 
-`<Section bg>` accepts `background · surface · lilac · ink · plum`. The homepage alternates **white ↔ lilac** with **ink** as the single dark anchor at section 3 (التعريف):
+`<Section bg>` accepts `background · surface · lilac · ink · plum · hero`. The homepage alternates **white ↔ lilac** with **ink** as the single dark anchor at section 3 (التعريف):
 
-`hero · lilac · INK · white · lilac · white · white · lilac · white · white · lilac`
+`hero · hero-surface · INK · white · lilac · white · white · lilac · white · white · lilac`
 
 **Do not alternate `background` with `surface`.** #ffffff against #f8f6fb is 1.07:1 — below the threshold of perception, so it produces no rhythm, just a page that looks flat. `lilac` is 1.25:1 against white, which reads. `surface` is for cards and insets.
+
+**`hero` belongs to section 2 and nowhere else.** It is not a band, it is the *absence* of one: the hero's last layer fades to `--color-surface`, so its bottom row is exactly #f8f6fb, and `.section-hero-surface` holds that same tone through section 2 — the two read as one sheet, with no line where they meet. Deliberately flat: a wash down to white looks like the obvious upgrade, but the challenges diagram's sticky plate has to sit opaque on this ground in the stacked layout, and no flat rectangle can track a gradient — at 1.07:1 it reads as a faint panel behind the artwork even with its edges faded. Anywhere else on the page this tone would be exactly the invisible white/surface alternation the paragraph above rules out; here the ink anchor immediately after is what carries the rhythm.
 
 ### Rules
 - **Coral is a fill, never small text.** Contrast is symmetric, so coral-on-white and white-on-coral are the same 3.84:1 — it fails AA as body-size text on *every* ground (3.84 on white, 3.08 on ink). Use `text-accent-strong` on light grounds and `text-lilac` on ink. Coral fills stay: they clear the 3:1 UI/graphics threshold.

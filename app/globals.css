@@ -655,8 +655,15 @@
 @media (min-width: 640px) {
   .ch-diagram { max-width: 22rem; }
 }
+/* Desktop: the diagram fills its grid column instead of floating inside it.
+   Capped at 27rem it sat 30px in from the page's content edge while every
+   other column on the page — the hero's stat pills above it, the list beside
+   it — is flush with that edge, so the drawing read as adrift rather than as
+   one half of a two-column section. The box is the artwork's real bounding
+   box, not padding: at rest the circles sit 55 of 400 viewBox units in, and
+   فتور العلاقة drives them out to 9. */
 @media (min-width: 1080px) {
-  .ch-diagram { max-width: 27rem; }
+  .ch-diagram { max-width: none; }
 }
 
 @keyframes ch-breathe {
@@ -964,6 +971,32 @@
   background-image: var(--grain-tile);
   opacity: 0.42;
   mix-blend-mode: overlay;
+}
+
+/* --- Section 2 continues section 1's surface ------------------------------
+   The hero's last layer before the grain is an opaque `to top` fade to
+   --color-surface over its bottom 10rem, so the hero's final row is exactly
+   #f8f6fb — flat, untextured, untinted, at every viewport width and whatever
+   the pools and the najdi relief are doing higher up. Holding that same tone
+   is what removes the seam: there is no edge to see, because both sides of
+   the join are the same colour and section 2 never steps off it.
+
+   Flat, and deliberately so. A wash down to white was the obvious next move
+   and it is wrong here: the diagram's sticky plate has to sit opaque over
+   this ground in the stacked layout, no flat rectangle can track a gradient,
+   and at 1.07:1 the mismatch reads as a faint panel behind the artwork even
+   with its edges faded. Nothing else in the section wants a ramp badly enough
+   to pay for that. No najdi and no pools either — the hero's bottom edge
+   carries neither, so continuing it means continuing nothing, and a second
+   copy of the hero's corner texture one screen later would read as a template
+   stamp rather than as the same room.
+
+   This is NOT the white/surface alternation `Section` warns about. That rule
+   is about two ADJACENT bands stepping by 1.07:1 — a step nobody can see, so
+   it buys no rhythm. Here the two are meant to be the same surface, and the
+   rhythm comes from section 3's ink anchor immediately after. */
+.section-hero-surface {
+  background-color: var(--color-surface);
 }
 
 /* Nav link underline, drawn from the right — RTL reading direction. */
