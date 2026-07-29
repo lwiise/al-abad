@@ -69,7 +69,12 @@ export function CourseCurriculum({ modules }: { modules: CourseModuleRow[] }) {
         </ul>
 
         <div className="mx-auto mt-10 max-w-3xl">
-          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-background px-5">
+          {/* Same `shadow-sm` as the homepage FAQ, and for the same reason —
+              these two are the same card and must not diverge. Here the band is
+              `surface`, so the white card is 1.07:1 against it, which CLAUDE.md
+              calls below the threshold of perception; the shadow is what makes
+              the محاور read as a surface instead of a faint patch. */}
+          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-background px-5 shadow-sm">
             {modules.map((m, i) => {
               const lessons = m.lessons ?? 0;
               return (

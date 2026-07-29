@@ -8,6 +8,16 @@ import { buttonClasses } from "@/components/ui/button";
  * Slim purchase bar that slides in once the hero scrolls out of view, and hides
  * again while the hero or the offer section is on screen (so it never competes
  * with the in-view CTA). Sits just under the sticky site header.
+ *
+ * It takes `shadow-nav` — the SAME token the frosted header takes, deliberately
+ * so. These are the site's only two full-bleed fixed bars, they are stacked one
+ * directly beneath the other on this page, and two overlay bars a few pixels
+ * apart with different depths read as a rendering bug rather than as hierarchy.
+ * (Left to hand-rolled values these would drift, which is the failure the dark
+ * `Button` variants and the four dark CTA treatments already document.)
+ *
+ * Nothing extra is needed to hide it: the shadow rides the existing opacity
+ * fade, so it does not linger under the header once the bar has slid up.
  */
 export function StickyBuyBar({
   title,
@@ -48,7 +58,7 @@ export function StickyBuyBar({
     <div
       aria-hidden={!visible}
       className={cn(
-        "fixed inset-x-0 top-16 z-40 border-b border-border bg-background/90 backdrop-blur transition-all duration-300",
+        "fixed inset-x-0 top-16 z-40 border-b border-border bg-background/90 shadow-nav backdrop-blur transition-all duration-300",
         visible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0",
       )}
     >

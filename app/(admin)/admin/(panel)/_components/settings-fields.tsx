@@ -35,7 +35,7 @@ export async function loadSettings() {
 /** Collapsible section — closed by default, only the title shows. */
 export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <details className="group rounded-xl border border-border bg-background">
+    <details className="group rounded-xl border border-border bg-background shadow-sm">
       <summary className="flex cursor-pointer select-none list-none items-center justify-between gap-3 rounded-xl px-6 py-4 text-sm font-bold text-primary transition-colors hover:bg-surface [&::-webkit-details-marker]:hidden">
         {title}
         <ChevronDown className="size-4 shrink-0 text-foreground-subtle transition-transform group-open:rotate-180" />

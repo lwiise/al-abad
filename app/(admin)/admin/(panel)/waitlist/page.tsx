@@ -32,7 +32,7 @@ export default async function WaitlistPage() {
           لا يوجد مشتركون بعد.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-background">
+        <div className="overflow-x-auto rounded-xl border border-border bg-background shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-foreground-subtle">
