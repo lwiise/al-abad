@@ -1,47 +1,46 @@
-import type { CSSProperties, RefObject } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * The signature of قسم التعريف: ONE circle.
+ * The art of قسم التعريف — one drawn form per مرتكز.
  *
- * Section 2 holds two circles in tension. Here they have resolved into a single
- * line whose stroke runs lilac → coral: both colours, one continuous stroke.
+ * A DELIBERATE DEPARTURE FROM HOUSE STYLE, and worth naming as one. Everything
+ * else drawn on this site is hairline stroke: the challenges diagram, the hero
+ * backdrop, the orbit accents, the Najdi tile — all `fill="none"` with a 1–1.75
+ * non-scaling stroke, and the only fills anywhere are sub-6-unit dots, 12–14%
+ * washes sitting *behind* a stroke, and imported brand logos. Nothing on the
+ * site has a silhouette that carries its meaning.
  *
- * Every state is driven by `data-state` alone; all the motion lives in
- * `app/globals.css` under `.mi-*`. What lives here is the geometry, and the
- * per-element constants that geometry implies.
+ * These do. There is no `stroke` attribute in this file at all, by instruction:
+ * two earlier passes at this section drew the three مرتكزات as abstract
+ * geometry — a ring resolving, arcs separating, tracings accumulating — and
+ * both were rejected. The brief is to draw the thing, not to allude to it.
  *
- * EACH STATE HAS TO ARGUE ITS مرتكز, not merely appear. Section 2 sets the
- * standard: ضعف التواصل breaks its strokes into travelling gaps, فتور العلاقة
- * drains coral to grey. A state that would suit any label is decoration. So:
+ * So each مرتكز gets an artifact of the practice, and the motion is the artifact
+ * being used rather than a line being drawn:
  *
- *   منهج علميّ    points scattered inside the ring travel and land exactly ON
- *                 it — method is what turns scattered observation into a rule
- *   أدوات عملية   the ring resolves into six IDENTICAL segments, equal gaps,
- *                 each stepping out the same distance — equal parts evenly
- *                 spaced is a kit; uneven pieces drifting is a break
- *   خبرة ميدانية  faint tracings of the circle accumulate at slight offsets,
- *                 one after another — each a past case, the solid line their sum
+ *   منهج علميّ    an open book; its pages settle onto the stack one by one
+ *   أدوات عملية   a set of four implements; each rises into place in turn
+ *   خبرة ميدانية  a route already travelled; its waypoints fill in along it
  *
- * Converge, distribute, accumulate: three different KINDS of motion, so they
- * stay distinguishable in peripheral vision.
+ * The route is a FILLED tapered ribbon, not a stroked path, and what animates
+ * is the waypoints — never the ribbon drawing itself. A path that draws is
+ * exactly the line animation being removed.
  *
- * TWO CONSTRAINTS SHAPE THE GEOMETRY:
+ * Forms stay geometric rather than illustrative. CLAUDE.md's warning about
+ * generic template visuals is at its sharpest here: a wrench-and-screwdriver
+ * icon set would be precisely the failure it describes.
  *
- * 1. Nothing here may touch `stroke-dasharray` / `stroke-dashoffset` on the
- *    main circle. `useSignatureScrub` in meet-instructor.tsx owns those
- *    imperatively, in DEVICE pixels, for the scroll-draw — see the long note
- *    there on why they cannot be authored declaratively. The states work on
- *    separate elements, so the two can never race.
+ * Colour, per the dark-section rule: lilac carries the forms (9.50:1 on ink)
+ * and coral marks exactly one element in each (3.08:1 — an accent, never the
+ * thing you must read). No gradient across a silhouette: a two-hue gradient is
+ * the tic CLAUDE.md bans.
  *
- * 2. Browsers clip `<svg>` at the viewBox, so NOTHING may exceed 100 units
- *    from the centre — in either its resting or its active position. Every
- *    figure below is derived and asserted at the bottom of this file rather
- *    than typed by hand: a first hand-picked scatter reached 110.7 and would
- *    have cut the points off against the box.
+ * Every state is driven by `data-state` alone; the motion lives in
+ * `app/globals.css` under `.mi-*`. Everything is always mounted at opacity 0,
+ * so a state change interpolates from what is on screen instead of appearing.
  *
- * Decorative: the section carries a visually-hidden live region that says what
- * this is doing, so the SVG itself is aria-hidden.
+ * Decorative: the section carries a visually-hidden live region describing
+ * this, so the SVG itself is aria-hidden.
  */
 
 export const INSTRUCTOR_STATES = ["method", "tools", "field"] as const;
@@ -49,232 +48,290 @@ export const INSTRUCTOR_STATES = ["method", "tools", "field"] as const;
 export type InstructorState = (typeof INSTRUCTOR_STATES)[number];
 export type SignatureState = InstructorState | "idle";
 
-/**
- * Geometry lives here, not in the consumer: useSignatureScrub converts the
- * circle's user-space circumference into device pixels and needs both numbers
- * to agree with what is actually drawn.
- */
-export const VIEWBOX = 200;
-export const RADIUS = 99;
-const CENTRE = VIEWBOX / 2;
-
-/** Furthest any element may sit from the centre before the viewBox clips it. */
-const LIMIT = CENTRE;
+const BOX = 240;
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
-const round = (n: number) => +n.toFixed(2);
-const onCircle = (r: number, deg: number): [number, number] => [
-  round(CENTRE + r * Math.cos(rad(deg))),
-  round(CENTRE + r * Math.sin(rad(deg))),
-];
+const r2 = (n: number) => +n.toFixed(2);
 
 // ---------------------------------------------------------------------------
-// منهج علميّ — scattered points that resolve onto the ring
+// منهج علميّ — an open book
 // ---------------------------------------------------------------------------
 
-const POINT_R = 1.75;
-const POINT_HOME_R = 97.5;
+/** Where the pages hinge. Also the CSS transform-origin for `.mi-page`. */
+const SPINE: [number, number] = [120, 104];
 
 /**
- * Per point: how far IN from its home position it rests, and how far along the
- * tangent. Both are applied along the point's own radius, which is what keeps
- * every scattered position inside the box no matter how large the numbers look
- * — an outward component is what would clip. Varied so the cloud reads as
- * scatter rather than a uniform contraction.
+ * A 3/4 open book: the two boards fan up and away from a spine that sits lower
+ * than both outer edges, which is what makes it read as opened rather than as
+ * two parallelograms. The near edge of each board is drawn as a separate
+ * thickness so the object has depth without any outline.
  */
-const POINT_SCATTER: [inward: number, tangent: number][] = [
-  [22, 7],
-  [13, -9],
-  [26, 4],
-  [17, 10],
-  [11, -6],
-  [24, -8],
-  [15, 6],
-  [28, -3],
-  [12, 9],
-  [19, -11],
-];
-
-const POINTS = POINT_SCATTER.map(([inward, tangent], i) => {
-  const deg = i * 36;
-  const [cx, cy] = onCircle(POINT_HOME_R, deg);
-  const ux = Math.cos(rad(deg));
-  const uy = Math.sin(rad(deg));
-  // -radial * inward  +  tangent * jitter
-  return {
-    cx,
-    cy,
-    sx: round(-ux * inward - uy * tangent),
-    sy: round(-uy * inward + ux * tangent),
-  };
-});
-
-// ---------------------------------------------------------------------------
-// أدوات عملية — the ring as six identical, evenly spaced segments
-// ---------------------------------------------------------------------------
-
-const SEG_R = 91;
-const SEG_SPAN = 54; // six of these plus six 6° gaps = 360
-const SEG_STEP = 7; // every segment steps out by exactly this much
-
-const SEGMENTS = Array.from({ length: 6 }, (_, i) => {
-  const from = i * 60 + 3;
-  const [x1, y1] = onCircle(SEG_R, from);
-  const [x2, y2] = onCircle(SEG_R, from + SEG_SPAN);
-  const mid = from + SEG_SPAN / 2;
-  return {
-    // large-arc-flag 0 (span < 180°), sweep-flag 1 (increasing angle)
-    d: `M ${x1} ${y1} A ${SEG_R} ${SEG_R} 0 0 1 ${x2} ${y2}`,
-    dx: round(SEG_STEP * Math.cos(rad(mid))),
-    dy: round(SEG_STEP * Math.sin(rad(mid))),
-  };
-});
-
-// ---------------------------------------------------------------------------
-// خبرة ميدانية — faint tracings that accumulate
-// ---------------------------------------------------------------------------
-
-const GHOST_R = 93;
+const BOOK_LEFT = "M 120 104 L 36 82 L 36 136 L 120 158 Z";
+const BOOK_RIGHT = "M 120 104 L 204 82 L 204 136 L 120 158 Z";
+/** Board thickness — the edge you would see, so the boards are solids not sheets. */
+const BOOK_LEFT_EDGE = "M 36 136 L 120 158 L 120 168 L 36 146 Z";
+const BOOK_RIGHT_EDGE = "M 204 136 L 120 158 L 120 168 L 204 146 Z";
+/** The spine block, so the two halves read as one object rather than two slabs. */
+const BOOK_SPINE = "M 115 103 L 125 103 L 125 170 L 115 170 Z";
 
 /**
- * Offset centres, so the traces overlap rather than nest — nested rings read as
- * one target, overlapping ones as separate records of the same thing.
+ * Three leaves hinged at the spine. They rest lifted and rotate down onto the
+ * stack in turn — the rotation is in globals.css; the shapes are identical so
+ * the sequence reads as one page after another, not three different things.
+ */
+const PAGE = "M 120 104 L 200 83 L 200 92 L 120 112 Z";
+const PAGE_LIFT = [-38, -26, -14]; // degrees at rest, settling to 0
+
+// ---------------------------------------------------------------------------
+// أدوات عملية — four implements
+// ---------------------------------------------------------------------------
+
+/**
+ * One family, four working ends. The shared stem is what makes them a SET; the
+ * differing ends are what make them four tools. Deliberately not recognisable
+ * hardware — for a relationship counsellor the tools are conceptual, and a
+ * literal wrench would be absurd.
  *
- * Each also rests pulled back toward the centre along its own offset direction
- * and settles outward into place, so a trace arrives rather than switches on.
+ * Built from explicit point arrays rather than authored `d` strings, so the
+ * clip assertions below can check real coordinates. The one curved end is a
+ * `<circle>` for the same reason: an arc command's `rx ry rot flags` are not
+ * coordinates, and a checker that pairs path numbers blindly reads them as
+ * some — which is exactly the false positive this shape produced first time.
  */
-const GHOSTS = [
-  [-4, -2.5],
-  [3.5, -4],
-  [-2.5, 4],
-  [4, 3],
-].map(([ox, oy]) => {
-  const len = Math.hypot(ox, oy);
+const TOOL_X = [58, 98, 138, 178];
+const TOOL_TOP = 84;
+const TOOL_BOTTOM = 156;
+
+type Pt = [number, number];
+
+const poly = (pts: Pt[]) =>
+  `M ${pts[0][0]} ${pts[0][1]} ` + pts.slice(1).map(([x, y]) => `L ${x} ${y}`).join(" ") + " Z";
+
+const TOOLS = TOOL_X.map((x, i) => {
+  // Chamfered top, so the stem reads as a handle without an arc.
+  const stem: Pt[] = [
+    [x - 6.5, TOOL_TOP + 9],
+    [x - 3, TOOL_TOP],
+    [x + 3, TOOL_TOP],
+    [x + 6.5, TOOL_TOP + 9],
+    [x + 6.5, TOOL_BOTTOM],
+    [x - 6.5, TOOL_BOTTOM],
+  ];
+
+  const b = TOOL_BOTTOM;
+  const ends: Pt[][] =
+    i === 0
+      ? [[[x - 15, b], [x + 15, b], [x + 11, b + 22], [x - 15 + 4, b + 22]]] // flat blade
+      : i === 1
+        ? [
+            [[x - 13, b], [x - 3, b], [x - 3, b + 24], [x - 13, b + 24]], // two prongs
+            [[x + 3, b], [x + 13, b], [x + 13, b + 24], [x + 3, b + 24]],
+          ]
+        : i === 2
+          ? [[[x - 14, b], [x + 14, b], [x, b + 26]]] // point
+          : []; // the disc below
+
   return {
-    cx: CENTRE + ox,
-    cy: CENTRE + oy,
-    // toward the centre, 4 units
-    sx: round((-ox / len) * 4),
-    sy: round((-oy / len) * 4),
+    polys: [stem, ...ends],
+    disc: i === 3 ? { cx: x, cy: b + 13, r: 14 } : null,
   };
 });
 
 // ---------------------------------------------------------------------------
-// Clip assertions — cheap, and they run wherever this module is imported.
+// خبرة ميدانية — a travelled route
 // ---------------------------------------------------------------------------
 
-const reach = (dx: number, dy: number, r = 0) => Math.hypot(dx, dy) + r;
+const ROUTE: [number, number][] = [
+  [46, 194],
+  [116, 178],
+  [84, 86],
+  [196, 54],
+];
 
-for (const p of POINTS) {
-  const home = reach(p.cx - CENTRE, p.cy - CENTRE, POINT_R);
-  const rest = reach(p.cx + p.sx - CENTRE, p.cy + p.sy - CENTRE, POINT_R);
-  if (home > LIMIT || rest > LIMIT) {
-    throw new Error(`Signature point escapes the viewBox: home ${home}, rest ${rest}`);
+const bez = (t: number, p: [number, number][]): [number, number] => {
+  const u = 1 - t;
+  return [0, 1].map(
+    (i) =>
+      u * u * u * p[0][i] + 3 * u * u * t * p[1][i] + 3 * u * t * t * p[2][i] + t * t * t * p[3][i],
+  ) as [number, number];
+};
+
+const tangent = (t: number, p: [number, number][]): [number, number] => {
+  const u = 1 - t;
+  return [0, 1].map(
+    (i) =>
+      3 * u * u * (p[1][i] - p[0][i]) +
+      6 * u * t * (p[2][i] - p[1][i]) +
+      3 * t * t * (p[3][i] - p[2][i]),
+  ) as [number, number];
+};
+
+/**
+ * The ribbon is BUILT, not typed: sample the centreline, offset each sample
+ * along its normal by a tapering half-width, then close the two sides into one
+ * filled polygon. Hand-authoring an offset curve is where a tapered ribbon goes
+ * subtly wrong, and it is also how a shape silently escapes the viewBox.
+ */
+const RIBBON = (() => {
+  const N = 30;
+  const side = (sign: number) =>
+    Array.from({ length: N + 1 }, (_, i) => {
+      const t = i / N;
+      const [x, y] = bez(t, ROUTE);
+      const [tx, ty] = tangent(t, ROUTE);
+      const len = Math.hypot(tx, ty) || 1;
+      const half = 7.5 - 4 * t; // tapers along the way travelled
+      return [r2(x + (-ty / len) * half * sign), r2(y + (tx / len) * half * sign)] as [
+        number,
+        number,
+      ];
+    });
+  const out = side(1);
+  const back = side(-1).reverse();
+  return (
+    `M ${out[0][0]} ${out[0][1]} ` +
+    out.slice(1).map(([x, y]) => `L ${x} ${y}`).join(" ") +
+    ` ` +
+    back.map(([x, y]) => `L ${x} ${y}`).join(" ") +
+    " Z"
+  );
+})();
+
+const WAYPOINTS = [0.04, 0.3, 0.54, 0.78, 0.98].map((t) => {
+  const [x, y] = bez(t, ROUTE);
+  return { cx: r2(x), cy: r2(y) };
+});
+const WAYPOINT_R = 9;
+
+// ---------------------------------------------------------------------------
+// Clip assertions. Kept from the previous art, adapted: browsers clip <svg> at
+// the viewBox, and that failure is invisible in a screenshot. Checks the pages
+// in their LIFTED rest position too — that is the one thing here that lives
+// outside its authored bounds.
+// ---------------------------------------------------------------------------
+
+const assertInside = (label: string, pts: [number, number][]) => {
+  for (const [x, y] of pts) {
+    if (x < 0 || x > BOX || y < 0 || y > BOX) {
+      throw new Error(`Instructor art escapes the viewBox: ${label} at ${x},${y}`);
+    }
   }
+};
+
+/** Only valid for absolute M/L polygons — every `d` it is given is one. */
+const numbersIn = (d: string): [number, number][] => {
+  const n = d.match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
+  const pairs: [number, number][] = [];
+  for (let i = 0; i + 1 < n.length; i += 2) pairs.push([n[i], n[i + 1]]);
+  return pairs;
+};
+
+assertInside("book", [
+  ...numbersIn(BOOK_LEFT),
+  ...numbersIn(BOOK_RIGHT),
+  ...numbersIn(BOOK_LEFT_EDGE),
+  ...numbersIn(BOOK_RIGHT_EDGE),
+  ...numbersIn(BOOK_SPINE),
+]);
+for (const deg of PAGE_LIFT) {
+  const c = Math.cos(rad(deg));
+  const s = Math.sin(rad(deg));
+  assertInside(
+    `page@${deg}deg`,
+    numbersIn(PAGE).map(([x, y]) => {
+      const dx = x - SPINE[0];
+      const dy = y - SPINE[1];
+      return [SPINE[0] + dx * c - dy * s, SPINE[1] + dx * s + dy * c];
+    }),
+  );
 }
-if (SEG_R + SEG_STEP > LIMIT) throw new Error("Signature segments escape the viewBox");
-for (const g of GHOSTS) {
-  const home = reach(g.cx - CENTRE, g.cy - CENTRE, GHOST_R);
-  const rest = reach(g.cx + g.sx - CENTRE, g.cy + g.sy - CENTRE, GHOST_R);
-  if (home > LIMIT || rest > LIMIT) {
-    throw new Error(`Signature ghost escapes the viewBox: home ${home}, rest ${rest}`);
-  }
-}
+assertInside(
+  "tools",
+  TOOLS.flatMap((t) => [
+    ...t.polys.flat(),
+    ...(t.disc
+      ? ([
+          [t.disc.cx - t.disc.r, t.disc.cy - t.disc.r],
+          [t.disc.cx + t.disc.r, t.disc.cy + t.disc.r],
+        ] as Pt[])
+      : []),
+  ]),
+);
+assertInside("ribbon", numbersIn(RIBBON));
+assertInside(
+  "waypoints",
+  WAYPOINTS.flatMap(({ cx, cy }) => [
+    [cx - WAYPOINT_R, cy - WAYPOINT_R],
+    [cx + WAYPOINT_R, cy + WAYPOINT_R],
+  ] as [number, number][]),
+);
 
 // ---------------------------------------------------------------------------
 
 export function InstructorSignature({
   state,
-  circleRef,
   className,
 }: {
   state: SignatureState;
-  circleRef?: RefObject<SVGCircleElement | null>;
   className?: string;
 }) {
   return (
     <svg
-      viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
+      viewBox={`0 0 ${BOX} ${BOX}`}
       data-state={state}
-      className={cn("mi-signature", className)}
-      fill="none"
+      className={cn("mi-art", className)}
       aria-hidden="true"
     >
-      <defs>
-        <linearGradient id="instructor-signature" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" style={{ stopColor: "var(--color-lilac)" }} />
-          <stop offset="1" style={{ stopColor: "var(--color-coral)" }} />
-        </linearGradient>
-      </defs>
-
-      {/* خبرة ميدانية — behind the ring, so they read as what it was built from.
-          The stagger that makes them accumulate is in globals.css. */}
-      <g className="mi-ghosts">
-        {GHOSTS.map((g, i) => (
-          <circle
-            key={i}
-            className="mi-ghost"
-            cx={g.cx}
-            cy={g.cy}
-            r={GHOST_R}
-            stroke="var(--color-lilac)"
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-            style={{ "--mi-sx": `${g.sx}px`, "--mi-sy": `${g.sy}px` } as CSSProperties}
-          />
-        ))}
-      </g>
-
-      {/* No stroke-dasharray here on purpose: the circle renders CLOSED for
-          SSR, no-JS and reduced motion, and only useSignatureScrub adds the
-          dash. See the note there on why the dash cannot be authored. */}
-      <circle
-        ref={circleRef}
-        className="mi-circle"
-        cx={CENTRE}
-        cy={CENTRE}
-        r={RADIUS}
-        // rotate -90° so the dash origin (3 o'clock) moves to the top; the
-        // stroke then grows clockwise from there.
-        transform={`rotate(-90 ${CENTRE} ${CENTRE})`}
-        stroke="url(#instructor-signature)"
-        strokeOpacity="0.35"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-
-      {/* أدوات عملية */}
-      <g className="mi-segs">
-        {SEGMENTS.map((s, i) => (
+      {/* منهج علميّ */}
+      <g className="mi-book">
+        <path d={BOOK_LEFT} fill="var(--color-lilac)" fillOpacity="0.38" />
+        <path d={BOOK_RIGHT} fill="var(--color-lilac)" fillOpacity="0.5" />
+        <path d={BOOK_LEFT_EDGE} fill="var(--color-lilac)" fillOpacity="0.7" />
+        <path d={BOOK_RIGHT_EDGE} fill="var(--color-lilac)" fillOpacity="0.8" />
+        <path d={BOOK_SPINE} fill="var(--color-lilac)" fillOpacity="0.9" />
+        {PAGE_LIFT.map((deg, i) => (
           <path
             key={i}
-            className="mi-seg"
-            d={s.d}
-            stroke="url(#instructor-signature)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            vectorEffect="non-scaling-stroke"
-            // Inline rather than an nth-child table in globals.css (the shape
-            // `.ch-dots` uses): these are DERIVED from the same numbers that
-            // place the segment, so keeping them together is what stops the two
-            // drifting apart. The behaviour still lives entirely in the CSS.
-            style={{ "--mi-dx": `${s.dx}px`, "--mi-dy": `${s.dy}px` } as CSSProperties}
+            className="mi-page"
+            d={PAGE}
+            // The one coral element: the page currently being turned.
+            fill={i === 0 ? "var(--color-coral)" : "var(--color-lilac)"}
+            fillOpacity={i === 0 ? 0.95 : 0.72}
+            style={{ "--mi-lift": `${deg}deg` } as React.CSSProperties}
           />
         ))}
       </g>
 
-      {/* منهج علميّ — drawn last so the points land on top of the line. */}
-      <g className="mi-points">
-        {POINTS.map((p, i) => (
+      {/* أدوات عملية */}
+      <g className="mi-tools">
+        {TOOLS.map((t, i) => (
+          <g
+            key={i}
+            className="mi-tool"
+            fill={i === 0 ? "var(--color-coral)" : "var(--color-lilac)"}
+            fillOpacity={i === 0 ? 0.95 : 0.7}
+          >
+            {t.polys.map((pts, j) => (
+              <path key={j} d={poly(pts)} />
+            ))}
+            {t.disc && <circle cx={t.disc.cx} cy={t.disc.cy} r={t.disc.r} />}
+          </g>
+        ))}
+      </g>
+
+      {/* خبرة ميدانية */}
+      <g className="mi-route">
+        <path className="mi-ribbon" d={RIBBON} fill="var(--color-lilac)" fillOpacity="0.4" />
+        {WAYPOINTS.map((w, i) => (
           <circle
             key={i}
-            className="mi-point"
-            cx={p.cx}
-            cy={p.cy}
-            r={POINT_R}
-            fill="var(--color-lilac)"
-            style={{ "--mi-sx": `${p.sx}px`, "--mi-sy": `${p.sy}px` } as CSSProperties}
+            className="mi-wp"
+            cx={w.cx}
+            cy={w.cy}
+            r={WAYPOINT_R}
+            // The last waypoint is where the road has reached.
+            fill={i === WAYPOINTS.length - 1 ? "var(--color-coral)" : "var(--color-lilac)"}
+            fillOpacity={i === WAYPOINTS.length - 1 ? 1 : 0.8}
           />
         ))}
       </g>
