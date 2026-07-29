@@ -53,6 +53,7 @@ const bgMap: Record<Bg, string> = {
 export function Section({
   id,
   bg = "background",
+  screen = false,
   className,
   containerClassName,
   bleed,
@@ -60,6 +61,33 @@ export function Section({
 }: {
   id?: string;
   bg?: Bg;
+  /**
+   * One-screen band: at least 90svh tall, with the content vertically centred
+   * in whatever is left over.
+   *
+   * `min-h`, never `h`: a band that is exactly 90svh either clips its content or
+   * scrolls inside itself the moment the window is short, the copy wraps to more
+   * lines or the reader has bumped their font size. A floor grows instead, which
+   * is the only failure mode that keeps every word on the page. It is the
+   * section's job to make its content FIT that floor at the heights people
+   * actually browse at — see the note in `ai-teaser.tsx` for how section 7 does
+   * it and where it gives up.
+   *
+   * `svh` rather than `vh`, matching `min-h-svh` in `hero.tsx`: on a phone `vh`
+   * measures the viewport with the browser chrome retracted, so a `vh` band is
+   * always taller than the screen it was meant to match. On a desktop the two
+   * are identical.
+   *
+   * The vertical padding goes height-aware with it, and this is the first place
+   * the height comes from — the standard `py-20 md:py-24` is 192px, more than a
+   * fifth of a 900px window, and it is dead air in a band whose whole point is
+   * that the content fits. The clamp gives back ~100px of it on a 768px window
+   * and reaches the standard 96px at a ~2130px one. Because the content is
+   * CENTRED, the padding only ever binds when content + padding exceeds the
+   * band; above that the free space is split evenly and the padding is a floor
+   * on how close the band's edges may come.
+   */
+  screen?: boolean;
   className?: string;
   containerClassName?: string;
   /**
@@ -78,10 +106,22 @@ export function Section({
   return (
     <section
       id={id}
-      className={cn(bgMap[bg], "py-20 md:py-24", bleed && "relative isolate", className)}
+      className={cn(
+        bgMap[bg],
+        screen
+          ? "flex min-h-[90svh] flex-col justify-center py-[clamp(2rem,4.5svh,6rem)]"
+          : "py-20 md:py-24",
+        bleed && "relative isolate",
+        className,
+      )}
     >
       {bleed}
-      <div className={cn("mx-auto max-w-6xl px-6", containerClassName)}>{children}</div>
+      {/* `w-full` matters only in the `screen` case: the container is a flex item
+          there, and a column flex item is sized by its content unless told
+          otherwise, so a short block would centre itself horizontally at its own
+          intrinsic width instead of filling the column. `mx-auto` still does the
+          centring; `max-w-6xl` still does the capping. */}
+      <div className={cn("mx-auto w-full max-w-6xl px-6", containerClassName)}>{children}</div>
     </section>
   );
 }

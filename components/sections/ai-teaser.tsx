@@ -59,6 +59,47 @@ export function AiTeaser({
        apart than before, not closer. */
     <Section
       bg="night"
+      /* ONE SCREEN — `min-h-[90svh]`, content centred in it. See `screen` in
+         section.tsx for why it is a floor and not a fixed height.
+
+         THE LAYOUT IS UNCHANGED: one centred column, tile → chip → headline →
+         subhead → form → mockup, at every width it has ever had. Fitting 90vh is
+         done by COMPRESSION, in the order that costs the design least:
+
+           1. The band's padding, which was 192px at md — more than a fifth of a
+              900px window — and is now height-aware (section.tsx). Worth ~100px
+              at a 768px window and invisible at any height.
+           2. The gaps between the six parts, likewise height-aware: the clamps
+              below hold the current rhythm on a tall window and tighten it on a
+              short one. Worth ~60px more, and also invisible — nothing changes
+              size, only the air between things.
+           3. The tile and the headline, the only two parts of the copy that
+              compress: the tile is a decorative icon and the headline clamps
+              between 28 and 36px the way hero.tsx's does. ~30px, and the last
+              compression that touches anything the reader looks at.
+           4. The mockup, which after 1–3 is still the one thing over budget on
+              any window shorter than ~1000px. It scales with the window height
+              (`.ai-mock` in globals.css), and that is where the remaining 166px
+              at 768 comes from.
+
+         WHAT THAT COSTS, stated because it is a real cost and it was the argument
+         against doing it this way: the phone's chat text is 12px, and the scale is
+         0.72 at a 900px window, 0.56 at 768 and 0.40 at 673 — so from a laptop
+         down it renders at 7px or less and the source chip reads as a shape rather
+         than as words. Nothing the reader has to READ is compressed: the subhead,
+         the form, the note and the chips keep their sizes at every height, and the
+         headline never goes below 28px. Below ~672px the ladder stops and the band
+         grows instead — the scale needed at a 600px window is 0.22, and a 63px
+         sticker looks broken rather than compact.
+
+         WHY THE FIELD'S GUARD IS NOW MEASURED. The quiet zone the dots damp
+         themselves into used to be an ellipse at a FIXED place — 34% of the band
+         height down. Every one of the four compressions above moves the copy, so
+         it no longer sits where that assumed; the field reads the `data-ai-copy`
+         box below and guards exactly that instead. It fixes an older drift too:
+         the fixed centre slid off the copy as soon as the headline wrapped to a
+         fifth line on a phone. */
+      screen
       className="overflow-hidden"
       /* Full-bleed, so the field is the page's ground and not a texture inside
          a content column — a lattice stopping at max-w-6xl would just redraw
@@ -73,7 +114,10 @@ export function AiTeaser({
          field would survive as violet dots over whatever ground the reader
          chose — decoration outliving the palette it was measured against. */
       bleed={
-        <AiParticleField className="pointer-events-none absolute inset-0 -z-10 size-full forced-colors:hidden" />
+        <AiParticleField
+          guard="[data-ai-copy]"
+          className="pointer-events-none absolute inset-0 -z-10 size-full forced-colors:hidden"
+        />
       }
     >
       {/* Sequenced rather than revealed as a slab: this is a stack of distinct
@@ -82,46 +126,74 @@ export function AiTeaser({
           reading order; see components/motion/sequence.tsx. */}
       <Sequence>
         <div className="text-center">
-          <span
-            data-seq-item
-            className="ai-tile mx-auto flex size-16 items-center justify-center rounded-xl bg-highlight text-on-highlight md:size-18"
-          >
-            <AssistantGlyph className="size-8 md:size-9" />
-          </span>
+          {/* WORDS INSIDE, ARTWORK OUTSIDE. The dot field reads this box and
+              holds itself to GUARD_MIN across it, so everything the reader has to
+              READ on the dark plate belongs in here. The mockup and the chips are
+              deliberately its siblings, not its children: they are opaque, they
+              carry their own ground, and guarding them would damp the field
+              across the whole band and leave the art nothing to be bright in.
 
-          {/* Violet-tinted chip with a lilac label. Same fill-vs-text split it
-              had on the light band, resolved for dark: the fill and the dot are
-              graphics and clear 3:1, while the label takes the dark-ground text
-              colour — 10.15:1 on the tint. Plum, which carried this label on
-              white, is 1.26:1 here and unusable. */}
-          <span
-            data-seq-item
-            className="mt-6 inline-flex items-center gap-2 rounded-full border border-highlight/40 bg-highlight/15 px-3.5 py-1.5 text-sm font-medium text-lilac"
-          >
-            <span aria-hidden="true" className="size-1.5 rounded-full bg-highlight" />
-            {badge || "قريباً"}
-          </span>
+              The gaps below are `clamp(floor, Nsvh, current)` — the rhythm as it
+              is on a tall window, tightening on a short one. It is the cheapest
+              height in the section: nothing changes size, only the air between
+              things, and it is worth ~60px at a 768px window. */}
+          <div data-ai-copy>
+            {/* The tile is height-aware too, and it is the only part of the copy
+                block that is: it is a decorative app icon rather than something
+                to read, so 24px off it on a short window costs nothing, and every
+                pixel the copy gives back is a pixel the mockup keeps. The cap is
+                the `md:size-18` it used to be. */}
+            <span
+              data-seq-item
+              className="ai-tile mx-auto flex size-[clamp(3rem,7svh,4.5rem)] items-center justify-center rounded-xl bg-highlight text-on-highlight"
+            >
+              <AssistantGlyph className="size-[clamp(1.5rem,3.5svh,2.25rem)]" />
+            </span>
 
-          <h2
-            data-seq-item
-            className="mx-auto mt-4 max-w-3xl text-3xl font-bold text-white md:text-4xl"
-          >
-            <span className="block">{lead}</span>
-            {/* Lilac, not violet — see the band note above. Flat either way:
-                a violet→blue ramp on a dark plate is the same generic look the
-                palette notes rule out on white. */}
-            {tail && <span className="mt-1 block text-lilac">{tail}</span>}
-          </h2>
+            {/* Violet-tinted chip with a lilac label. Same fill-vs-text split it
+                had on the light band, resolved for dark: the fill and the dot are
+                graphics and clear 3:1, while the label takes the dark-ground text
+                colour — 10.15:1 on the tint. Plum, which carried this label on
+                white, is 1.26:1 here and unusable. */}
+            <span
+              data-seq-item
+              className="mt-[clamp(1rem,2.4svh,1.5rem)] inline-flex items-center gap-2 rounded-full border border-highlight/40 bg-highlight/15 px-3.5 py-1.5 text-sm font-medium text-lilac"
+            >
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-highlight" />
+              {badge || "قريباً"}
+            </span>
 
-          <p
-            data-seq-item
-            className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-neutral-300"
-          >
-            {subhead || FALLBACK_SUBHEAD}
-          </p>
+            {/* Height-aware between 28 and 36px — the same device hero.tsx uses
+                on its own headline, and the same reason: on a short window the
+                axis that is scarce is the vertical one, so the size that matters
+                is a fraction of the HEIGHT. `min()` with a vw term so a narrow
+                window cannot blow it up. The cap is `md:text-4xl`, the floor is
+                just under the mobile `text-3xl`, and the line-height still comes
+                from the class. It is the one piece of real copy that compresses,
+                and it gives back ~6px of a 2-line headline; the subhead, the form
+                and the note keep their sizes at every height. */}
+            <h2
+              data-seq-item
+              className="mx-auto mt-[clamp(0.5rem,1.7svh,1rem)] max-w-3xl text-3xl font-bold text-white md:text-4xl"
+              style={{ fontSize: "clamp(1.75rem, min(3.6vw, 4.4svh), 2.25rem)" }}
+            >
+              <span className="block">{lead}</span>
+              {/* Lilac, not violet — see the band note above. Flat either way:
+                  a violet→blue ramp on a dark plate is the same generic look the
+                  palette notes rule out on white. */}
+              {tail && <span className="mt-1 block text-lilac">{tail}</span>}
+            </h2>
 
-          <div data-seq-item className="mt-8 flex justify-center">
-            <AiWaitlistForm ctaLabel={ctaLabel} note={note} />
+            <p
+              data-seq-item
+              className="mx-auto mt-[clamp(0.5rem,1.7svh,1rem)] max-w-2xl text-lg leading-relaxed text-neutral-300"
+            >
+              {subhead || FALLBACK_SUBHEAD}
+            </p>
+
+            <div data-seq-item className="mt-[clamp(1.25rem,3.4svh,2rem)] flex justify-center">
+              <AiWaitlistForm ctaLabel={ctaLabel} note={note} />
+            </div>
           </div>
 
           {/* Wrapped rather than marked on its own root: the preview is art,

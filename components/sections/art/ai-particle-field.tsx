@@ -24,11 +24,11 @@ import { useEffect, useRef } from "react";
  * across the content column — because a full-bleed dot field is the stock SaaS
  * background and that mask was the only thing stopping it reading as one. That
  * rule is not gone, it MOVED: `GUARD` below is the same idea enforced per dot,
- * as a smooth ellipse around the type instead of a rectangle the width of the
- * column. The difference is that it damps the field rather than deleting it, so
- * the dots visibly carry on behind the headline the way the reference's do, and
- * it degrades sensibly on a phone (where `.dot-grid` switched itself off
- * entirely, having no gutters left to live in).
+ * as a soft-edged quiet zone around the type rather than a hard-stopped mask the
+ * width of the column. The difference is that it damps the field rather than
+ * deleting it, so the dots visibly carry on behind the headline the way the
+ * reference's do, and it degrades sensibly on a phone (where `.dot-grid`
+ * switched itself off entirely, having no gutters left to live in).
  *
  * THE GUARD IS A LEGIBILITY REQUIREMENT, NOT A TASTE ONE. A lilac dot at full
  * strength is 1.25:1 against white — text over one is unreadable. Damping the
@@ -80,42 +80,61 @@ const SPEED = 0.00034;
 const RIM = 120;
 
 /* --- The guard -----------------------------------------------------------
-   An ellipse that CONTAINS the type, inside which the field is held at exactly
+   A quiet zone that CONTAINS the type, inside which the field is held at exactly
    GUARD_MIN, ramping back to full strength outside it.
 
-   The plateau is the point, and it is what the first cut of this got wrong. A
+   THE PLATEAU IS THE POINT, and it is what the first cut of this got wrong. A
    guard that merely eases from GUARD_MIN at its centre is only worth GUARD_MIN
    at ONE PIXEL: two thirds of the way out along the headline it had already
    recovered to ~0.5, which is a bright lilac dot under a glyph and nowhere near
    the bound the contrast audit claims. A ceiling asserted in `check-contrast`
    has to be true everywhere a letter can land, so the quiet zone is flat and
-   only its OUTER edge is soft. */
+   only its OUTER edge is soft.
+
+   IT IS MEASURED, NOT POSITIONED. It used to be an ellipse at a fixed place —
+   centred on the band, 420px wide, 34% of the band height down — which assumed
+   the copy always lands in the same place. It does not: section 7 is a
+   one-screen band now (see ai-teaser.tsx), so its rhythm, its tile and its
+   headline all move with the window height, and the copy block runs anywhere from
+   378px tall on a short window to 444 on a tall one — and 598 on a phone, where
+   34%-of-band had already drifted off the bottom of it as the headline wrapped to
+   a fifth line. So the field reads the box of the block it has to protect and
+   guards THAT, at whatever size the browser resolved it to.
+
+   AND THE PLATEAU IS THE BOX, not an ellipse around it. An ellipse cannot
+   contain a rect without its radii being inflated by √2 to catch the corners, and
+   on a 768×440 copy block that inflation would put the flat minimum 310px above
+   and below its centre — most of a short band's height — leaving the field dead
+   everywhere the reader can see it. `max(0, |d| - r)` per axis gives a plateau
+   that is exactly the box, corners included, with iso-lines that round themselves
+   off outside it: the same smooth falloff over a third less damped area. What the
+   earlier note ruled out was `.dot-grid`'s HARD-EDGED rectangle, which fenced the
+   column in a visible line; nothing was ever wrong with the rectangle itself. */
 
 /** Field strength across the type. Asserted in scripts/check-contrast.mjs. */
 const GUARD_MIN = 0.16;
 
-/** Ellipse centre, a fraction of band height, clamped in px so a tall band
- *  (a phone, where the copy wraps to twice the lines) keeps the quiet zone over
- *  the copy instead of letting it drift down to the middle of the band. */
-const GUARD_CY = 0.34;
-const GUARD_CY_MAX = 460;
+/** Grown past the measured box on every side, in px. A layout box is where the
+ *  LINE boxes are, and a glyph is not its line box: Arabic descenders hang below
+ *  the baseline, the em box's leading sits inside the box rather than around the
+ *  ink, and antialiasing puts a little of every letter one pixel further out
+ *  again. Cheap insurance — 24px of plateau costs a few dots. */
+const GUARD_PAD = 24;
 
-/** Half-width in px. The widest text in the section is the `max-w-3xl`
- *  headline at ±384px, so this clears it with room; capped at the half-band, so
- *  a viewport narrower than the headline is guarded edge to edge. */
-const GUARD_RX = 420;
+/** How far past the plateau the field takes to recover, in px. Wide enough that
+ *  the quiet zone has no visible edge — a hard one would just redraw in dots the
+ *  panel this section spent a redesign getting rid of — and narrow enough that
+ *  full strength is reached inside the gutter beside the content column, which is
+ *  what keeps the band's edges and its lower half bright. */
+const GUARD_RAMP = 150;
 
-/** Half-height: a fraction of the band, floored so a short band still guards
- *  the whole stack from the chip down to the note under the form. */
-const GUARD_RY = 0.3;
-const GUARD_RY_MIN = 240;
-
-/** How far past the ellipse the field takes to recover, as a fraction of its
- *  radii. Wide enough that the quiet zone has no visible edge — a hard one
- *  would just redraw in dots the panel this section spent a redesign getting
- *  rid of — and narrow enough that full strength is reached by the gutters
- *  beside the content column. */
-const GUARD_RAMP = 0.4;
+/** Fallback geometry, used only if the guarded element is not given or not
+ *  found. Deliberately generous: a guard that is too big dims the art, a guard
+ *  that is too small puts a bright dot under a letter, and only one of those is
+ *  a bug worth shipping. */
+const FALLBACK_RX = 420;
+const FALLBACK_RY = 0.34;
+const FALLBACK_RY_MIN = 260;
 
 /* --- Batching ------------------------------------------------------------
    5,000 dots × (beginPath, arc, fill) is ~1M canvas calls a second and drops
@@ -149,7 +168,22 @@ function readToken(name: string): [number, number, number] | null {
   return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
 }
 
-export function AiParticleField({ className }: { className?: string }) {
+export function AiParticleField({
+  className,
+  guard,
+}: {
+  className?: string;
+  /**
+   * Selector for the block whose type the field must stay legible under, looked
+   * up inside the canvas's own parent — i.e. the band. A selector rather than a
+   * ref because the band is a server component and cannot hold one, and rather
+   * than numbers because the answer depends on the layout the browser resolved,
+   * which no server render knows. Missing or unmatched falls back to the
+   * FALLBACK_* geometry above, so a renamed hook dims the art instead of
+   * quietly unguarding the headline.
+   */
+  guard?: string;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -157,6 +191,10 @@ export function AiParticleField({ className }: { className?: string }) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const guarded = guard
+      ? (canvas.parentElement?.querySelector<HTMLElement>(guard) ?? null)
+      : null;
 
     /* Troughs are violet and crests are lilac, so the field lights the section
        in its own hue and resolves to near-white where it is brightest — the
@@ -187,6 +225,15 @@ export function AiParticleField({ className }: { className?: string }) {
     let w = 0;
     let h = 0;
 
+    /* The quiet zone, in canvas-local px: centre and half-extents. Recomputed on
+       layout, not per frame — the guarded block moves WITH the canvas when the
+       page scrolls, so only a resize (or a reflow, which resizes something) can
+       change where it sits relative to these pixels. */
+    let gx = 0;
+    let gy = 0;
+    let grx = 0;
+    let gry = 0;
+
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       w = Math.max(1, Math.round(rect.width));
@@ -197,6 +244,19 @@ export function AiParticleField({ className }: { className?: string }) {
       canvas.height = Math.round(h * dpr);
       // Setting .width resets the context, so the transform goes on after it.
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const box = guarded?.getBoundingClientRect();
+      if (box) {
+        gx = box.left - rect.left + box.width / 2;
+        gy = box.top - rect.top + box.height / 2;
+        grx = box.width / 2 + GUARD_PAD;
+        gry = box.height / 2 + GUARD_PAD;
+      } else {
+        gx = w / 2;
+        gy = h / 2;
+        grx = Math.min(w / 2, FALLBACK_RX);
+        gry = Math.max(h * FALLBACK_RY, FALLBACK_RY_MIN);
+      }
     };
 
     const draw = (t: number) => {
@@ -207,11 +267,6 @@ export function AiParticleField({ className }: { className?: string }) {
       const rows = Math.ceil(h / pitch) + 2;
       const ox = (w - (cols - 1) * pitch) / 2;
       const oy = (h - (rows - 1) * pitch) / 2;
-
-      const gx = w / 2;
-      const gy = Math.min(h * GUARD_CY, GUARD_CY_MAX);
-      const grx = Math.min(w / 2, GUARD_RX);
-      const gry = Math.max(h * GUARD_RY, GUARD_RY_MIN);
 
       for (let i = 0; i < total; i++) {
         px[i].length = 0;
@@ -262,17 +317,27 @@ export function AiParticleField({ className }: { className?: string }) {
           else if (e > 1) e = 1;
           e = e * e;
 
-          /* Guard: flat GUARD_MIN anywhere a glyph can be (d ≤ 1), then
-             smoothstepped back to full strength over the next GUARD_RAMP.
-             Measured on the DISPLACED position, so a dot pushed into the quiet
-             zone is damped rather than arriving lit. */
-          const nx = (dx - gx) / grx;
-          const ny = (dy - gy) / gry;
-          const d = Math.sqrt(nx * nx + ny * ny);
-          let k = (d - 1) / GUARD_RAMP;
-          if (k <= 0) k = 0;
-          else if (k >= 1) k = 1;
-          else k = k * k * (3 - 2 * k);
+          /* Guard: flat GUARD_MIN anywhere a glyph can be — inside the measured
+             box — then smoothstepped back to full strength over the next
+             GUARD_RAMP px. `ox`/`oy` are how far outside the box this dot is on
+             each axis, so both zero means inside and the distance is the
+             ordinary one from the nearest edge or corner. Measured on the
+             DISPLACED position, so a dot pushed into the quiet zone is damped
+             rather than arriving lit. */
+          const qx = Math.abs(dx - gx) - grx;
+          const qy = Math.abs(dy - gy) - gry;
+          let k;
+          // Past the ramp on either axis is past it outright — skips the sqrt
+          // for the majority of dots, which are nowhere near the copy.
+          if (qx >= GUARD_RAMP || qy >= GUARD_RAMP) k = 1;
+          else if (qx <= 0 && qy <= 0) k = 0;
+          else {
+            const ex = qx > 0 ? qx : 0;
+            const ey = qy > 0 ? qy : 0;
+            k = Math.sqrt(ex * ex + ey * ey) / GUARD_RAMP;
+            if (k >= 1) k = 1;
+            else k = k * k * (3 - 2 * k);
+          }
           const guard = GUARD_MIN + (1 - GUARD_MIN) * k;
 
           let rim = (dy < h / 2 ? dy : h - dy) / RIM;
@@ -362,6 +427,11 @@ export function AiParticleField({ className }: { className?: string }) {
     draw(motion.matches ? 3.4 : 0);
     io.observe(canvas);
     ro.observe(canvas);
+    // The guarded block as well as the canvas: the band has a min-height, so the
+    // copy can reflow — a webfont landing, a longer headline from the CMS, the
+    // reader's own font size — and change the box the quiet zone is cut from
+    // without changing the size of the band it is cut in.
+    if (guarded) ro.observe(guarded);
     document.addEventListener("visibilitychange", sync);
     motion.addEventListener("change", sync);
 
@@ -372,7 +442,7 @@ export function AiParticleField({ className }: { className?: string }) {
       document.removeEventListener("visibilitychange", sync);
       motion.removeEventListener("change", sync);
     };
-  }, []);
+  }, [guard]);
 
   return <canvas ref={ref} aria-hidden="true" className={className} />;
 }
