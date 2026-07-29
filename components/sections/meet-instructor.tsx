@@ -56,7 +56,10 @@ const RELEASE_MS = 400;
  * مرتكزات in the CMS; the label itself is read out alongside it.
  */
 const SIGNATURE_DESCRIPTION: Record<SignatureState, string> = {
-  idle: "لا رسم — تظهر صورة كلّ مرتكزٍ عند اختياره.",
+  // Not "appears when selected" any more: the scroll presents all three in turn
+  // and selecting one only holds it. Copy, not a comment — a reader who is told
+  // selection is the mechanism has no reason to expect anything else happened.
+  idle: "لا رسم بعد — يُعرض رسمُ كلّ مرتكزٍ تِباعاً مع تقدّم الصفحة، ويثبت عند اختيار مرتكز.",
   method: "كتابٌ مفتوح، تنطبق صفحاته على بعضها واحدةً تلو الأخرى.",
   tools: "طقمُ أدواتٍ قائمٌ في حاملِه، تُسحب كلُّ أداةٍ إلى موضعها تباعاً.",
   field: "أرضٌ مقطوعة، تُرصَف طبقاتُها من الأعمق صعوداً حتى السطح.",
@@ -116,18 +119,29 @@ export function MeetInstructor({
   // short grace period after the pointer leaves, and a single `data-state`
   // string as the only thing crossing into CSS.
   //
-  // The DIFFERENCE from section 2, and the reason this section reads at all:
-  // the scroll drives the index here, so the three artifacts play in turn as
-  // the list comes up the screen. Section 2's diagram waits for a pointer,
-  // which is fine there — it is one diagram that only changes accent per row.
-  // Here each مرتكز has its own object with its own motion, and gating all
-  // three behind hover meant a phone never saw two of them and a desktop
-  // visitor who did not happen to sweep the list saw none. A pointer or the
-  // keyboard still takes over while it is on a row; letting go hands the art
-  // back to the scroll rather than blanking it.
+  // The DIFFERENCE from section 2 is that the SCROLL drives the index here, so
+  // the three artifacts play in turn as the block comes up the screen; a pointer
+  // or the keyboard only takes over while it is on a row. Gating all three
+  // behind hover meant a phone never saw two of them and a desktop visitor who
+  // did not happen to sweep the list saw none.
+  //
+  // Section 2 is NOT the cheap case, and it is not settled either — it is
+  // deferred. Its diagram has six states with more motion in each than these
+  // three have (globals.css `.ch-*`), which is exactly why it cannot take this
+  // hook as-is: six steps in one band is ~100px of scroll each, and its stacked
+  // diagram is `sticky` where this art sits in normal flow, so the two need
+  // different band geometry. If it is ever done, do it as its own decision.
   const [chosen, setChosen] = useState<number | null>(null);
   const pillars = useRef<HTMLDivElement>(null);
-  const stepped = useScrollStep(pillars, markerList.length);
+  // Bounded by the artifacts that exist, not by the row count: the CMS supplies
+  // the مرتكزات and `INSTRUCTOR_STATES` has three drawings. Stepping over four
+  // rows would play book → rack → ground → book, i.e. visibly rewind to the
+  // start one row before the end. Extra rows stay pointer/keyboard-only, where
+  // the wrap below is invisible because nobody sees two artifacts in sequence.
+  const stepped = useScrollStep(
+    pillars,
+    Math.min(markerList.length, INSTRUCTOR_STATES.length),
+  );
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearIdleTimer = () => {
@@ -144,14 +158,47 @@ export function MeetInstructor({
     setChosen(index);
   }, []);
 
+  // Hands the art back to the scroll — which can mean playing an EARLIER
+  // artifact than the row just left, if the block has not travelled that far
+  // yet. That is deliberate: the art shows where the page is, and the rows
+  // follow the same index, so the two never disagree. It used to fade out to
+  // idle instead, which was terminal and neutral; there is no longer such a
+  // thing as neutral here, because the scroll always has an opinion.
   const release = useCallback(() => {
     clearIdleTimer();
     idleTimer.current = setTimeout(() => setChosen(null), RELEASE_MS);
   }, []);
 
-  // Nothing chosen → whatever the scroll is on. That is `null` above the band
-  // (the section rests in idle until the list is genuinely in view), then 0, 1,
-  // 2 in turn, holding the last once the list has passed.
+  // A scroll that names a new مرتكز outranks a stale hold. Two reasons, and both
+  // of them are the feature silently not working without this:
+  //
+  //   Touch has no release path at all. `onPointerLeave` is gated to a mouse and
+  //   a tap is never followed by one, so one tap used to latch one مرتكز for the
+  //   rest of the visit — on the device class where the art is largest.
+  //
+  //   Browsers do not recompute hover DURING a scroll gesture: Blink dispatches
+  //   a synthetic mousemove only once it settles, WebKit waits for a real one.
+  //   So a cursor left anywhere over the list — `cursor: pointer`, mid-column,
+  //   exactly where a reading pointer rests — pinned `chosen` for the whole pass
+  //   and the sequence never played for a visitor who did nothing.
+  //
+  // Keyboard focus is exempt: a keyboard visitor on a row means it, and onBlur
+  // owns that release. Everything else loses the hold the moment the page moves.
+  //
+  // `:focus-visible`, NOT `:focus`. Chromium focuses a <button> on TAP, so a
+  // plain focus check hands the latch straight back to the touch bug this effect
+  // exists to fix — measured, not assumed. focus-visible is precisely "the
+  // browser is treating this as keyboard focus", which is the only hold worth
+  // protecting from the scroll.
+  useEffect(() => {
+    if (pillars.current?.querySelector(":focus-visible")) return;
+    clearIdleTimer();
+    setChosen(null);
+  }, [stepped]);
+
+  // Nothing chosen → whatever the scroll is on. That is `null` until the block
+  // has finished arriving, then 0, 1, 2 in turn, holding the last one once it
+  // has passed.
   const active = chosen ?? stepped;
 
   // The CMS supplies the مرتكزات, so the count is not fixed at three — states
@@ -323,7 +370,22 @@ export function MeetInstructor({
                   >
                     <button
                       type="button"
-                      aria-pressed={isActive}
+                      // `aria-pressed` was doing double duty as the ARIA state
+                      // and the CSS hook, and once the scroll started naming the
+                      // active row those two stopped being the same thing: a
+                      // toggle button reporting "pressed" because the viewport
+                      // moved is a state the visitor never set and cannot clear,
+                      // and browse-mode arrowing (which itself scrolls) would
+                      // read the same document differently twice.
+                      //
+                      // So they are split. `data-active` is what globals.css
+                      // styles, and `aria-current` is the honest ARIA — "the
+                      // item in this set being presented right now" — which is
+                      // true whoever named it. Section 2 keeps `aria-pressed`
+                      // and is still correct: nothing but the pointer and the
+                      // keyboard drives it there.
+                      data-active={isActive}
+                      aria-current={isActive ? "true" : undefined}
                       className="mi-row flex w-full items-center gap-4 py-4 text-start"
                       // Pointer enter/leave are gated to a mouse: touch
                       // synthesises both and would fight the tap.
@@ -338,6 +400,9 @@ export function MeetInstructor({
                       // out of the list hands the art back to the scroll rather
                       // than leaving the last-focused مرتكز showing.
                       onBlur={() => release()}
+                      // A tap (or a click) holds the مرتكز until the scroll
+                      // names a different one — see the effect above, which is
+                      // the only hand-back touch gets.
                       onClick={() => hold(i)}
                     >
                       {/* Fills when the row is the one driving the art. */}

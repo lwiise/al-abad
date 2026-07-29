@@ -67,8 +67,12 @@ import { cn } from "@/lib/utils";
  * `app/globals.css` under `.mi-*`. Everything is always mounted at opacity 0,
  * so a state change interpolates from what is on screen instead of appearing.
  *
- * Decorative: the section carries a visually-hidden live region describing
- * this, so the SVG itself is aria-hidden.
+ * Decorative: the SVG is aria-hidden, and the section carries a visually-hidden
+ * description of whichever state is showing. That description is only LIVE while
+ * a pointer or the keyboard is driving — the scroll presents all three in turn
+ * on the way past, and announcing art nobody asked for is noise. The honest
+ * statement of the trade: the selected state is narrated, the scroll-driven
+ * presentation is decoration.
  */
 
 export const INSTRUCTOR_STATES = ["method", "tools", "field"] as const;

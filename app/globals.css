@@ -835,6 +835,16 @@
    ground in section — and each مرتكز drives its own via `data-state` on the SVG
    root, the same one-attribute contract قسم التحديات uses.
 
+   ONE ATTRIBUTE, TWO DRIVERS. `data-state` is named primarily by SCROLL
+   POSITION (components/motion/use-scroll-step.ts): the three artifacts play in
+   turn, one by one, as the block travels up the viewport, and a pointer or the
+   keyboard only overrides while it is on a row. So this section moves unprompted
+   — the CSS did not change for that, because one attribute is still the whole
+   interface, but nothing here should be read as "input-driven" any more. The
+   list styles off `data-active` for the same reason: the ARIA state (`aria-
+   current`) and the CSS hook stopped being the same thing once the viewport
+   could name the active row. See the note in components/sections/meet-instructor.tsx.
+
    THIS SECTION NO LONGER DRAWS LINES. Two earlier passes animated abstract
    stroked geometry here (a ring resolving, arcs separating, tracings
    accumulating) and both were rejected; the brief is to draw the thing rather
@@ -857,9 +867,14 @@
    2. Everything is always MOUNTED at opacity 0. Nothing renders conditionally,
       or a transition would have nothing to interpolate from.
 
-   THERE ARE NO KEYFRAME ANIMATIONS IN THIS SECTION, deliberately. Section 2's
-   circles breathe; this one holds. Every piece of motion here is a transition,
-   which is also what lets a state change interrupt cleanly at any point.
+   THERE ARE NO KEYFRAME ANIMATIONS IN THIS SECTION, deliberately: section 2
+   LOOPS — its circles breathe and تكرار الخلافات oscillates — while every state
+   here PLAYS ONCE and then stands still. Every piece of motion is a transition,
+   which is what lets a state change interrupt cleanly at any point, and that
+   matters more now than when it was written: the scroll can hand the art to the
+   next مرتكز mid-play, and a transition eases out of wherever the shapes
+   actually are. (`--mi-move` below is also the hook's hold between steps, so
+   each artifact gets its transition before the next one takes over.)
 
    Colour is the dark-section rule: lilac carries the forms (9.50:1 on ink),
    coral marks exactly one element in each (3.08:1 — an accent, never the thing
@@ -979,12 +994,15 @@
   .mi-marker {
     border-color: color-mix(in oklab, var(--color-lilac) 34%, transparent);
   }
-  .mi-row[aria-pressed="true"] .mi-marker {
+  /* `data-active`, not `aria-pressed` — the row the SCROLL is presenting is
+     styled the same as one under the pointer, but only a pointer or the keyboard
+     is allowed to claim an ARIA state. See the header note. */
+  .mi-row[data-active="true"] .mi-marker {
     background-color: var(--color-lilac);
     border-color: var(--color-lilac);
     scale: 1.15;
   }
-  .mi-row[aria-pressed="true"] .mi-label {
+  .mi-row[data-active="true"] .mi-label {
     color: var(--color-lilac);
   }
 }
