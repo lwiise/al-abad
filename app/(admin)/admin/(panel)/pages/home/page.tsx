@@ -95,7 +95,9 @@ export default async function HomePageSettings(props: {
           <TextField name="ai_badge" label="شارة القسم" defaultValue={str("ai_badge")} placeholder="قريباً" />
           <TextField name="ai_headline" label="العنوان" defaultValue={str("ai_headline")} />
           <AreaField name="ai_subhead" label="العنوان الفرعي" defaultValue={str("ai_subhead")} rows={2} />
-          <AreaField name="ai_points" label="النقاط" defaultValue={listVal("ai_points")} help="سطر واحد لكل نقطة" rows={4} />
+          <AreaField name="ai_points" label="النقاط" defaultValue={listVal("ai_points")} help="تظهر كبطاقات عائمة حول المحادثة — سطر واحد لكل نقطة" rows={4} />
+          <TextField name="ai_cta_label" label="نص الزر" defaultValue={str("ai_cta_label")} placeholder="انضم لقائمة الانتظار" />
+          <TextField name="ai_note" label="ملاحظة تحت النموذج" defaultValue={str("ai_note")} help="طمأنة قصيرة عن البريد الإلكتروني" />
         </Section>
 
         <Section title="قسم آراء المتدربين">
@@ -111,13 +113,16 @@ export default async function HomePageSettings(props: {
         </Section>
 
         <Section title="الدعوة النهائية (Final CTA)">
-          <TextField name="final_cta_heading" label="العنوان" defaultValue={str("final_cta_heading")} />
+          <TextField name="final_cta_eyebrow" label="شارة الصدارة" defaultValue={str("final_cta_eyebrow")} help="النص الصغير أعلى البطاقة" />
+          <TextField name="final_cta_heading" label="العنوان" defaultValue={str("final_cta_heading")} help="ضع «…» قبل الكلمة الأخيرة لتُكتب بخط الرقعة" />
+          <AreaField name="final_cta_subhead" label="العنوان الفرعي" defaultValue={str("final_cta_subhead")} rows={2} />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField name="final_cta_primary_label" label="زر رئيسي — النص" defaultValue={str("final_cta_primary_label")} />
             <TextField name="final_cta_primary_url" label="زر رئيسي — الرابط" defaultValue={str("final_cta_primary_url")} dir="ltr" />
             <TextField name="final_cta_secondary_label" label="زر ثانوي — النص" defaultValue={str("final_cta_secondary_label")} />
             <TextField name="final_cta_secondary_url" label="زر ثانوي — الرابط" defaultValue={str("final_cta_secondary_url")} dir="ltr" />
           </div>
+          <TextField name="final_cta_proof" label="سطر الثقة" defaultValue={str("final_cta_proof")} help="يظهر بجانب صور المتدربين أسفل البطاقة" />
         </Section>
 
         <Section title="قسم المدونة">

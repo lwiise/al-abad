@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { StatRow } from "@/lib/database.types";
 import { buttonClasses } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, splitAtEllipsis } from "@/lib/utils";
 import { HeroBackdrop } from "./art/hero-backdrop";
 
 const DEFAULT_HEADLINE = "زواج أكثر وعياً… وعلاقة تدوم";
@@ -28,18 +28,6 @@ const FALLBACK_STATS = [
   { value: "آلاف", label: "متدرب ومتدربة" },
   { value: "+١٠٠ ألف", label: "ساعة تدريب" },
 ];
-
-/**
- * Split the headline at the ellipsis so the tail can be set in Ruqʿah.
- *
- * The headline is CMS copy, so this cannot hard-code "وعلاقة تدوم" — an editor
- * may change it. No ellipsis means no second line and no calligraphy.
- */
-function splitHeadline(value: string): { lead: string; calligraphic: string | null } {
-  const i = value.indexOf("…");
-  if (i === -1) return { lead: value, calligraphic: null };
-  return { lead: value.slice(0, i + 1).trim(), calligraphic: value.slice(i + 1).trim() || null };
-}
 
 /** Entrance delay. One shared curve and duration; only the offset changes. */
 const enter = (ms: number): CSSProperties => ({ animationDelay: `${ms}ms` });
@@ -84,7 +72,7 @@ export function Hero({
   trustBadge?: string | null;
   stats?: StatRow[];
 }) {
-  const { lead, calligraphic } = splitHeadline(headline || DEFAULT_HEADLINE);
+  const { lead, tail: calligraphic } = splitAtEllipsis(headline || DEFAULT_HEADLINE);
   const pills = stats.length
     ? stats.slice(0, 3).map((s) => ({ value: s.value, label: s.label }))
     : FALLBACK_STATS;

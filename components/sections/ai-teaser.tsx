@@ -1,9 +1,13 @@
-import { Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
-import { AiOrbit } from "@/components/motion/ai-orbit";
+import { AssistantGlyph } from "@/components/site/icons";
+import { splitAtEllipsis } from "@/lib/utils";
 import { Section } from "./section";
 import { AiWaitlistForm } from "./ai-waitlist-form";
+import { AiAssistantPreview } from "./art/ai-assistant-preview";
 
+const FALLBACK_HEADLINE = "سؤالك لا ينتظر موعد الدرس… مساعدك الذكي يجيب فوراً";
+const FALLBACK_SUBHEAD =
+  "مساعدٌ ذكيّ مدرَّب على محتوى الأكاديمية، يجيب أسئلتك ويرشدك خطوة بخطوة — متاحٌ على مدار الساعة.";
 const FALLBACK_POINTS = ["إجاباتٌ فورية من الدورات", "إرشادٌ بين الدروس", "متاحٌ دائماً"];
 
 export function AiTeaser({
@@ -11,45 +15,60 @@ export function AiTeaser({
   subhead,
   points,
   badge,
+  ctaLabel,
+  note,
 }: {
   headline?: string | null;
   subhead?: string | null;
   points: string[];
   badge?: string | null;
+  ctaLabel?: string | null;
+  note?: string | null;
 }) {
   const items = points.length ? points : FALLBACK_POINTS;
+  const { lead, tail } = splitAtEllipsis(headline || FALLBACK_HEADLINE);
 
   return (
     <Section bg="background">
       <Reveal>
-        {/* Violet "future" moment — soft animated sheen. */}
-        <div className="ai-shimmer relative overflow-hidden rounded-[2rem] px-6 py-14 text-center text-on-highlight md:px-12">
-          <AiOrbit className="pointer-events-none absolute -end-10 -top-12 size-56 text-white/25" />
-          <div className="relative z-10">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium backdrop-blur">
-            <Sparkles className="size-4" /> {badge || "قريباً"}
+        {/* The band stays white; this panel does the separating — bg-surface
+            behind a hairline border, a soft shadow and the dot texture at its
+            rim. It was a violet .ai-shimmer card, which it shared verbatim with
+            the final CTA one screen later: same radius, same AiOrbit corner,
+            only the hue differed, so the page said the same thing twice.
+            Violet still marks the section — as fills on a light ground. */}
+        <div className="relative isolate overflow-hidden rounded-[2rem] border border-border bg-surface px-6 pt-14 text-center shadow-lg sm:px-10 md:pt-16">
+          <span aria-hidden="true" className="dot-grid pointer-events-none absolute inset-0 -z-10" />
+
+          <span className="ai-tile mx-auto flex size-16 items-center justify-center rounded-xl bg-highlight text-on-highlight md:size-18">
+            <AssistantGlyph className="size-8 md:size-9" />
           </span>
-          <h2 className="mx-auto mt-5 max-w-2xl text-3xl font-bold md:text-4xl">
-            {headline || "مساعدك الذكي للتعلّم"}
+
+          {/* A violet-tinted chip with a plum label, not violet text: #a551fc at
+              14px is 4.05:1 and fails. The violet lives in the fill and the dot,
+              which are graphics and clear 3:1. */}
+          <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-highlight/30 bg-highlight/10 px-3.5 py-1.5 text-sm font-medium text-primary">
+            <span aria-hidden="true" className="size-1.5 rounded-full bg-highlight" />
+            {badge || "قريباً"}
+          </span>
+
+          <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-bold text-foreground md:text-4xl">
+            <span className="block">{lead}</span>
+            {/* Flat violet, never a gradient — 30px bold clears the large-text
+                threshold, and a violet→blue ramp on white is the exact generic
+                look the palette notes rule out. */}
+            {tail && <span className="mt-1 block text-highlight">{tail}</span>}
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-on-highlight/90">
-            {subhead ||
-              "مساعدٌ ذكيّ مدرَّب على محتوى الأكاديمية، يجيب أسئلتك ويرشدك خطوة بخطوة — متاحٌ على مدار الساعة."}
+
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-foreground-muted">
+            {subhead || FALLBACK_SUBHEAD}
           </p>
 
-          <ul className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-x-6 gap-y-2 text-on-highlight/90">
-            {items.map((p, i) => (
-              <li key={i} className="flex items-center gap-2">
-                <span className="size-1.5 rounded-full bg-white/70" aria-hidden="true" />
-                {p}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-8 flex justify-center">
+            <AiWaitlistForm ctaLabel={ctaLabel} note={note} />
+          </div>
 
-          <div className="mt-9 flex justify-center">
-            <AiWaitlistForm />
-          </div>
-          </div>
+          <AiAssistantPreview points={items} />
         </div>
       </Reveal>
     </Section>

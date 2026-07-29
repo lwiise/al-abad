@@ -77,10 +77,10 @@ const RHYTHM: { n: number; name: string; bg: string; tone: string }[] = [
   { n: 4, name: "الدورات", bg: "bg-background", tone: "background" },
   { n: 5, name: "كيف نعمل", bg: "bg-surface-strong", tone: "lilac" },
   { n: 6, name: "النتائج", bg: "bg-background", tone: "background" },
-  { n: 7, name: "الذكاء", bg: "bg-background", tone: "background + شريط بنفسجي" },
+  { n: 7, name: "الذكاء", bg: "bg-background", tone: "background + لوحة surface" },
   { n: 8, name: "الآراء", bg: "bg-surface-strong", tone: "lilac" },
   { n: 9, name: "الأسئلة", bg: "bg-background", tone: "background" },
-  { n: 10, name: "الدعوة", bg: "bg-background", tone: "background + شريط العلامة" },
+  { n: 10, name: "الدعوة", bg: "bg-background", tone: "background + بطاقة فاتحة" },
   { n: 11, name: "المدونة", bg: "bg-surface-strong", tone: "lilac" },
 ];
 
@@ -113,7 +113,7 @@ export default function StyleguidePage() {
       <Section bg="surface">
         <Group
           title="إيقاع الأقسام"
-          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، مع ink مرساةً داكنة واحدة. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك. القسم ٢ استثناء مقصود: يواصل لون surface نفسه — وهو اللون الذي تنتهي عليه الواجهة — فيقرآن ورقةً واحدة بلا خطّ فاصل."
+          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، مع ink مرساةً داكنة واحدة. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك. القسم ٢ استثناء مقصود: يواصل لون surface نفسه — وهو اللون الذي تنتهي عليه الواجهة — فيقرآن ورقةً واحدة بلا خطّ فاصل. والقسم ٧ هو الاستعمال المقصود لـ surface: الشريط يبقى أبيض، واللوحة الداخلية هي التي تفصل — بحدٍّ شعري وظلٍّ ناعم، فالفصل يقع على الحدّ والظلّ لا على فرق ١٫٠٧:١."
         >
           <ul className="overflow-hidden rounded-2xl border border-border-strong">
             {RHYTHM.map((r) => (

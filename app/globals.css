@@ -288,7 +288,10 @@
   }
 }
 
-/* --- AI section: soft moving sheen (the "future" moment) ----------------- */
+/* --- Moving sheen — shared by the two brand gradient bands --------------- */
+/* Section 10's final CTA and the vision band. Section 7 used to be the third;
+   see the "Section 7 — the assistant panel" block below for why it no longer
+   is, and why .ai-shimmer went with it. */
 @keyframes shimmer {
   0% {
     background-position: 0% 50%;
@@ -299,20 +302,6 @@
 }
 
 @layer utilities {
-  /* Animated violet→indigo gradient for the AI band. */
-  .ai-shimmer {
-    background-image: linear-gradient(
-      110deg,
-      var(--color-highlight) 0%,
-      #7c3aed 25%,
-      var(--color-highlight) 50%,
-      #6d28d9 75%,
-      var(--color-highlight) 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 9s linear infinite;
-  }
-
   /* Depth for rich dark (plum/ink) bands — soft brand-tone glows, not flat. */
   .dark-depth {
     background-image:
@@ -359,11 +348,53 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ai-shimmer,
   .shimmer-night,
   .shimmer-brand {
     animation: none;
   }
+}
+
+/* ===========================================================================
+   Section 7 — the assistant panel
+   ===========================================================================
+   The band stays white and an inset panel does the separating. That is not the
+   white/surface alternation `Section` rules out: 1.07:1 buys no rhythm between
+   two adjacent BANDS, but a panel has a hairline border and a shadow carrying
+   the edge, and the tone only fills in behind them.
+   ------------------------------------------------------------------------- */
+
+/* Dotted texture, faded INWARD from the rim: the mask is transparent in the
+   middle and opaque at the edges, so the dots frame the content instead of
+   sitting behind the type. A full-bleed dot field is the stock SaaS background,
+   and this mask is the one move that stops it reading as one.
+   Its own layer, never the panel itself — mask-image masks background-color
+   too, so masking the panel would eat the surface fill along with the dots.
+   22px is the pitch media-fallback.tsx already uses: one dot rhythm sitewide.
+   Static and decorative; nothing here to switch off for reduced motion. */
+.dot-grid {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in oklab, var(--color-primary) 24%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(
+    74% 64% at 50% 42%,
+    transparent 0%,
+    transparent 42%,
+    #000 100%
+  );
+  mask-image: radial-gradient(74% 64% at 50% 42%, transparent 0%, transparent 42%, #000 100%);
+}
+
+/* App-icon tile. The violet glow is what makes a filled square read as an icon
+   rather than a swatch; the shared --shadow-lg is ink-tinted and reads as a
+   hole under it. Not a Tailwind arbitrary because the value needs color-mix
+   over a token, and raw hex is exactly what the palette rules forbid. */
+.ai-tile {
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in oklab, white 26%, transparent),
+    0 14px 30px -12px color-mix(in oklab, var(--color-highlight) 60%, transparent);
 }
 
 /* Hero aurora — controlled, art-directed brand wash (not muddy WebGL). */
@@ -389,6 +420,37 @@
         40% 45% at 35% 70%,
         color-mix(in oklab, var(--color-lilac) 55%, transparent),
         transparent 70%
+      );
+  }
+}
+
+/* Closing CTA sheet — the light counterpart to the hero aurora, so the page
+   opens and closes on the same kind of surface.
+
+   Deliberately NOT a saturated two-hue linear gradient: that "purple gradient
+   on white" is the generic-template look CLAUDE.md rules out, and our palette
+   is plum/violet, so it is one careless `from-primary to-highlight` away at all
+   times. What is here instead is a lilac sheet with two low-opacity radial
+   blooms — plum for depth in the far corner, coral to seat the CTA button in
+   its own light. Violet stays out of it: it belongs to the AI band. */
+@layer utilities {
+  .cta-sheet {
+    background:
+      radial-gradient(
+        62% 78% at 88% 4%,
+        color-mix(in oklab, var(--color-accent) 16%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        66% 82% at 4% 100%,
+        color-mix(in oklab, var(--color-primary) 13%, transparent),
+        transparent 72%
+      ),
+      linear-gradient(
+        168deg,
+        color-mix(in oklab, var(--color-lilac) 88%, var(--color-background)) 0%,
+        var(--color-background) 58%,
+        color-mix(in oklab, var(--color-lilac) 55%, var(--color-background)) 100%
       );
   }
 }
