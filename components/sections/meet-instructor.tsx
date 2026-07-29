@@ -6,13 +6,13 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  useSyncExternalStore,
   type RefObject,
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
+import { useScrollStep } from "@/components/motion/use-scroll-step";
 import {
   INSTRUCTOR_STATES,
   InstructorSignature,
@@ -45,13 +45,10 @@ const MARKERS = ["منهج علميّ", "أدوات عملية", "خبرة مي�
  */
 const PILLAR_NOTES = ["", "", ""];
 
-/** Desktop: how long the art holds a state after the pointer leaves.
- *  Shorter than --mi-move (620ms) on purpose — a quick sweep off a row and
- *  back must never reset the art to idle mid-transition. */
-const RETURN_TO_IDLE_MS = 400;
-
-/** Below this the layout stacks and there is no hover to rest against. */
-const STACKED = "(max-width: 1079.98px)";
+/** Desktop: how long a hovered مرتكز holds after the pointer leaves, before the
+ *  scroll takes the art back. Shorter than --mi-move (620ms) on purpose — a
+ *  quick sweep off a row and back must never hand the art over mid-transition. */
+const RELEASE_MS = 400;
 
 /**
  * What the art is showing, in Arabic, for people who cannot see it. Keyed
@@ -64,19 +61,6 @@ const SIGNATURE_DESCRIPTION: Record<SignatureState, string> = {
   tools: "طقمُ أدواتٍ قائمٌ في حاملِه، تُسحب كلُّ أداةٍ إلى موضعها تباعاً.",
   field: "أرضٌ مقطوعة، تُرصَف طبقاتُها من الأعمق صعوداً حتى السطح.",
 };
-
-/** The layout is external state, so read it as such rather than in an effect. */
-function useStackedLayout() {
-  return useSyncExternalStore(
-    (onChange) => {
-      const mq = window.matchMedia(STACKED);
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia(STACKED).matches,
-    () => false,
-  );
-}
 
 // Layout effect on the client (runs before paint → no flash of the animated-in
 // state), plain effect on the server so SSR doesn't warn. Mirrors use-reveal.ts.
@@ -101,8 +85,10 @@ const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : use
  * dash; both went when the art did. On ink, lilac carries the forms (9.50:1) and coral
  * accents them (3.08:1); plum is 1.26:1 here and unusable.
  *
- * No GSAP. One IntersectionObserver drives the entrance; everything else is a
- * CSS transition keyed off one `data-state` attribute.
+ * No GSAP, and nothing is pinned or scrubbed. One IntersectionObserver drives
+ * the entrance and one rAF-throttled scroll listener (useScrollStep) names the
+ * مرتكز the page has reached; everything else is a CSS transition keyed off one
+ * `data-state` attribute.
  */
 export function MeetInstructor({
   aboutBody,
@@ -127,10 +113,21 @@ export function MeetInstructor({
 
   // --- Which مرتكز is driving the art -------------------------------------
   // Same model as قسم التحديات (challenges-board.tsx): one index of state, a
-  // short grace period before returning to idle, and a single `data-state`
+  // short grace period after the pointer leaves, and a single `data-state`
   // string as the only thing crossing into CSS.
+  //
+  // The DIFFERENCE from section 2, and the reason this section reads at all:
+  // the scroll drives the index here, so the three artifacts play in turn as
+  // the list comes up the screen. Section 2's diagram waits for a pointer,
+  // which is fine there — it is one diagram that only changes accent per row.
+  // Here each مرتكز has its own object with its own motion, and gating all
+  // three behind hover meant a phone never saw two of them and a desktop
+  // visitor who did not happen to sweep the list saw none. A pointer or the
+  // keyboard still takes over while it is on a row; letting go hands the art
+  // back to the scroll rather than blanking it.
   const [chosen, setChosen] = useState<number | null>(null);
-  const stacked = useStackedLayout();
+  const pillars = useRef<HTMLDivElement>(null);
+  const stepped = useScrollStep(pillars, markerList.length);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearIdleTimer = () => {
@@ -149,13 +146,13 @@ export function MeetInstructor({
 
   const release = useCallback(() => {
     clearIdleTimer();
-    idleTimer.current = setTimeout(() => setChosen(null), RETURN_TO_IDLE_MS);
+    idleTimer.current = setTimeout(() => setChosen(null), RELEASE_MS);
   }, []);
 
-  // Stacked, the art is on screen with nothing to hover, so nothing
-  // chosen means the first مرتكز. On desktop the section rests in idle until a
-  // pointer or the keyboard reaches a row.
-  const active = chosen ?? (stacked ? 0 : null);
+  // Nothing chosen → whatever the scroll is on. That is `null` above the band
+  // (the section rests in idle until the list is genuinely in view), then 0, 1,
+  // 2 in turn, holding the last once the list has passed.
+  const active = chosen ?? stepped;
 
   // The CMS supplies the مرتكزات, so the count is not fixed at three — states
   // cycle rather than fall off the end.
@@ -297,7 +294,13 @@ export function MeetInstructor({
 
                 Stacked it sits above the list; from 1080px it moves into the
                 empty end-side gutter the 46ch cap leaves. */}
-            <div className="relative order-5 mt-10">
+            {/* This block — art AND list — is what useScrollStep measures. The
+                band is tied to where the مرتكزات actually are, not to the
+                section, which is three times taller and would have flipped
+                through all three while the portrait was still the only thing on
+                screen. Stacked, the art is the top of this box, which is why
+                the band is centred on it rather than run to its bottom edge. */}
+            <div ref={pillars} className="relative order-5 mt-10">
               <div
                 aria-hidden="true"
                 className="pointer-events-none mx-auto mb-8 w-32 max-w-full aspect-square min-[1080px]:absolute min-[1080px]:end-0 min-[1080px]:top-1/2 min-[1080px]:mx-0 min-[1080px]:mb-0 min-[1080px]:w-40 min-[1080px]:-translate-y-1/2"
@@ -332,8 +335,8 @@ export function MeetInstructor({
                       }}
                       onFocus={() => hold(i)}
                       // Unlike section 2, focus does NOT latch here: tabbing
-                      // out of the list returns the art to idle rather than
-                      // leaving the last-focused مرتكز showing.
+                      // out of the list hands the art back to the scroll rather
+                      // than leaving the last-focused مرتكز showing.
                       onBlur={() => release()}
                       onClick={() => hold(i)}
                     >
@@ -361,8 +364,15 @@ export function MeetInstructor({
               </ul>
             </div>
 
-            {/* Decorative SVG, so the description lives here instead. */}
-            <p className="sr-only" aria-live="polite" aria-atomic="true">
+            {/* Decorative SVG, so the description lives here instead. Live only
+                while a pointer or the keyboard is driving it: the scroll moves
+                this three times on the way past, and announcing art nobody
+                asked for is noise, not information. */}
+            <p
+              className="sr-only"
+              aria-live={chosen === null ? "off" : "polite"}
+              aria-atomic="true"
+            >
               {active === null
                 ? SIGNATURE_DESCRIPTION.idle
                 : `${markerList[active]}: ${SIGNATURE_DESCRIPTION[state]}`}
