@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { getPostBySlug, getPublishedPosts } from "@/lib/data";
 import { Markdown } from "@/components/ui/markdown";
+import { Sequence } from "@/components/motion/sequence";
 
 export const revalidate = 300;
 
@@ -37,16 +38,33 @@ export default async function PostPage(props: { params: Promise<{ slug: string }
   const date = formatDate(post.published_at);
 
   return (
-    <article className="mx-auto max-w-3xl px-6 py-12 md:py-16">
+    /* Almost all of this is above the fold at load, so the cascade reads as an
+       entrance rather than a scroll reveal — the same thing the courses
+       masthead already does. The cover is left unmarked for the reason the
+       about page leaves its portrait unmarked: it is `priority` and it is the
+       LCP element, so a hydration blink would land on the biggest object on a
+       page whose whole job is to be read immediately. The body is one opaque
+       block and moves as one; marking its paragraphs individually would mean
+       prose materialising under the reader's eye, which is an irritant rather
+       than choreography. */
+    <Sequence as="article" className="mx-auto max-w-3xl px-6 py-12 md:py-16">
       <Link
+        data-seq-item
         href="/المدونة"
         className="mb-8 inline-flex items-center gap-1.5 text-sm text-foreground-muted transition-colors hover:text-foreground"
       >
         <ArrowRight className="size-4" /> كل المقالات
       </Link>
 
-      {date && <p className="text-sm text-foreground-subtle">{date}</p>}
-      <h1 className="mt-2 text-3xl font-extrabold leading-tight text-foreground md:text-4xl">
+      {date && (
+        <p data-seq-item className="text-sm text-foreground-subtle">
+          {date}
+        </p>
+      )}
+      <h1
+        data-seq-item
+        className="mt-2 text-3xl font-extrabold leading-tight text-foreground md:text-4xl"
+      >
         {post.title}
       </h1>
 
@@ -63,7 +81,9 @@ export default async function PostPage(props: { params: Promise<{ slug: string }
         </div>
       )}
 
-      <div className="mt-8">{post.body && <Markdown>{post.body}</Markdown>}</div>
-    </article>
+      <div data-seq-item className="mt-8">
+        {post.body && <Markdown>{post.body}</Markdown>}
+      </div>
+    </Sequence>
   );
 }

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type Bg = "background" | "surface" | "lilac" | "ink" | "plum" | "hero";
@@ -81,10 +81,23 @@ export function Section({
  *
  * Decorative only (aria-hidden), so it is exempt from WCAG 1.4.11 — see the
  * note in scripts/check-contrast.mjs.
+ *
+ * Takes a prop spread so `SectionHeading` can hand it a `data-seq-item` when
+ * cascading. It is never marked on its own: the five hand-built headings that
+ * use this standalone leave their eyebrow and h2 unmarked, and a lone 12px bar
+ * sliding in under static type is worse than no motion at all.
  */
-export function HeadingRule({ light, className }: { light?: boolean; className?: string }) {
+export function HeadingRule({
+  light,
+  className,
+  ...rest
+}: { light?: boolean; className?: string } & Omit<
+  ComponentProps<"span">,
+  "className" | "children" | "aria-hidden"
+>) {
   return (
     <span
+      {...rest}
       aria-hidden="true"
       className={cn(
         "mt-5 block h-1 w-12 rounded-full",
@@ -95,23 +108,51 @@ export function HeadingRule({ light, className }: { light?: boolean; className?:
   );
 }
 
+/**
+ * Inside a `<Sequence>` a heading can arrive one of two ways, and they are
+ * mutually exclusive:
+ *
+ * - as ONE item — pass `data-seq-item` through the spread. This is the
+ *   default reading and what `faq.tsx` settled on: cascading the heading's own
+ *   lines *as well* doubles the motion in a single glance.
+ * - as FOUR — pass `seq`, which marks the eyebrow, the h2, the rule and the
+ *   sub so they arrive in reading order.
+ *
+ * `seq` is opt-in rather than always-on precisely because the markers are
+ * invisible until something wraps the heading in a `Sequence`. Shipping them
+ * unconditionally would mean the next person to add a `Sequence` inherits a
+ * four-step cascade they never asked for and never saw in a diff.
+ *
+ * The `Omit` on the spread is load-bearing: `ComponentProps<"div">` carries
+ * `title?: string` (the tooltip attribute), which intersects with this
+ * component's required `title: string` to `never`.
+ */
 export function SectionHeading({
   eyebrow,
   title,
   sub,
   align = "center",
   light = false,
+  seq = false,
   className,
+  ...rest
 }: {
   eyebrow?: string;
   title: string;
   sub?: string;
   align?: "center" | "start";
   light?: boolean;
+  /** Cascade the heading's own parts instead of arriving as one item. */
+  seq?: boolean;
   className?: string;
-}) {
+} & Omit<ComponentProps<"div">, "title" | "children" | "className">) {
+  // undefined → React omits the attribute entirely, so this is inert when off.
+  // The selector matches on presence, so the empty string is enough when on.
+  const item = seq ? "" : undefined;
+
   return (
     <div
+      {...rest}
       className={cn(
         align === "center" ? "mx-auto max-w-2xl text-center" : "max-w-2xl text-start",
         className,
@@ -121,11 +162,15 @@ export function SectionHeading({
           the 3:1 graphics threshold, and this is real text. Lilac is 9.50:1 and
           is what CLAUDE.md's dark-section rule already calls for. */}
       {eyebrow && (
-        <p className={cn("mb-3 text-sm font-medium", light ? "text-lilac" : "text-secondary")}>
+        <p
+          data-seq-item={item}
+          className={cn("mb-3 text-sm font-medium", light ? "text-lilac" : "text-secondary")}
+        >
           {eyebrow}
         </p>
       )}
       <h2
+        data-seq-item={item}
         className={cn(
           "text-3xl font-bold md:text-4xl",
           light ? "text-white" : "text-foreground",
@@ -133,9 +178,14 @@ export function SectionHeading({
       >
         {title}
       </h2>
-      <HeadingRule light={light} className={cn(align === "center" && "mx-auto")} />
+      <HeadingRule
+        data-seq-item={item}
+        light={light}
+        className={cn(align === "center" && "mx-auto")}
+      />
       {sub && (
         <p
+          data-seq-item={item}
           className={cn(
             "mt-4 text-lg leading-relaxed",
             light ? "text-neutral-300" : "text-foreground-muted",
