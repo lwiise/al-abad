@@ -22,16 +22,41 @@ import { cn } from "@/lib/utils";
  * being used rather than a line being drawn:
  *
  *   منهج علميّ    an open book; its pages settle onto the stack one by one
- *   أدوات عملية   a set of four implements; each rises into place in turn
- *   خبرة ميدانية  a route already travelled; its waypoints fill in along it
+ *   أدوات عملية   four implements standing in their rack; each is drawn up out
+ *                 of it in turn
+ *   خبرة ميدانية  ground in section; its layers are laid down from the deepest
+ *                 up to the surface
  *
- * The route is a FILLED tapered ribbon, not a stroked path, and what animates
- * is the waypoints — never the ribbon drawing itself. A path that draws is
- * exactly the line animation being removed.
+ * WHY THE SECOND AND THIRD FORMS LOOK NOTHING LIKE THEIR FIRST VERSIONS. Both
+ * were redrawn after the owner reported they did not read as their مرتكز, and
+ * both failures are worth keeping written down because each is easy to walk
+ * back into:
+ *
+ *   أدوات عملية was four bare implements floating in a row: an identical
+ *   vertical stem each, with a differing working end at the BOTTOM. At the size
+ *   this art actually renders (128–160px) a vertical bar with a point, a flat
+ *   edge or a fork under it is not an implement, it is an arrowhead — the set
+ *   read as four down-arrows, which says nothing about tools. What fixed it was
+ *   the RACK, and the rack is load-bearing: context is what makes a silhouette
+ *   an object, and an abstract shape without any defaults to whatever glyph it
+ *   most resembles. It also earns the motion — the implements come up out of
+ *   something now instead of drifting into place from nowhere. See the note at
+ *   TOOLS for what the heads may and may not be; that constraint has already
+ *   been broken twice in two different directions.
+ *
+ *   خبرة ميدانية was a travelled route — a filled bezier ribbon with waypoints
+ *   filling in along it. It reads as a journey, and a journey is the visitor's
+ *   story, not his credential; worse, section 5 (الخطوات) is already built out
+ *   of path-and-station diagrams, so this said the same thing one section
+ *   earlier in a different accent. Ground makes the claim the مرتكز actually
+ *   makes: depth accumulated in the field, oldest underneath, the surface —
+ *   where he is now — on top. Do not put a path back here.
  *
  * Forms stay geometric rather than illustrative. CLAUDE.md's warning about
  * generic template visuals is at its sharpest here: a wrench-and-screwdriver
- * icon set would be precisely the failure it describes.
+ * icon set would be precisely the failure it describes, which is why the four
+ * heads are deliberately not hardware — for a relationship counsellor the tools
+ * are conceptual.
  *
  * Colour, per the dark-section rule: lilac carries the forms (9.50:1 on ink)
  * and coral marks exactly one element in each (3.08:1 — an accent, never the
@@ -55,6 +80,21 @@ const BOX = 240;
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
 const r2 = (n: number) => +n.toFixed(2);
+
+type Pt = [number, number];
+
+const poly = (pts: Pt[]) =>
+  `M ${pts[0][0]} ${pts[0][1]} ` + pts.slice(1).map(([x, y]) => `L ${x} ${y}`).join(" ") + " Z";
+
+/** Axis-aligned box with a corner radius — the handles and the rack. Kept as
+ *  data rather than authored `d` strings so the clip assertions below check the
+ *  real corners rather than approximating them. */
+type Box = { x: number; y: number; w: number; h: number; r: number };
+
+const corners = ({ x, y, w, h }: Box): Pt[] => [
+  [x, y],
+  [x + w, y + h],
+];
 
 // ---------------------------------------------------------------------------
 // منهج علميّ — an open book
@@ -86,131 +126,177 @@ const PAGE = "M 120 104 L 200 83 L 200 92 L 120 112 Z";
 const PAGE_LIFT = [-38, -26, -14]; // degrees at rest, settling to 0
 
 // ---------------------------------------------------------------------------
-// أدوات عملية — four implements
+// أدوات عملية — four implements in their rack
 // ---------------------------------------------------------------------------
+
+/** How far below its resting place an implement starts, matching
+ *  `.mi-tool { translate: 0 34px }` in globals.css. Named here only so the clip
+ *  assertion can check the low position too; change one, change both. */
+const TOOL_RISE = 34;
+
+/** Every handle ends here — inside the rack body, so no implement ever shows a
+ *  cut end. The rack is painted after the implements for the same reason. */
+const HANDLE_FOOT = 182;
 
 /**
- * One family, four working ends. The shared stem is what makes them a SET; the
- * differing ends are what make them four tools. Deliberately not recognisable
- * hardware — for a relationship counsellor the tools are conceptual, and a
- * literal wrench would be absurd.
+ * One head and one handle each. Ordered right → left, so index 0 is the first
+ * one an Arabic reader meets and the stagger runs with the text rather than
+ * against it. Every handle is the same width and seated at the same depth —
+ * that is what makes the four a SET — and the four heads differ in silhouette,
+ * mass and height, which is what stops them reading as one repeated glyph.
  *
- * Built from explicit point arrays rather than authored `d` strings, so the
- * clip assertions below can check real coordinates. The one curved end is a
- * `<circle>` for the same reason: an arc command's `rx ry rot flags` are not
- * coordinates, and a checker that pairs path numbers blindly reads them as
- * some — which is exactly the false positive this shape produced first time.
+ * WHAT THE HEADS MAY NOT BE, both learned the hard way at the ~140px this
+ * actually renders at:
+ *
+ *   Nothing rounded on a thin stem. A round paddle is a spoon and prongs are a
+ *   fork, and once two of the four read as cutlery the whole rack becomes a
+ *   drying rack — which is what the version before this one did. Heads here are
+ *   angular and asymmetric — a wedge, a hook, a notched block, a skewed plate —
+ *   and the handles are wide enough (14) to be gripped rather than sipped from.
+ *
+ *   Nothing pointed hanging BELOW the handle. The first version had the working
+ *   ends at the bottom and read as four down-arrows: a vertical bar with a
+ *   point under it is an arrowhead before it is anything else. Heads go on top.
+ *
+ * Both failures are the same failure — an abstract shape with no context
+ * defaults to whichever glyph it most resembles — which is what the rack is
+ * for. Keep it.
  */
-const TOOL_X = [58, 98, 138, 178];
-const TOOL_TOP = 84;
-const TOOL_BOTTOM = 156;
+type Tool = { head: Pt[]; handle: Box };
 
-type Pt = [number, number];
-
-const poly = (pts: Pt[]) =>
-  `M ${pts[0][0]} ${pts[0][1]} ` + pts.slice(1).map(([x, y]) => `L ${x} ${y}`).join(" ") + " Z";
-
-const TOOLS = TOOL_X.map((x, i) => {
-  // Chamfered top, so the stem reads as a handle without an arc.
-  const stem: Pt[] = [
-    [x - 6.5, TOOL_TOP + 9],
-    [x - 3, TOOL_TOP],
-    [x + 3, TOOL_TOP],
-    [x + 6.5, TOOL_TOP + 9],
-    [x + 6.5, TOOL_BOTTOM],
-    [x - 6.5, TOOL_BOTTOM],
-  ];
-
-  const b = TOOL_BOTTOM;
-  const ends: Pt[][] =
-    i === 0
-      ? [[[x - 15, b], [x + 15, b], [x + 11, b + 22], [x - 15 + 4, b + 22]]] // flat blade
-      : i === 1
-        ? [
-            [[x - 13, b], [x - 3, b], [x - 3, b + 24], [x - 13, b + 24]], // two prongs
-            [[x + 3, b], [x + 13, b], [x + 13, b + 24], [x + 3, b + 24]],
-          ]
-        : i === 2
-          ? [[[x - 14, b], [x + 14, b], [x, b + 26]]] // point
-          : []; // the disc below
-
-  return {
-    polys: [stem, ...ends],
-    disc: i === 3 ? { cx: x, cy: b + 13, r: 14 } : null,
-  };
-});
-
-// ---------------------------------------------------------------------------
-// خبرة ميدانية — a travelled route
-// ---------------------------------------------------------------------------
-
-const ROUTE: [number, number][] = [
-  [46, 194],
-  [116, 178],
-  [84, 86],
-  [196, 54],
+const TOOLS: Tool[] = [
+  // wedge — the coral one
+  {
+    head: [
+      [172, 60],
+      [204, 60],
+      [195, 96],
+      [181, 96],
+    ],
+    handle: { x: 181, y: 92, w: 14, h: HANDLE_FOOT - 92, r: 4 },
+  },
+  // hook
+  {
+    head: [
+      [135, 68],
+      [149, 68],
+      [149, 108],
+      [119, 108],
+      [119, 94],
+      [135, 94],
+    ],
+    handle: { x: 135, y: 104, w: 14, h: HANDLE_FOOT - 104, r: 4 },
+  },
+  // notched block
+  {
+    head: [
+      [80, 76],
+      [92, 76],
+      [92, 88],
+      [100, 88],
+      [100, 76],
+      [112, 76],
+      [112, 108],
+      [80, 108],
+    ],
+    handle: { x: 89, y: 104, w: 14, h: HANDLE_FOOT - 104, r: 4 },
+  },
+  // skewed plate
+  {
+    head: [
+      [38, 72],
+      [66, 72],
+      [58, 104],
+      [30, 104],
+    ],
+    handle: { x: 43, y: 100, w: 14, h: HANDLE_FOOT - 100, r: 4 },
+  },
 ];
 
-const bez = (t: number, p: [number, number][]): [number, number] => {
-  const u = 1 - t;
-  return [0, 1].map(
-    (i) =>
-      u * u * u * p[0][i] + 3 * u * u * t * p[1][i] + 3 * u * t * t * p[2][i] + t * t * t * p[3][i],
-  ) as [number, number];
-};
+/** The rack. Body first, rim over it — the rim is the line the implements pass
+ *  through, and it has to read as in front of them. */
+const RACK_BODY: Box = { x: 36, y: 156, w: 168, h: 28, r: 10 };
+const RACK_RIM: Box = { x: 28, y: 146, w: 184, h: 14, r: 7 };
 
-const tangent = (t: number, p: [number, number][]): [number, number] => {
-  const u = 1 - t;
-  return [0, 1].map(
-    (i) =>
-      3 * u * u * (p[1][i] - p[0][i]) +
-      6 * u * t * (p[2][i] - p[1][i]) +
-      3 * t * t * (p[3][i] - p[2][i]),
-  ) as [number, number];
-};
+// ---------------------------------------------------------------------------
+// خبرة ميدانية — ground, in section
+// ---------------------------------------------------------------------------
 
 /**
- * The ribbon is BUILT, not typed: sample the centreline, offset each sample
- * along its normal by a tapering half-width, then close the two sides into one
- * filled polygon. Hand-authoring an offset curve is where a tapered ribbon goes
- * subtly wrong, and it is also how a shape silently escapes the viewBox.
+ * ONE MASS, CUT — not a stack of bars. Two passes at this were built out of
+ * separate horizontal bands and both failed at the size this renders, in
+ * opposite directions, so the shape is worth defending:
+ *
+ *   Bands that NARROWED going up made a symmetrical pyramid, which says summit
+ *   — a hierarchy climbed — and not depth accumulated.
+ *
+ *   Bands of roughly equal width with ragged ends made a loading skeleton: six
+ *   detached rounded bars stacked with gaps is what every placeholder on the
+ *   web looks like.
+ *
+ * What fixes both is that ground is CONTINUOUS. The layers here touch — each
+ * one runs from its own seam down to the next — and the block has clean
+ * vertical sides and a flat floor, so it reads as a section cut out of the
+ * ground rather than as objects arranged in a pile. The one edge that is not
+ * ruled is the top: the surface undulates, and that contour is most of what
+ * says "ground" at 128px.
+ *
+ * Seams undulate too. Parallel straight seams are stripes, and stripes are a
+ * flag or a palette; a gentle wave with its own period and phase per seam is
+ * geology. `y` is the seam's mean depth, `amp` its swing — SEAM SPACING MUST
+ * EXCEED THE SUM OF THE TWO AMPLITUDES or the seams cross and the layers turn
+ * inside out, which the assertion below checks rather than trusting.
  */
-const RIBBON = (() => {
-  const N = 30;
-  const side = (sign: number) =>
-    Array.from({ length: N + 1 }, (_, i) => {
-      const t = i / N;
-      const [x, y] = bez(t, ROUTE);
-      const [tx, ty] = tangent(t, ROUTE);
-      const len = Math.hypot(tx, ty) || 1;
-      const half = 7.5 - 4 * t; // tapers along the way travelled
-      return [r2(x + (-ty / len) * half * sign), r2(y + (tx / len) * half * sign)] as [
-        number,
-        number,
-      ];
-    });
-  const out = side(1);
-  const back = side(-1).reverse();
-  return (
-    `M ${out[0][0]} ${out[0][1]} ` +
-    out.slice(1).map(([x, y]) => `L ${x} ${y}`).join(" ") +
-    ` ` +
-    back.map(([x, y]) => `L ${x} ${y}`).join(" ") +
-    " Z"
-  );
-})();
+type Seam = { y: number; amp: number; freq: number; phase: number };
 
-const WAYPOINTS = [0.04, 0.3, 0.54, 0.78, 0.98].map((t) => {
-  const [x, y] = bez(t, ROUTE);
-  return { cx: r2(x), cy: r2(y) };
-});
-const WAYPOINT_R = 9;
+const GROUND_X0 = 28;
+const GROUND_X1 = 212;
+const GROUND_STEPS = 28;
+
+const SEAMS: Seam[] = [
+  { y: 72, amp: 6, freq: 0.03, phase: 10 }, // the surface
+  // Shares the surface's period and phase, at a smaller amplitude, so the top
+  // layer keeps an even thickness instead of swelling and pinching. It is the
+  // coral one, and coral is an accent — a band that wanders between 11 and 19
+  // units thick is the loudest thing in the frame at the wide end.
+  { y: 83, amp: 4.5, freq: 0.03, phase: 10 },
+  { y: 106, amp: 6, freq: 0.034, phase: 130 },
+  { y: 128, amp: 5, freq: 0.028, phase: 40 },
+  { y: 149, amp: 4, freq: 0.032, phase: 100 },
+  { y: 168, amp: 4, freq: 0.022, phase: 160 },
+  { y: 184, amp: 0, freq: 0, phase: 0 }, // the floor of the cut
+];
+
+/** Opacity by layer, surface first. Depth recedes; the surface is the present,
+ *  which is why it is also the one coral element in this state. */
+const LAYER_OPACITY = [1, 0.78, 0.62, 0.5, 0.4, 0.32];
+
+const seamY = (s: Seam, x: number) => r2(s.y + s.amp * Math.sin(s.freq * (x - s.phase)));
+
+const GROUND_XS = Array.from({ length: GROUND_STEPS + 1 }, (_, i) =>
+  r2(GROUND_X0 + ((GROUND_X1 - GROUND_X0) * i) / GROUND_STEPS),
+);
+
+/** Closed band between two seams: down the upper one, back along the lower. The
+ *  first and last samples sit exactly on GROUND_X0/X1, so the sides of every
+ *  layer are vertical and line up into one cut face — no clip path, and so no
+ *  generated id to collide with a second instance of this art on a page. */
+const stratum = (a: Seam, b: Seam): Pt[] => [
+  ...GROUND_XS.map((x) => [x, seamY(a, x)] as Pt),
+  ...GROUND_XS.map((x) => [x, seamY(b, x)] as Pt).reverse(),
+];
+
+/** Deepest first, so the stagger lays the ground down from underneath and ends
+ *  at the surface. */
+const STRATA = SEAMS.slice(0, -1)
+  .map((s, i) => ({ pts: stratum(s, SEAMS[i + 1]), o: LAYER_OPACITY[i] }))
+  .reverse();
 
 // ---------------------------------------------------------------------------
 // Clip assertions. Kept from the previous art, adapted: browsers clip <svg> at
-// the viewBox, and that failure is invisible in a screenshot. Checks the pages
-// in their LIFTED rest position too — that is the one thing here that lives
-// outside its authored bounds.
+// the viewBox, and that failure is invisible in a screenshot. Checks the two
+// things that live outside their authored bounds — the pages in their LIFTED
+// rest position, and the implements in their LOW one.
 // ---------------------------------------------------------------------------
 
 const assertInside = (label: string, pts: [number, number][]) => {
@@ -248,28 +334,36 @@ for (const deg of PAGE_LIFT) {
     }),
   );
 }
+const toolPoints = TOOLS.flatMap((t) => [...t.head, ...corners(t.handle)]);
+assertInside("tools", toolPoints);
 assertInside(
-  "tools",
-  TOOLS.flatMap((t) => [
-    ...t.polys.flat(),
-    ...(t.disc
-      ? ([
-          [t.disc.cx - t.disc.r, t.disc.cy - t.disc.r],
-          [t.disc.cx + t.disc.r, t.disc.cy + t.disc.r],
-        ] as Pt[])
-      : []),
-  ]),
+  `tools@+${TOOL_RISE}px`,
+  toolPoints.map(([x, y]) => [x, y + TOOL_RISE] as Pt),
 );
-assertInside("ribbon", numbersIn(RIBBON));
+assertInside("rack", [...corners(RACK_BODY), ...corners(RACK_RIM)]);
 assertInside(
-  "waypoints",
-  WAYPOINTS.flatMap(({ cx, cy }) => [
-    [cx - WAYPOINT_R, cy - WAYPOINT_R],
-    [cx + WAYPOINT_R, cy + WAYPOINT_R],
-  ] as [number, number][]),
+  "strata",
+  STRATA.flatMap((l) => l.pts),
 );
+// Seams that cross turn a layer inside out — a silent failure, since the shape
+// still fills and still sits inside the viewBox. Checked at the sample points,
+// which is where the geometry is actually evaluated.
+SEAMS.slice(0, -1).forEach((a, i) => {
+  const b = SEAMS[i + 1];
+  for (const x of GROUND_XS) {
+    if (seamY(a, x) >= seamY(b, x)) {
+      throw new Error(`Instructor art: ground seams ${i} and ${i + 1} cross at x=${x}`);
+    }
+  }
+});
 
 // ---------------------------------------------------------------------------
+
+/** `rx` only — an `<rect>` mirrors it to `ry`, and every corner here is round.
+ *  Colour is inherited from the enclosing group. */
+const Slab = ({ x, y, w, h, r, o }: Box & { o?: number }) => (
+  <rect x={x} y={y} width={w} height={h} rx={r} fillOpacity={o} />
+);
 
 export function InstructorSignature({
   state,
@@ -305,7 +399,10 @@ export function InstructorSignature({
         ))}
       </g>
 
-      {/* أدوات عملية */}
+      {/* أدوات عملية — the four implements are children 1–4 of this group and
+          the rack is child 5, which is what the `.mi-tool:nth-child` stagger in
+          globals.css counts. The rack is last so it paints over the handles and
+          the implements rise out from behind it. */}
       <g className="mi-tools">
         {TOOLS.map((t, i) => (
           <g
@@ -314,27 +411,26 @@ export function InstructorSignature({
             fill={i === 0 ? "var(--color-coral)" : "var(--color-lilac)"}
             fillOpacity={i === 0 ? 0.95 : 0.7}
           >
-            {t.polys.map((pts, j) => (
-              <path key={j} d={poly(pts)} />
-            ))}
-            {t.disc && <circle cx={t.disc.cx} cy={t.disc.cy} r={t.disc.r} />}
+            <path d={poly(t.head)} />
+            <Slab {...t.handle} />
           </g>
         ))}
+        <g fill="var(--color-lilac)">
+          <Slab {...RACK_BODY} o={0.42} />
+          <Slab {...RACK_RIM} o={0.62} />
+        </g>
       </g>
 
       {/* خبرة ميدانية */}
-      <g className="mi-route">
-        <path className="mi-ribbon" d={RIBBON} fill="var(--color-lilac)" fillOpacity="0.4" />
-        {WAYPOINTS.map((w, i) => (
-          <circle
+      <g className="mi-field">
+        {STRATA.map((l, i) => (
+          <path
             key={i}
-            className="mi-wp"
-            cx={w.cx}
-            cy={w.cy}
-            r={WAYPOINT_R}
-            // The last waypoint is where the road has reached.
-            fill={i === WAYPOINTS.length - 1 ? "var(--color-coral)" : "var(--color-lilac)"}
-            fillOpacity={i === WAYPOINTS.length - 1 ? 1 : 0.8}
+            className="mi-stratum"
+            d={poly(l.pts)}
+            // The surface is drawn last and is the one coral element.
+            fill={i === STRATA.length - 1 ? "var(--color-coral)" : "var(--color-lilac)"}
+            fillOpacity={l.o}
           />
         ))}
       </g>

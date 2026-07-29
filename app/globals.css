@@ -381,20 +381,35 @@
 }
 
 /* ===========================================================================
-   Section 7 — the assistant panel
+   Section 7 — the assistant band
    ===========================================================================
-   The band stays white and an inset panel does the separating. That is not the
-   white/surface alternation `Section` rules out: 1.07:1 buys no rhythm between
-   two adjacent BANDS, but a panel has a hairline border and a shadow carrying
-   the edge, and the tone only fills in behind them.
+   A plain white band, full width, like every other section. It used to be an
+   inset `bg-surface` panel — a hairline border and a shadow doing the
+   separating — but boxing the content inside a column narrower than the page
+   made it read as a widget dropped onto the site rather than part of it.
+   What marks the section now is the dot texture in the gutters, the violet
+   app-icon tile and the violet headline tail.
    ------------------------------------------------------------------------- */
 
-/* Dotted texture, faded INWARD from the rim: the mask is transparent in the
-   middle and opaque at the edges, so the dots frame the content instead of
-   sitting behind the type. A full-bleed dot field is the stock SaaS background,
-   and this mask is the one move that stops it reading as one.
-   Its own layer, never the panel itself — mask-image masks background-color
-   too, so masking the panel would eat the surface fill along with the dots.
+/* Dotted texture, faded INWARD from the rim: transparent across the middle and
+   opaque at the edges, so the dots frame the content instead of sitting behind
+   the type. A full-bleed dot field is the stock SaaS background, and this mask
+   is the one move that stops it reading as one.
+
+   The horizontal stops are absolute, not percentages, and 36rem is exactly half
+   of the `max-w-6xl` (72rem) content column: the transparent zone IS the column,
+   so dots only ever live in the gutters beside it and fade to full strength at
+   the viewport edge. That also makes the texture self-disabling — below 72rem
+   there are no gutters, `calc(50% - 36rem)` goes negative, the browser clamps
+   the stops and the whole band comes out transparent. Which is what we want:
+   the previous mask was a viewport-relative radial, and on a phone (narrow band,
+   tall content) its ellipse covered so little of the band that the dots ran
+   straight behind the headline.
+
+   The second layer fades the dots out at the top and bottom rather than letting
+   them butt into the neighbouring bands; `mask-composite` intersects the two.
+   Its own layer, never the band itself — mask-image masks background-color too,
+   so masking the section would eat its white along with the dots.
    22px is the pitch media-fallback.tsx already uses: one dot rhythm sitewide.
    Static and decorative; nothing here to switch off for reduced motion. */
 .dot-grid {
@@ -404,13 +419,26 @@
     transparent 0
   );
   background-size: 22px 22px;
-  -webkit-mask-image: radial-gradient(
-    74% 64% at 50% 42%,
-    transparent 0%,
-    transparent 42%,
-    #000 100%
-  );
-  mask-image: radial-gradient(74% 64% at 50% 42%, transparent 0%, transparent 42%, #000 100%);
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      #000 0,
+      transparent calc(50% - 36rem),
+      transparent calc(50% + 36rem),
+      #000 100%
+    ),
+    linear-gradient(to bottom, transparent 0, #000 20%, #000 80%, transparent 100%);
+  mask-image:
+    linear-gradient(
+      to right,
+      #000 0,
+      transparent calc(50% - 36rem),
+      transparent calc(50% + 36rem),
+      #000 100%
+    ),
+    linear-gradient(to bottom, transparent 0, #000 20%, #000 80%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 }
 
 /* App-icon tile. The violet glow is what makes a filled square read as an icon
@@ -802,8 +830,8 @@
 }
 
 /* --- قسم التعريف: the drawn forms + مرتكزات -------------------------------
-   One drawn artifact per مرتكز — an open book, a set of implements, a
-   travelled route — and each مرتكز drives its own via `data-state` on the SVG
+   One drawn artifact per مرتكز — an open book, a racked set of implements,
+   ground in section — and each مرتكز drives its own via `data-state` on the SVG
    root, the same one-attribute contract قسم التحديات uses.
 
    THIS SECTION NO LONGER DRAWS LINES. Two earlier passes animated abstract
@@ -820,8 +848,8 @@
    1. Channels are kept apart, because CSS applies translate → rotate → scale →
       transform in that order and they compose:
         rotate    → the book's pages settling onto the stack
-        translate → the implements rising into place
-        scale     → the waypoints filling in
+        translate → the implements rising out of the rack
+        scale     → the ground's layers spreading as they are laid down
       No element is ever driven on two channels, and nothing is both animated
       and transitioned on the same one.
 
@@ -848,13 +876,13 @@
   /* Whole-form visibility. Only the active مرتكز's artifact is on screen. */
   .mi-book,
   .mi-tools,
-  .mi-route {
+  .mi-field {
     opacity: 0;
     transition: opacity var(--mi-move) var(--mi-ease);
   }
   .mi-art[data-state="method"] .mi-book,
   .mi-art[data-state="tools"] .mi-tools,
-  .mi-art[data-state="field"] .mi-route {
+  .mi-art[data-state="field"] .mi-field {
     opacity: 1;
   }
 
@@ -877,7 +905,16 @@
 
   /* --- أدوات عملية: the implements rise --------------------------------
      Equal rise, equal spacing, staggered arrival: a set being laid out, which
-     is the whole claim. Uneven would read as spillage. */
+     is the whole claim. Uneven would read as spillage.
+
+     The rise is 34px and it is a MOTION AGAINST THE RACK, not a drift in empty
+     space — at rest each implement's head sits inside the rack it comes out of,
+     and the rack is painted over the handles so the emergence reads. The 34 is
+     duplicated as TOOL_RISE in art/instructor-signature.tsx, where the clip
+     assertion checks the low position; change one, change both.
+
+     nth-child counts the four .mi-tool groups. The rack is child 5 of the same
+     group — deliberately unstaggered, because the holder is already there. */
   .mi-tool {
     transform-box: view-box;
     translate: 0 34px;
@@ -895,28 +932,34 @@
   .mi-tool:nth-child(3) { transition-delay: 180ms; }
   .mi-tool:nth-child(4) { transition-delay: 270ms; }
 
-  /* --- خبرة ميدانية: the waypoints fill in ------------------------------
-     fill-box, not view-box: each waypoint scales about ITSELF, and fill-box is
-     what makes `transform-origin: center` mean the element's own centre. The
-     ribbon never draws — it is a filled shape that simply arrives. */
-  .mi-wp {
+  /* --- خبرة ميدانية: the ground is laid down ----------------------------
+     fill-box, not view-box: each layer spreads about ITSELF, and fill-box is
+     what makes `transform-origin: center` mean the element's own centre.
+
+     X ONLY — `scale: 0 1`, never a bare `scale: 0`. A layer that also grew in
+     height would inflate, and inflating is not depositing; spreading outward
+     from the middle at full thickness is the whole read. The deepest layer is
+     first in the DOM, so the stagger builds the mass from underneath and
+     finishes at the surface. Nothing here draws a path — see the note in
+     art/instructor-signature.tsx about the route this replaced. */
+  .mi-stratum {
     transform-box: fill-box;
     transform-origin: center;
-    scale: 0;
+    scale: 0 1;
     transition:
       scale var(--mi-move) var(--mi-ease),
       opacity var(--mi-move) var(--mi-ease);
     opacity: 0;
   }
-  .mi-art[data-state="field"] .mi-wp {
-    scale: 1;
+  .mi-art[data-state="field"] .mi-stratum {
+    scale: 1 1;
     opacity: 1;
   }
-  .mi-wp:nth-child(2) { transition-delay: 80ms; }
-  .mi-wp:nth-child(3) { transition-delay: 180ms; }
-  .mi-wp:nth-child(4) { transition-delay: 280ms; }
-  .mi-wp:nth-child(5) { transition-delay: 380ms; }
-  .mi-wp:nth-child(6) { transition-delay: 480ms; }
+  .mi-stratum:nth-child(2) { transition-delay: 70ms; }
+  .mi-stratum:nth-child(3) { transition-delay: 140ms; }
+  .mi-stratum:nth-child(4) { transition-delay: 210ms; }
+  .mi-stratum:nth-child(5) { transition-delay: 280ms; }
+  .mi-stratum:nth-child(6) { transition-delay: 350ms; }
 
   /* The list — the marker echoes the circle and fills when its row is the one
      driving it. Lilac, not plum: this sits on ink, where plum is 1.26:1. */

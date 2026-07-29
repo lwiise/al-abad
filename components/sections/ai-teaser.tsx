@@ -29,21 +29,35 @@ export function AiTeaser({
   const { lead, tail } = splitAtEllipsis(headline || FALLBACK_HEADLINE);
 
   return (
-    <Section bg="background">
-      {/* Sequenced rather than revealed as a slab: the panel is a stack of
-          distinct objects — icon, chip, headline, subhead, form, mockup — and
-          sliding the whole card up as one rectangle showed none of them. Each
-          part now arrives in reading order; see components/motion/sequence.tsx. */}
-      <Sequence>
-        {/* The band stays white; this panel does the separating — bg-surface
-            behind a hairline border, a soft shadow and the dot texture at its
-            rim. It was a violet .ai-shimmer card, which it shared verbatim with
-            the final CTA one screen later: same radius, same AiOrbit corner,
-            only the hue differed, so the page said the same thing twice.
-            Violet still marks the section — as fills on a light ground. */}
-        <div className="relative isolate overflow-hidden rounded-[2rem] border border-border bg-surface px-6 pt-14 text-center shadow-lg sm:px-10 md:pt-16">
-          <span aria-hidden="true" className="dot-grid pointer-events-none absolute inset-0 -z-10" />
+    /* A plain white band, the same full-width sheet every other section is
+       printed on — no inset card. Two earlier versions boxed this content: a
+       violet `.ai-shimmer` card (which it shared verbatim with the final CTA one
+       screen later, so the page said the same thing twice), then a `bg-surface`
+       panel behind a hairline border. Both fenced the section off inside a
+       column narrower than the page, and the grey ground read as a widget
+       dropped onto the site rather than part of it.
 
+       What is left to separate section 7 from section 6 — also white — is not a
+       band tone: it is the dot texture framing the full width, the violet
+       app-icon tile opening the section, and the violet headline tail. Violet
+       still marks the section, as fills on a light ground. */
+    <Section
+      bg="background"
+      className="overflow-hidden"
+      /* Full-bleed, so the dots frame the page and not a content column: with
+         the panel gone, a texture stopping at max-w-6xl would just redraw the
+         card edge in dots. Its mask fades INWARD, so nothing lands behind the
+         type — see `.dot-grid` in globals.css. */
+      bleed={
+        <span aria-hidden="true" className="dot-grid pointer-events-none absolute inset-0 -z-10" />
+      }
+    >
+      {/* Sequenced rather than revealed as a slab: this is a stack of distinct
+          objects — icon, chip, headline, subhead, form, mockup — and sliding
+          them up as one rectangle showed none of them. Each part now arrives in
+          reading order; see components/motion/sequence.tsx. */}
+      <Sequence>
+        <div className="text-center">
           <span
             data-seq-item
             className="ai-tile mx-auto flex size-16 items-center justify-center rounded-xl bg-highlight text-on-highlight md:size-18"
@@ -86,9 +100,9 @@ export function AiTeaser({
 
           {/* Wrapped rather than marked on its own root: the preview is art,
               and it should not have to know about the entrance system. Its
-              device deliberately bleeds past the panel's bottom edge (-mb-16,
-              clipped by the panel's overflow-hidden), so the rise reads as the
-              mockup sliding up into the card. */}
+              device deliberately bleeds past the bottom of the band (-mb-16,
+              clipped by the Section's overflow-hidden), so the rise reads as
+              the mockup sliding up into the section. */}
           <div data-seq-item>
             <AiAssistantPreview points={items} />
           </div>
