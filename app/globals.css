@@ -821,3 +821,520 @@
     transition: none;
   }
 }
+
+/* ===========================================================================
+   «كيف تبدأ؟» — one step at a time, told by the scroll
+   ===========================================================================
+   Three cards side by side said everything at once and so said nothing: every
+   step got a third of the attention and an icon. Here each step takes the
+   screen alone, with a diagram that draws what it actually says, and the
+   scroll is what hands over to the next one.
+
+   Deliberately NOT wrapped in @layer — same reason as the nav/hero block
+   above: Tailwind v4 treats rules inside `@layer utilities` as utility
+   candidates and only emits the ones it can match, which drops compound
+   selectors like these. Plain top-level CSS is emitted verbatim.
+
+   TWO RULES SHAPE THE MOTION.
+
+   1. The layout switch is CSS, the state is JS. The section renders as an
+      ordinary list of steps and only becomes a sticky stage once the client
+      has confirmed it can honour the motion (`data-hiw`), so no-JS and
+      reduced-motion readers keep every step, in order, fully visible.
+
+   2. A diagram only animates while its step is the one on screen, so it plays
+      from its first frame every time that step comes round. This is also the
+      only reason these may be keyframe animations at all — the challenges
+      diagram had to transition everything because its states interrupt each
+      other mid-flight, whereas here leaving a step REMOVES the animation and
+      the value snaps back to the resting pose while the card is already
+      fading out. Nobody ever sees the snap. That resting pose is the finished
+      state of each diagram — chosen, watched, achieved — which is exactly the
+      still image reduced motion should be left with.
+   ------------------------------------------------------------------------- */
+
+/* How far "arrived" a part of a diagram is: 0 = waiting, 1 = chosen / watched
+   / achieved. Lift, coral fill, the check and the heart's size are all derived
+   from this one number, so a keyframe that moves it moves the whole look and
+   every diagram states its idea the same way.
+
+   Registered so it INTERPOLATES rather than flipping. Where @property is
+   missing the maths still resolves — it just steps instead of easing. */
+@property --hiw-on {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.hiw-track {
+  --hiw-ease: var(--ease-hero);
+  /* Scroll distance each step holds the stage before handing over. */
+  --hiw-hold: 62svh;
+  --hiw-swap: 560ms;
+}
+
+/* --- Static: every step visible, one under another ----------------------- */
+.hiw-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- Scroll: the stage sticks and the cards are dealt into one cell ------ */
+.hiw-track[data-hiw="scroll"] {
+  /* min-height, not height: if a card is ever taller than the viewport the
+     track grows with it instead of letting the stage overrun the section. */
+  min-height: calc(100svh + var(--hiw-count) * var(--hiw-hold));
+}
+
+.hiw-track[data-hiw="scroll"] .hiw-stage {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  /* The nav is fixed, so the stage has to clear it itself — the scrolled
+     height, since the section is never reached before the nav has shrunk. */
+  padding-block: calc(var(--nav-h-scrolled) + 1rem) 2rem;
+}
+
+/* One grid cell, every card in it: the deck is as tall as the tallest card
+   without a hand-set height, and the cards cross-fade in place. */
+.hiw-track[data-hiw="scroll"] .hiw-deck {
+  display: grid;
+  gap: 0;
+}
+
+.hiw-track[data-hiw="scroll"] .hiw-card {
+  grid-area: 1 / 1;
+  opacity: 0;
+  translate: 0 44px;
+  scale: 0.97;
+  pointer-events: none;
+  /* Opacity is deliberately quicker than the movement: the two cards are
+     stacked in the same cell, so a fade as long as the travel leaves both
+     diagrams legible over each other for half a second. */
+  transition:
+    opacity calc(var(--hiw-swap) * 0.6) var(--hiw-ease),
+    translate var(--hiw-swap) var(--hiw-ease),
+    scale var(--hiw-swap) var(--hiw-ease);
+}
+/* Steps already taken lift away upward; the ones still to come wait below. */
+.hiw-track[data-hiw="scroll"] .hiw-card[data-state="past"] {
+  translate: 0 -44px;
+}
+.hiw-track[data-hiw="scroll"] .hiw-card[data-state="current"] {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  pointer-events: auto;
+}
+
+/* --- The rail: where you are, and a way to skip ------------------------- */
+.hiw-rail-item {
+  cursor: pointer;
+}
+/* Fills from the start edge — RTL, like the nav underline above. Driven
+   straight off scroll progress (set as --hiw-p every frame), so it needs no
+   transition of its own: it is already continuous. */
+.hiw-rail-fill {
+  transform-origin: 100% 50%;
+  transform: scaleX(clamp(0, calc(var(--hiw-p, 0) * var(--hiw-count) - var(--hiw-i)), 1));
+}
+.hiw-rail-label {
+  transition: color 240ms var(--hiw-ease);
+}
+.hiw-rail-item[aria-current="step"] .hiw-rail-label {
+  color: var(--color-foreground);
+  font-weight: 600;
+}
+
+/* --- 1 · اختر دورتك ------------------------------------------------------
+   Attention slides along the three courses, right to left; whichever it rests
+   on lifts, warms and takes the check. Resting pose: the first one chosen. */
+.hiw-opt {
+  --hiw-on: 0;
+  transform-box: view-box;
+  opacity: calc(0.55 + 0.45 * var(--hiw-on));
+  translate: 0 calc(-16px * var(--hiw-on));
+}
+.hiw-opt-1 {
+  --hiw-on: 1;
+}
+.hiw-opt-ring,
+.hiw-opt-wash {
+  opacity: var(--hiw-on);
+}
+.hiw-opt-check {
+  /* fill-box: each badge scales about its own centre, so the three cards share
+     one rule instead of carrying three transform-origins. */
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: var(--hiw-on);
+  scale: calc(0.55 + 0.45 * var(--hiw-on));
+}
+.hiw-pick {
+  transform-box: view-box;
+}
+
+.hiw-art[data-active="true"] .hiw-opt {
+  /* backwards: during its delay a card holds the first frame (waiting), not
+     the resting pose it was authored with. */
+  animation: hiw-on 4.5s var(--hiw-ease) infinite backwards;
+}
+.hiw-art[data-active="true"] .hiw-opt-2 {
+  animation-delay: 1.5s;
+}
+.hiw-art[data-active="true"] .hiw-opt-3 {
+  animation-delay: 3s;
+}
+.hiw-art[data-active="true"] .hiw-pick {
+  animation: hiw-pick 4.5s var(--hiw-ease) infinite;
+}
+
+/* --- 2 · سجّل وتعلّم على راحتك ---------------------------------------------
+   The ring fills at its own pace and the lessons tick off behind it, each as
+   the ring passes its third. Resting pose: three quarters of the way in. */
+.hiw-ring {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 26;
+}
+.hiw-play {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hiw-lesson {
+  --hiw-on: 0;
+}
+.hiw-lesson-1,
+.hiw-lesson-2 {
+  --hiw-on: 1;
+}
+.hiw-lesson-fill,
+.hiw-lesson-check {
+  opacity: var(--hiw-on);
+}
+.hiw-lesson-line {
+  opacity: calc(0.4 + 0.6 * var(--hiw-on));
+}
+
+.hiw-art[data-active="true"] .hiw-ring {
+  /* linear: a pace, not a flourish. */
+  animation: hiw-fill 6s linear infinite;
+}
+.hiw-art[data-active="true"] .hiw-play {
+  animation: hiw-beat 2.4s ease-in-out infinite;
+}
+.hiw-art[data-active="true"] .hiw-lesson-1 {
+  animation: hiw-lesson-1 6s var(--hiw-ease) infinite;
+}
+.hiw-art[data-active="true"] .hiw-lesson-2 {
+  animation: hiw-lesson-2 6s var(--hiw-ease) infinite;
+}
+.hiw-art[data-active="true"] .hiw-lesson-3 {
+  animation: hiw-lesson-3 6s var(--hiw-ease) infinite;
+}
+
+/* --- 3 · طبّق وحقّق نتائج --------------------------------------------------
+   The climb draws itself, three practical steps are met along it, and the
+   heart the challenges diagram watched shrink is waiting at the top, at full
+   size. Resting pose: arrived. Each milestone gets its own keyframes rather
+   than one set with delays, because they must all clear TOGETHER when the
+   climb resets — a shared keyframe plus a delay would stagger the clearing
+   into the next pass. */
+.hiw-climb {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+.hiw-mark {
+  --hiw-on: 1;
+}
+.hiw-mark-fill,
+.hiw-mark-check {
+  opacity: var(--hiw-on);
+}
+.hiw-summit {
+  --hiw-on: 1;
+}
+.hiw-heart {
+  transform-box: fill-box;
+  transform-origin: center;
+  /* Two channels on purpose: `transform` is the growth that comes with
+     arriving, `scale` is the beat — so the beat never has to stop. */
+  transform: scale(calc(0.82 + 0.36 * var(--hiw-on)));
+  /* Present from the start, but only faintly: what the climb is for is
+     visible before it is reached, and fills in on arrival. */
+  opacity: calc(0.32 + 0.68 * var(--hiw-on));
+}
+.hiw-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: calc(0.12 * var(--hiw-on));
+  transform: scale(calc(0.7 + 0.3 * var(--hiw-on)));
+}
+.hiw-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: calc(0.85 * var(--hiw-on));
+}
+
+.hiw-art[data-active="true"] .hiw-climb {
+  animation: hiw-draw 6.6s var(--hiw-ease) infinite;
+}
+.hiw-art[data-active="true"] .hiw-mark-1 {
+  animation: hiw-mark-1 6.6s var(--hiw-ease) infinite;
+}
+.hiw-art[data-active="true"] .hiw-mark-2 {
+  animation: hiw-mark-2 6.6s var(--hiw-ease) infinite;
+}
+.hiw-art[data-active="true"] .hiw-mark-3 {
+  animation: hiw-mark-3 6.6s var(--hiw-ease) infinite;
+}
+.hiw-art[data-active="true"] .hiw-summit {
+  animation: hiw-summit 6.6s var(--hiw-ease) infinite;
+}
+.hiw-art[data-active="true"] .hiw-heart {
+  animation: hiw-beat 1.9s ease-in-out infinite;
+}
+.hiw-art[data-active="true"] .hiw-spark {
+  animation: hiw-twinkle 2.6s ease-in-out infinite;
+}
+.hiw-art[data-active="true"] .hiw-spark-2 {
+  animation-delay: 0.5s;
+}
+.hiw-art[data-active="true"] .hiw-spark-3 {
+  animation-delay: 1s;
+}
+
+/* --- Keyframes ---------------------------------------------------------- */
+@keyframes hiw-on {
+  0% {
+    --hiw-on: 0;
+  }
+  8%,
+  27% {
+    --hiw-on: 1;
+  }
+  34%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+
+/* The three stops are the three cards, 124 apart, right to left. The return
+   leg is made invisible rather than animated: a bar whipping back across the
+   whole row would read as a mistake. */
+@keyframes hiw-pick {
+  0%,
+  27% {
+    translate: 0 0;
+    opacity: 1;
+  }
+  33%,
+  60% {
+    translate: -124px 0;
+    opacity: 1;
+  }
+  67%,
+  88% {
+    translate: -248px 0;
+    opacity: 1;
+  }
+  93% {
+    translate: -248px 0;
+    opacity: 0;
+  }
+  94% {
+    translate: 0 0;
+    opacity: 0;
+  }
+  100% {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+
+/* Fills 6% → 64%, holds, then resets behind a fade — same reason as the bar. */
+@keyframes hiw-fill {
+  0%,
+  6% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+  64%,
+  86% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  93% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+  94% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+}
+
+/* Each lesson ticks as the ring passes its third: ⅓ at 25%, ⅔ at 45%, all of
+   it at 64%. They clear together with the ring. */
+@keyframes hiw-lesson-1 {
+  0%,
+  22% {
+    --hiw-on: 0;
+  }
+  28%,
+  86% {
+    --hiw-on: 1;
+  }
+  93%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+@keyframes hiw-lesson-2 {
+  0%,
+  42% {
+    --hiw-on: 0;
+  }
+  48%,
+  86% {
+    --hiw-on: 1;
+  }
+  93%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+@keyframes hiw-lesson-3 {
+  0%,
+  61% {
+    --hiw-on: 0;
+  }
+  67%,
+  86% {
+    --hiw-on: 1;
+  }
+  93%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+
+@keyframes hiw-draw {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+  70%,
+  88% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  95% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+  96% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+}
+
+/* Met at the climb's start, third and two-thirds; the heart once it arrives. */
+@keyframes hiw-mark-1 {
+  0% {
+    --hiw-on: 0;
+  }
+  4%,
+  92% {
+    --hiw-on: 1;
+  }
+  96%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+@keyframes hiw-mark-2 {
+  0%,
+  21% {
+    --hiw-on: 0;
+  }
+  27%,
+  92% {
+    --hiw-on: 1;
+  }
+  96%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+@keyframes hiw-mark-3 {
+  0%,
+  44% {
+    --hiw-on: 0;
+  }
+  50%,
+  92% {
+    --hiw-on: 1;
+  }
+  96%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+@keyframes hiw-summit {
+  0%,
+  66% {
+    --hiw-on: 0;
+  }
+  76%,
+  92% {
+    --hiw-on: 1;
+  }
+  96%,
+  100% {
+    --hiw-on: 0;
+  }
+}
+
+@keyframes hiw-beat {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.06;
+  }
+}
+@keyframes hiw-twinkle {
+  0%,
+  100% {
+    scale: 0.7;
+  }
+  50% {
+    scale: 1.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The stage never switches to scroll mode (the component checks the same
+     preference), so all that is left is to hold every diagram at its resting
+     pose — the finished state of its step. */
+  .hiw-art,
+  .hiw-art *,
+  .hiw-card,
+  .hiw-rail-label {
+    animation: none !important;
+    transition: none !important;
+  }
+}
