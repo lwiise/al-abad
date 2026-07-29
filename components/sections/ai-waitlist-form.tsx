@@ -102,7 +102,10 @@ export function AiWaitlistForm({
         <p
           role="status"
           aria-live="polite"
-          className="mt-2 flex items-center justify-center gap-2 text-sm font-medium text-lilac"
+          // `lg:justify-start` follows the section: the copy column is centred
+          // while the layout is stacked and start-aligned once it is two columns,
+          // and a flex row does not inherit the `text-align` that moves the rest.
+          className="mt-2 flex items-center justify-center gap-2 text-sm font-medium text-lilac lg:justify-start"
         >
           <AlertCircle className="size-4 shrink-0 text-accent" aria-hidden="true" />
           {state.message}

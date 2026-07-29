@@ -21,31 +21,59 @@ import { FloatGroup } from "@/components/motion/float-group";
  * left in RTL. Every `t` stays ≤ 60% so the chips stay level with the device
  * rather than trailing off below it.
  *
- * The scatter starts at `lg`, not `md`: at 768px the content column is barely
- * wider than the device, so a ~200px chip at the rim runs past the column and
- * into the band's edge. Below lg they are a plain wrapped row instead.
+ * THE SCATTER NEEDS A GUTTER AS WIDE AS A CHIP, and that is what sets the
+ * breakpoint. It used to start at `lg`, when this drawing had the section's full
+ * `max-w-6xl` column to itself and 432px of clear ground each side of the
+ * device. Section 7 is two columns from lg now (see ai-teaser.tsx), and the two
+ * halves of that split measure very differently:
+ *
+ *   - From xl the container has stopped growing at 1152 and the drawing's column
+ *     is 606 of it: 288 of device and 159 each side, against a chip that drops to
+ *     163 here (see the `xl:text-xs` note below). Four pixels of that land on the
+ *     device's 8px frame and none of it on its screen, which is a pill resting on
+ *     the phone's rim — the look the scatter was always after.
+ *   - Between lg and xl the column is 430–510 and the gutter 71–111, against a
+ *     180px chip. A chip anchored there sits squarely on the chat bubbles, so
+ *     across that range they stay the plain wrapped row the phone layout uses,
+ *     above the device.
+ *
+ * `t` is a fraction of the DEVICE's height, since that is what the layer is
+ * sized by, and the side offsets are 0–2% — the chips hug the gutter rather than
+ * floating in the middle of it, because the gutter is only 159px and the chip is
+ * 163. Slots 4–6 are the second column each side, for the six `ai_points` the
+ * CMS allows; the seeded three take the first three.
  */
 type Slot = { s?: string; e?: string; t: string; r: string };
 
 const CHIP_SLOTS: Slot[] = [
-  { s: "3%", t: "8%", r: "-4deg" },
-  { e: "4%", t: "34%", r: "3.5deg" },
-  { s: "6%", t: "58%", r: "2.5deg" },
-  { e: "8%", t: "6%", r: "3deg" },
-  { s: "10%", t: "36%", r: "-3deg" },
-  { e: "2%", t: "56%", r: "-2.5deg" },
+  { s: "0%", t: "6%", r: "-4deg" },
+  { e: "0%", t: "36%", r: "3.5deg" },
+  { s: "1%", t: "60%", r: "2.5deg" },
+  { e: "1%", t: "4%", r: "3deg" },
+  { s: "2%", t: "34%", r: "-3deg" },
+  { e: "0%", t: "60%", r: "-2.5deg" },
 ];
 
 export function AiAssistantPreview({ points }: { points: string[] }) {
   return (
     // `isolate` so the bloom's -z-10 stays inside this drawing and cannot land
     // behind the band's dot field, which sits at the same depth one level up.
-    <div className="relative isolate mt-12 md:mt-16">
-      {/* Below lg these are a plain centered wrap list above the device; from lg
-          they scatter around it. Logical start/end, so RTL mirrors for free. */}
+    //
+    // `lg:mt-0` because from lg this is a COLUMN of the section, sitting beside
+    // the copy rather than under it — the top margin is the stacked layout's
+    // gap, and left in place it would push the drawing below its own column.
+    <div className="relative isolate mt-12 md:mt-16 lg:mt-0">
+      {/* Below xl these are a plain centered wrap list above the device; from xl
+          they scatter around it. Logical start/end, so RTL mirrors for free.
+
+          `xl:z-10` because the device is a positioned sibling LATER in the DOM,
+          so without it the two paint in source order and the phone covers any
+          chip that reaches it — which is how a chip whose label the owner made
+          longer than the gutter would fail. Lifted, the worst case is a pill
+          resting ON the device, which is what a floating chip should do anyway. */}
       <FloatGroup
         as="ul"
-        className="flex flex-wrap justify-center gap-2.5 lg:pointer-events-none lg:absolute lg:inset-0 lg:block"
+        className="flex flex-wrap justify-center gap-2.5 xl:pointer-events-none xl:absolute xl:inset-0 xl:z-10 xl:block"
       >
         {points.slice(0, CHIP_SLOTS.length).map((point, i) => {
           const slot = CHIP_SLOTS[i];
@@ -61,7 +89,16 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
                   "--chip-r": slot.r,
                 } as CSSProperties
               }
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground shadow-lg lg:absolute lg:top-[var(--chip-t)] lg:start-[var(--chip-s)] lg:end-[var(--chip-e)] lg:rotate-[var(--chip-r)]"
+              /* A size smaller once they scatter, and that is arithmetic rather
+                 than taste: the gutter each side of the device is 159px and a
+                 `text-sm` chip measures 183. Widening the gutter instead costs
+                 the copy column the same 24px twice over, and it is already at
+                 the width where its headline takes a third line. Shrinking the
+                 DEVICE is the one move that cannot work at all — it is sized by
+                 its own content, so a narrower phone is a TALLER phone. In the
+                 row layout below xl there is no gutter to fit, so they stay at
+                 the site's normal chip size there. */
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground shadow-lg xl:absolute xl:top-[var(--chip-t)] xl:start-[var(--chip-s)] xl:end-[var(--chip-e)] xl:rotate-[var(--chip-r)] xl:px-3 xl:py-1.5 xl:text-xs"
             >
               <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-highlight" />
               {point}
@@ -84,7 +121,14 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
           here everything near it is opaque (this device, the chips) so it costs
           no contrast at all. The shadow stays for the light contexts the
           drawing may be reused in. */}
-      <div aria-hidden="true" className="relative mx-auto mt-8 w-60 sm:w-64 lg:mt-0 lg:w-72">
+      {/* Width stays 288 from lg even though the column narrowed: this box is
+          sized by its own content, so NARROWING it does not make it smaller —
+          the bubbles wrap onto more lines and it gets ~30px TALLER, which is the
+          opposite of what a one-screen band needs. Nor is it scaled down: at the
+          height budget a 768px window leaves it that would be 58%, and its 12px
+          chat text — the source chip is the one thing this drawing has to say —
+          would render at 7px. */}
+      <div aria-hidden="true" className="relative mx-auto mt-8 w-60 sm:w-64 lg:w-72 xl:mt-0">
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-[-55%] top-[8%] -z-10 h-[76%] rounded-[100%] bg-highlight/25 blur-3xl"
