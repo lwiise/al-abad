@@ -161,6 +161,9 @@ pairs.push(["focus ring on surface", T("focus"), T("surface"), UI]);
 // 30px bold clears the large-text threshold. Nothing smaller may be violet on a
 // light ground — the "قريباً" chip sets its label in plum and keeps violet in
 // the fill and the dot.
+// The headline itself sits on `background` now that section 7 is a white band
+// rather than a `surface` panel; the `surface` pair stays asserted because
+// surface is still a card/inset ground and violet may land on one.
 pairs.push(["highlight as large heading on background", T("highlight"), T("background"), LARGE]);
 pairs.push(["highlight as large heading on surface", T("highlight"), T("surface"), LARGE]);
 

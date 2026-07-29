@@ -18,12 +18,12 @@ import { FloatGroup } from "@/components/motion/float-group";
 
 /**
  * Scatter positions for the chips, alternating sides so they read right-then-
- * left in RTL. Every `t` stays ≤ 60% so no chip is ever clipped by the panel's
- * bottom edge — the device is the only thing meant to run off it.
+ * left in RTL. Every `t` stays ≤ 60% so the chips stay level with the device
+ * rather than trailing off below it.
  *
- * The scatter starts at `lg`, not `md`: at 768px the panel is barely wider than
- * the device, so a ~200px chip at the rim overflows and the panel's
- * overflow-hidden shears it. Below lg they are a plain wrapped row instead.
+ * The scatter starts at `lg`, not `md`: at 768px the content column is barely
+ * wider than the device, so a ~200px chip at the rim runs past the column and
+ * into the band's edge. Below lg they are a plain wrapped row instead.
  */
 type Slot = { s?: string; e?: string; t: string; r: string };
 
@@ -68,12 +68,12 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
         })}
       </FloatGroup>
 
-      {/* Cropped by the panel's overflow-hidden — the device continues past the
-          bottom edge, which is what makes it read as a product and not a card. */}
-      <div
-        aria-hidden="true"
-        className="relative mx-auto mt-8 -mb-16 w-60 sm:w-64 lg:mt-0 lg:-mb-20 lg:w-72"
-      >
+      {/* Shown whole, sitting on the band's own white. It used to be cropped by
+          the panel's bottom edge — with no panel there is nothing to crop
+          against but the section boundary, and a phone sliced off where the
+          white meets the lilac below reads as a rendering fault, not a product
+          shot. The shadow is what seats it now. */}
+      <div aria-hidden="true" className="relative mx-auto mt-8 w-60 sm:w-64 lg:mt-0 lg:w-72">
         <div className="rounded-[2rem] border border-border-strong bg-background p-2 shadow-xl">
           <div className="rounded-[1.6rem] bg-surface px-4 pt-3 pb-8">
             <span className="mx-auto block h-1 w-14 rounded-full bg-border-strong" />

@@ -355,20 +355,35 @@
 }
 
 /* ===========================================================================
-   Section 7 — the assistant panel
+   Section 7 — the assistant band
    ===========================================================================
-   The band stays white and an inset panel does the separating. That is not the
-   white/surface alternation `Section` rules out: 1.07:1 buys no rhythm between
-   two adjacent BANDS, but a panel has a hairline border and a shadow carrying
-   the edge, and the tone only fills in behind them.
+   A plain white band, full width, like every other section. It used to be an
+   inset `bg-surface` panel — a hairline border and a shadow doing the
+   separating — but boxing the content inside a column narrower than the page
+   made it read as a widget dropped onto the site rather than part of it.
+   What marks the section now is the dot texture in the gutters, the violet
+   app-icon tile and the violet headline tail.
    ------------------------------------------------------------------------- */
 
-/* Dotted texture, faded INWARD from the rim: the mask is transparent in the
-   middle and opaque at the edges, so the dots frame the content instead of
-   sitting behind the type. A full-bleed dot field is the stock SaaS background,
-   and this mask is the one move that stops it reading as one.
-   Its own layer, never the panel itself — mask-image masks background-color
-   too, so masking the panel would eat the surface fill along with the dots.
+/* Dotted texture, faded INWARD from the rim: transparent across the middle and
+   opaque at the edges, so the dots frame the content instead of sitting behind
+   the type. A full-bleed dot field is the stock SaaS background, and this mask
+   is the one move that stops it reading as one.
+
+   The horizontal stops are absolute, not percentages, and 36rem is exactly half
+   of the `max-w-6xl` (72rem) content column: the transparent zone IS the column,
+   so dots only ever live in the gutters beside it and fade to full strength at
+   the viewport edge. That also makes the texture self-disabling — below 72rem
+   there are no gutters, `calc(50% - 36rem)` goes negative, the browser clamps
+   the stops and the whole band comes out transparent. Which is what we want:
+   the previous mask was a viewport-relative radial, and on a phone (narrow band,
+   tall content) its ellipse covered so little of the band that the dots ran
+   straight behind the headline.
+
+   The second layer fades the dots out at the top and bottom rather than letting
+   them butt into the neighbouring bands; `mask-composite` intersects the two.
+   Its own layer, never the band itself — mask-image masks background-color too,
+   so masking the section would eat its white along with the dots.
    22px is the pitch media-fallback.tsx already uses: one dot rhythm sitewide.
    Static and decorative; nothing here to switch off for reduced motion. */
 .dot-grid {
@@ -378,13 +393,26 @@
     transparent 0
   );
   background-size: 22px 22px;
-  -webkit-mask-image: radial-gradient(
-    74% 64% at 50% 42%,
-    transparent 0%,
-    transparent 42%,
-    #000 100%
-  );
-  mask-image: radial-gradient(74% 64% at 50% 42%, transparent 0%, transparent 42%, #000 100%);
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      #000 0,
+      transparent calc(50% - 36rem),
+      transparent calc(50% + 36rem),
+      #000 100%
+    ),
+    linear-gradient(to bottom, transparent 0, #000 20%, #000 80%, transparent 100%);
+  mask-image:
+    linear-gradient(
+      to right,
+      #000 0,
+      transparent calc(50% - 36rem),
+      transparent calc(50% + 36rem),
+      #000 100%
+    ),
+    linear-gradient(to bottom, transparent 0, #000 20%, #000 80%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 }
 
 /* App-icon tile. The violet glow is what makes a filled square read as an icon
