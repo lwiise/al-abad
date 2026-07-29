@@ -69,15 +69,38 @@ const ACTIONS = [
 const VARIANTS = ["primary", "secondary", "outline", "ghost", "danger"] as const;
 const TONES = ["published", "draft", "highlight", "neutral"] as const;
 
+/**
+ * The elevation ramp, shown on BOTH light grounds on purpose.
+ *
+ * A shadow is the one token whose whole job is to separate a surface from what
+ * is behind it, so a swatch of it in isolation says nothing. The two grounds
+ * here are the two real pairings on the site: white-on-white (the الأسئلة card,
+ * 1.0:1 — no ground step whatsoever) and white-on-surface (the admin panel and
+ * قسم المنهج, 1.07:1, which CLAUDE.md calls below the threshold of perception).
+ * In both, the shadow is doing all of the work and the border is only an edge.
+ *
+ * Every value is ink-tinted, so this whole ramp is for LIGHT grounds only —
+ * hence no ink column. A shadow on a dark band is invisible, and the two dark
+ * sections that need a figure lifted off their plate use a coloured glow
+ * instead (`.ai-tile`) or light rather than shade (`ai-assistant-preview`).
+ */
+const ELEVATION = [
+  { token: "shadow-sm", role: "البطاقات — الحالة الافتراضية" },
+  { token: "shadow-md", role: "بطاقة بارزة، أو وجهة تمرير من sm" },
+  { token: "shadow-lg", role: "قائمة منسدلة، زرّ عائم، لوح مرتفع" },
+  { token: "shadow-xl", role: "أثقل عنصر في قسمه — plum بدل ink" },
+  { token: "shadow-nav", role: "الأشرطة الثابتة الممتدة فقط — لا للبطاقات" },
+];
+
 /** Homepage order — keep in sync with app/(marketing)/page.tsx. */
-const RHYTHM: { n: number; name: string; bg: string; tone: string }[] = [
+const RHYTHM: { n: number; name: string; bg: string; tone: string; dark?: boolean }[] = [
   { n: 1, name: "الواجهة", bg: "bg-background", tone: "أرضية فاتحة + لوح neutral-900" },
   { n: 2, name: "المشكلة", bg: "section-hero-surface", tone: "امتداد سطح الواجهة" },
-  { n: 3, name: "التعريف", bg: "bg-ink", tone: "ink — المرساة الداكنة" },
+  { n: 3, name: "التعريف", bg: "bg-ink", tone: "ink — مرساة داكنة", dark: true },
   { n: 4, name: "الدورات", bg: "bg-background", tone: "background" },
   { n: 5, name: "كيف نعمل", bg: "bg-surface-strong", tone: "lilac" },
   { n: 6, name: "النتائج", bg: "bg-background", tone: "background" },
-  { n: 7, name: "الذكاء", bg: "bg-surface", tone: "surface — الاستثناء الوحيد" },
+  { n: 7, name: "الذكاء", bg: "bg-neutral-900", tone: "night + حقل نقاط حيّ", dark: true },
   { n: 8, name: "الآراء", bg: "bg-background", tone: "background + بطاقات surface" },
   { n: 9, name: "الأسئلة", bg: "bg-background", tone: "background" },
   { n: 10, name: "الدعوة", bg: "bg-background", tone: "background + بطاقة فاتحة" },
@@ -113,7 +136,7 @@ export default function StyleguidePage() {
       <Section bg="surface">
         <Group
           title="إيقاع الأقسام"
-          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، مع ink مرساةً داكنة واحدة. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك. القسم ٢ استثناء مقصود: يواصل لون surface نفسه — وهو اللون الذي تنتهي عليه الواجهة — فيقرآن ورقةً واحدة بلا خطّ فاصل. والقسم ٧ هو الاستعمال المقصود لـ surface: الشريط يبقى أبيض، واللوحة الداخلية هي التي تفصل — بحدٍّ شعري وظلٍّ ناعم، فالفصل يقع على الحدّ والظلّ لا على فرق ١٫٠٧:١."
+          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، ومرساتان داكنتان: القسم ٣ على ink والقسم ٧ على night. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك. القسم ٢ استثناء مقصود: يواصل لون surface نفسه — وهو اللون الذي تنتهي عليه الواجهة — فيقرآن ورقةً واحدة بلا خطّ فاصل. والقسم ٧ هو أغمق درجة في السلّم (neutral-900) لأن أرضيته حقل نقاطٍ حيّ: كل ما يكسبه اللوح من عمقٍ يُصرف في سطوع النقاط، وعلى ink كان الحقل سيُخفَّت حتى يزول. تبقى الأقسام ٨ و٩ و١٠ ثلاثة أشرطة بيضاء متتالية بلا خطوة بينها — قرارُ مالك، والفارق أن الدخول إليها صار من أحدّ قطعٍ في الصفحة."
         >
           <ul className="overflow-hidden rounded-2xl border border-border-strong">
             {RHYTHM.map((r) => (
@@ -121,20 +144,18 @@ export default function StyleguidePage() {
                 <span
                   dir="ltr"
                   className={`w-6 shrink-0 font-mono text-xs ${
-                    r.bg === "bg-ink" ? "text-white/55" : "text-foreground-subtle"
+                    r.dark ? "text-white/55" : "text-foreground-subtle"
                   }`}
                 >
                   {r.n}
                 </span>
-                <span
-                  className={`flex-1 font-medium ${r.bg === "bg-ink" ? "text-white" : "text-foreground"}`}
-                >
+                <span className={`flex-1 font-medium ${r.dark ? "text-white" : "text-foreground"}`}>
                   {r.name}
                 </span>
                 <span
                   dir="ltr"
                   className={`font-mono text-xs ${
-                    r.bg === "bg-ink" ? "text-white/74" : "text-foreground-muted"
+                    r.dark ? "text-white/74" : "text-foreground-muted"
                   }`}
                 >
                   {r.tone}
@@ -307,6 +328,53 @@ export default function StyleguidePage() {
               العنوان.
             </p>
           </div>
+        </Group>
+      </Section>
+
+      <Section bg="surface">
+        <Group
+          title="الارتفاع والظلال"
+          note="الحدّ الشعري ليس ارتفاعاً: رمز border نسبته ١٫١٦:١ على الأبيض، فلا يكفي وحده ليقول إن السطح أمام الصفحة لا مرسومٌ عليها. لذلك كل بطاقة تحمل حداً وظلاً معاً — الحدّ يرسم الحافة والظل يفصل السطح. جميع القيم مصبوغة بـ ink، أي أنها للأرضيات الفاتحة وحدها؛ على الداكن يختفي الظل تماماً، فتُستخدم هناك هالةٌ ملوّنة أو ضوء بدل الظل. والصفّان أدناه هما الاقترانان الحقيقيان في الموقع: أبيض على أبيض (١٫٠٠:١) وأبيض على surface (١٫٠٧:١)."
+        >
+          <ul className="space-y-3">
+            {ELEVATION.map((e) => (
+              <li
+                key={e.token}
+                className="grid items-center gap-4 rounded-xl border border-border-strong bg-background p-4 sm:grid-cols-[11rem_1fr]"
+              >
+                <div>
+                  <code dir="ltr" className="block font-mono text-sm text-foreground">
+                    {e.token}
+                  </code>
+                  <span className="mt-1 block text-xs leading-relaxed text-foreground-subtle">
+                    {e.role}
+                  </span>
+                </div>
+                {/* The same card on both grounds, side by side — the pair is the
+                    point. On one it has no ground step at all and on the other
+                    1.07:1, so anything you can see separating them is the
+                    shadow. Rendered as real utilities, never as hardcoded
+                    values, for the same reason the swatches read their own
+                    computed colour. */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg bg-background p-4">
+                    <div
+                      className={`rounded-lg border border-border bg-background px-4 py-5 text-center text-xs text-foreground-muted ${e.token}`}
+                    >
+                      على background
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-surface p-4">
+                    <div
+                      className={`rounded-lg border border-border bg-background px-4 py-5 text-center text-xs text-foreground-muted ${e.token}`}
+                    >
+                      على surface
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         </Group>
       </Section>
     </>

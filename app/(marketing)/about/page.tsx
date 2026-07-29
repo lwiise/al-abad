@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getSettings } from "@/lib/data";
 import { Markdown } from "@/components/ui/markdown";
 import { Vision } from "@/components/sections/vision";
+import { Sequence } from "@/components/motion/sequence";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +28,14 @@ export default async function AboutPage() {
   return (
     <>
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+        {/* The portrait is deliberately NOT an item. It is `priority`, above
+            the fold, and the largest thing on the page — the one place where
+            the system's visible→hidden→visible flip on hydration is actually
+            visible, and it would land on the LCP element. The copy is a
+            composed stack (eyebrow, name, bio, CTA), which is the case
+            Sequence exists for; marking it while leaving its sibling column
+            alone is what Sequence can express and Reveal/Stagger cannot. */}
+        <Sequence className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative mx-auto w-full max-w-sm">
             <div className="aura pointer-events-none absolute -inset-8 -z-10" aria-hidden="true" />
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-surface-strong shadow-xl">
@@ -49,18 +57,29 @@ export default async function AboutPage() {
           </div>
 
           <div>
-            <p className="text-sm font-medium text-secondary">نبذة عن الأستاذ</p>
-            <h1 className="mt-3 text-4xl font-extrabold text-foreground md:text-5xl">
+            <p data-seq-item className="text-sm font-medium text-secondary">
+              نبذة عن الأستاذ
+            </p>
+            <h1
+              data-seq-item
+              className="mt-3 text-4xl font-extrabold text-foreground md:text-5xl"
+            >
               الأستاذ علي العباد
             </h1>
-            <div className="mt-6">
+            {/* Markdown takes no prop spread, so the marker goes on the wrapper
+                that already exists rather than a new node. */}
+            <div data-seq-item className="mt-6">
               <Markdown>{about}</Markdown>
             </div>
-            <Link href="/الدورات" className={cn(buttonClasses("primary", "md"), "mt-8 rounded-full")}>
+            <Link
+              data-seq-item
+              href="/الدورات"
+              className={cn(buttonClasses("primary", "md"), "mt-8 rounded-full")}
+            >
               تصفّح الدورات
             </Link>
           </div>
-        </div>
+        </Sequence>
       </div>
 
       <Vision

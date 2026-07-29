@@ -69,10 +69,14 @@ export function CourseInstructor({
           <ul className="mt-6 flex flex-wrap gap-2.5">
             {creds.map((c, i) => {
               const Icon = CRED_ICONS[i % CRED_ICONS.length];
+              // `shadow-sm` to match the credential chip in `pitch-intro` —
+              // same radius, padding, type and colour, on the same page, and it
+              // was the one lifted and this one flat. Nothing here needed its
+              // own look; the difference was drift.
               return (
                 <li
                   key={c}
-                  className="flex items-center gap-2 rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium text-primary"
+                  className="flex items-center gap-2 rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium text-primary shadow-sm"
                 >
                   <Icon className="size-4 text-secondary" aria-hidden="true" />
                   {c}

@@ -157,15 +157,75 @@ pairs.push(["hero btn outline — white on plate", WHITE, PLATE, AA]);
 pairs.push(["focus ring on background", T("focus"), T("background"), UI]);
 pairs.push(["focus ring on surface", T("focus"), T("surface"), UI]);
 
-// Section 7's second headline line. Violet as TEXT is a size rule, not a ban:
-// 30px bold clears the large-text threshold. Nothing smaller may be violet on a
-// light ground — the "قريباً" chip sets its label in plum and keeps violet in
-// the fill and the dot.
-// The headline itself sits on `background` now that section 7 is a white band
-// rather than a `surface` panel; the `surface` pair stays asserted because
-// surface is still a card/inset ground and violet may land on one.
+// Violet as TEXT on a LIGHT ground is a size rule, not a ban: 30px bold clears
+// the large-text threshold. Section 7 was the headline case and is dark now, so
+// what is left is the admin panel's waitlist counter (text-3xl bold on white);
+// the `surface` pair stays asserted because surface is still a card ground and
+// a large violet line may land on one. Nothing SMALLER may be violet on a light
+// ground — labels take plum on a violet tint instead, the same fill-vs-text
+// split `accent-strong` makes for coral.
 pairs.push(["highlight as large heading on background", T("highlight"), T("background"), LARGE]);
 pairs.push(["highlight as large heading on surface", T("highlight"), T("surface"), LARGE]);
+
+/**
+ * Section 7 (الذكاء) — the `night` band, neutral-900, under a live dot field.
+ *
+ * Two grounds have to be measured, not one. The plate itself is the easy case;
+ * the hard case is a glyph sitting directly over the BRIGHTEST DOT the field is
+ * allowed to draw there. The field damps itself to `GUARD_MIN` across the type
+ * (see components/sections/art/ai-particle-field.tsx) precisely so that worst
+ * pixel is bounded — GUARD_MIN is duplicated below, so change one and change
+ * both, and the crest colour is lilac, the lightest thing the field can be.
+ *
+ * This is also the measurement that settles the headline: violet is 3.68:1 on
+ * the bare plate and would be legal at 30px bold, but 2.34:1 over a guarded
+ * dot. So the tail is lilac and violet stays a fill here — which is what
+ * CLAUDE.md's dark-section rule says anyway.
+ */
+const NIGHT = T("neutral-900");
+const GUARD_MIN = 0.16; // ai-particle-field.tsx
+const GUARDED = over(T("lilac"), NIGHT, GUARD_MIN);
+
+pairs.push(["s7 headline — white on night", WHITE, NIGHT, AA]);
+pairs.push(["s7 headline tail — lilac on night", T("lilac"), NIGHT, AA]);
+pairs.push(["s7 subhead + note — neutral-300 on night", T("neutral-300"), NIGHT, AA]);
+pairs.push(["s7 headline over the brightest guarded dot", WHITE, GUARDED, AA]);
+pairs.push(["s7 tail over the brightest guarded dot", T("lilac"), GUARDED, AA]);
+pairs.push(["s7 subhead over the brightest guarded dot", T("neutral-300"), GUARDED, AA]);
+// The chip: violet fill, lilac label — the fill and the dot are graphics.
+pairs.push([
+  "s7 chip label — lilac on highlight/15 over night",
+  T("lilac"),
+  over(T("highlight"), NIGHT, 0.15),
+  AA,
+]);
+pairs.push(["s7 chip dot — highlight on night", T("highlight"), NIGHT, UI]);
+// The waitlist field (`fieldClasses(true)`) and the two result states in it.
+const well = over(WHITE, NIGHT, 0.1);
+pairs.push(["s7 field value — white on white/10 over night", WHITE, well, AA]);
+pairs.push(["s7 field placeholder — neutral-300 on white/10 over night", T("neutral-300"), well, AA]);
+pairs.push(["s7 success pill — lilac on white/10 over night", T("lilac"), well, AA]);
+// The error line: lilac text, coral glyph. `accent-strong` is dark-on-dark here.
+pairs.push(["s7 error line — lilac on night", T("lilac"), NIGHT, AA]);
+pairs.push(["s7 error glyph — accent on night", T("accent"), NIGHT, UI]);
+// The CTA is buttonClasses("primary", "md", light) — ink on lilac, asserted above.
+
+/**
+ * The focus ring on DARK grounds (`focusOnDark` in components/ui/button.tsx).
+ *
+ * Buttons do not set `outline-none`, so the global outline in globals.css is
+ * their entire focus indicator, and WCAG 1.4.11 covers it. The default is
+ * `--color-focus`, which is violet — 2.92:1 on ink outright, and on night only
+ * 3.68:1 until section 7's field puts a guarded dot behind it, at which point
+ * it is 2.34:1. Hence lilac on dark. Both grounds are asserted so a future dark
+ * band cannot quietly inherit the violet ring again.
+ *
+ * The light-ground ring above is `--color-focus` on `background`/`surface` and
+ * still passes; nothing here changes it.
+ */
+pairs.push(["focus ring on ink — lilac", T("lilac"), T("ink"), UI]);
+pairs.push(["focus ring on night — lilac", T("lilac"), NIGHT, UI]);
+pairs.push(["focus ring on night over a guarded dot — lilac", T("lilac"), GUARDED, UI]);
 
 /**
  * DELIBERATELY NOT ASSERTED — and please don't add them back.

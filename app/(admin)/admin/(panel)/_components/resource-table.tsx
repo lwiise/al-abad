@@ -39,7 +39,7 @@ export function ResourceTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-background">
+    <div className="overflow-x-auto rounded-xl border border-border bg-background shadow-sm">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border text-start text-foreground-subtle">

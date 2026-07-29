@@ -40,15 +40,18 @@ export default async function DashboardPage() {
           <Link
             key={r.key}
             href={`/admin/${r.key}`}
-            className="rounded-xl border border-border bg-background p-5 transition-colors hover:border-border-strong"
+            className="rounded-xl border border-border bg-background p-5 shadow-sm transition-colors hover:border-border-strong"
           >
             <p className="text-3xl font-bold text-foreground">{r.count}</p>
             <p className="mt-1 text-sm text-foreground-muted">{r.label}</p>
           </Link>
         ))}
+        {/* Shadowed like the four white tiles beside it — not because a violet
+            tint needs lifting, but because it shares their grid row, and one
+            tile sitting flat among lifted siblings reads as disabled. */}
         <Link
           href="/admin/waitlist"
-          className="rounded-xl border border-highlight/30 bg-highlight/5 p-5 transition-colors hover:border-highlight/50"
+          className="rounded-xl border border-highlight/30 bg-highlight/5 p-5 shadow-sm transition-colors hover:border-highlight/50"
         >
           <p className="text-3xl font-bold text-highlight">{waitlistCount}</p>
           <p className="mt-1 text-sm text-foreground-muted">قائمة انتظار AI</p>
@@ -68,7 +71,7 @@ export default async function DashboardPage() {
             لا توجد رسائل بعد.
           </p>
         ) : (
-          <ul className="divide-y divide-border rounded-xl border border-border bg-background">
+          <ul className="divide-y divide-border rounded-xl border border-border bg-background shadow-sm">
             {contacts.map((c) => (
               <li key={String(c.id)} className="p-4">
                 <div className="flex items-center justify-between gap-3">
