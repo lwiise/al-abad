@@ -16,8 +16,6 @@ import { buttonClasses } from "@/components/ui/button";
 import {
   INSTRUCTOR_STATES,
   InstructorSignature,
-  RADIUS,
-  VIEWBOX,
   type SignatureState,
 } from "./art/instructor-signature";
 
@@ -47,7 +45,7 @@ const MARKERS = ["منهج علميّ", "أدوات عملية", "خبرة مي�
  */
 const PILLAR_NOTES = ["", "", ""];
 
-/** Desktop: how long the signature holds a state after the pointer leaves.
+/** Desktop: how long the art holds a state after the pointer leaves.
  *  Shorter than --mi-move (620ms) on purpose — a quick sweep off a row and
  *  back must never reset the art to idle mid-transition. */
 const RETURN_TO_IDLE_MS = 400;
@@ -56,15 +54,15 @@ const RETURN_TO_IDLE_MS = 400;
 const STACKED = "(max-width: 1079.98px)";
 
 /**
- * What the signature is doing, in Arabic, for people who cannot see it. Keyed
+ * What the art is showing, in Arabic, for people who cannot see it. Keyed
  * by state rather than by label so it survives an editor rewording the
  * مرتكزات in the CMS; the label itself is read out alongside it.
  */
 const SIGNATURE_DESCRIPTION: Record<SignatureState, string> = {
-  idle: "دائرة واحدة مغلقة، خطّها يتدرّج من البنفسجي الفاتح إلى المرجاني.",
-  method: "نقاطٌ متناثرة داخل الدائرة تتحرّك حتى تستقرّ على خطّها تماماً.",
-  tools: "الدائرة تنتظم في ستّة أقواسٍ متساوية بفواصل متساوية، يخطو كلٌّ منها إلى الخارج المسافة نفسها.",
-  field: "أربعة آثارٍ باهتة للدائرة تظهر تباعاً بإزاحاتٍ طفيفة، فتتراكم حولها.",
+  idle: "لا رسم — تظهر صورة كلّ مرتكزٍ عند اختياره.",
+  method: "كتابٌ مفتوح، تنطبق صفحاته على بعضها واحدةً تلو الأخرى.",
+  tools: "أربع أدواتٍ متجاورة، ترتفع كلٌّ منها إلى موضعها تباعاً.",
+  field: "طريقٌ مرسوم، تمتلئ محطّاته واحدةً بعد الأخرى على امتداده.",
 };
 
 /** The layout is external state, so read it as such rather than in an effect. */
@@ -96,15 +94,15 @@ const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : use
  * section.tsx. This section used the retired elevation palette's near-black
  * (#1c1725) while that direction was being trialled.
  *
- * That earlier near-black existed to let the signature's plum→coral stroke
- * survive; on ink, plum is 1.26:1 and disappears. Rather than keep a whole
- * extra dark token alive for one arc, the stroke now runs lilac→coral (9.50:1
- * and 3.08:1 on ink) — which is what CLAUDE.md's dark-section rule prescribes
- * anyway: never plum on ink, lilac/white for weight, coral for accent. Same
- * idea, two colours in one continuous stroke, executed in colours that work.
+ * The art each مرتكز drives is in art/instructor-signature.tsx. It is drawn
+ * FILLED — an open book, a set of implements, a travelled route — and nothing
+ * in this section strokes or draws a line any more. A scroll-drawn ring used
+ * to sit behind the portrait with an ~80-line hook scrubbing its dash; both
+ * went when the art did. On ink, lilac carries the forms (9.50:1) and coral
+ * accents them (3.08:1); plum is 1.26:1 here and unusable.
  *
- * No GSAP here. One IntersectionObserver drives the entrance, a second gates a
- * rAF-throttled scroll read that scrubs the signature circle closed.
+ * No GSAP. One IntersectionObserver drives the entrance; everything else is a
+ * CSS transition keyed off one `data-state` attribute.
  */
 export function MeetInstructor({
   aboutBody,
@@ -122,14 +120,12 @@ export function MeetInstructor({
   ctaLabel?: string | null;
 }) {
   const root = useRef<HTMLElement>(null);
-  const signature = useRef<SVGCircleElement>(null);
 
   useSectionEnter(root);
-  useSignatureScrub(root, signature);
 
   const markerList = markers && markers.length ? markers : MARKERS;
 
-  // --- Which مرتكز is driving the signature -------------------------------
+  // --- Which مرتكز is driving the art -------------------------------------
   // Same model as قسم التحديات (challenges-board.tsx): one index of state, a
   // short grace period before returning to idle, and a single `data-state`
   // string as the only thing crossing into CSS.
@@ -156,7 +152,7 @@ export function MeetInstructor({
     idleTimer.current = setTimeout(() => setChosen(null), RETURN_TO_IDLE_MS);
   }, []);
 
-  // Stacked, the signature is on screen with nothing to hover, so nothing
+  // Stacked, the art is on screen with nothing to hover, so nothing
   // chosen means the first مرتكز. On desktop the section rests in idle until a
   // pointer or the keyboard reaches a row.
   const active = chosen ?? (stacked ? 0 : null);
@@ -227,16 +223,6 @@ export function MeetInstructor({
               style={{ background: "rgb(9 6 14 / 0.72)" }}
             />
 
-            {/* Positioned by the wrapper, not by the <svg>: an svg's intrinsic
-                sizing does not resolve an inset-driven box the way a div does.
-                Sized larger than the column so the circle crops at the edges. */}
-            <div className="pointer-events-none absolute inset-x-[-18%] top-[-26%] -z-10 aspect-square">
-              <InstructorSignature
-                state={state}
-                circleRef={signature}
-                className="size-full"
-              />
-            </div>
 
             {/* Base fade at EVERY size. The asset's bottom ~10% is a patterned
                 tablecloth he is sitting behind, which reads as a foreign grey
@@ -300,7 +286,29 @@ export function MeetInstructor({
                 Each row is a real <button>, so the keyboard gets the same
                 behaviour as the pointer for free and `aria-pressed` can do
                 double duty as the a11y state and the CSS hook. */}
-            <ul className="order-5 mt-10 max-w-[46ch]">
+            {/* The art lives HERE, not behind the portrait.
+
+                It was in the figure at 56% of the column, and the coach simply
+                occupies that space — the form came out half-hidden behind his
+                shoulder and read as a rendering artifact rather than a drawn
+                object. Beside the list it has genuinely empty ink to sit on,
+                and it is next to the rows that drive it, which is where the
+                eye already is.
+
+                Stacked it sits above the list; from 1080px it moves into the
+                empty end-side gutter the 46ch cap leaves. */}
+            <div className="relative order-5 mt-10">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none mx-auto mb-8 w-32 max-w-full aspect-square min-[1080px]:absolute min-[1080px]:end-0 min-[1080px]:top-1/2 min-[1080px]:mx-0 min-[1080px]:mb-0 min-[1080px]:w-40 min-[1080px]:-translate-y-1/2"
+              >
+                <InstructorSignature state={state} className="size-full" />
+              </div>
+
+              {/* Capped narrower than the 46ch the copy uses: the row rules run
+                  the width of this list, and at 46ch they ran straight through
+                  the art in the gutter beside it. */}
+              <ul className="max-w-[46ch] min-[1080px]:max-w-[27ch]">
               {markerList.map((m, i) => {
                 const isActive = active === i;
                 return (
@@ -324,13 +332,12 @@ export function MeetInstructor({
                       }}
                       onFocus={() => hold(i)}
                       // Unlike section 2, focus does NOT latch here: tabbing
-                      // out of the list returns the signature to idle rather
-                      // than leaving the last-focused مرتكز showing.
+                      // out of the list returns the art to idle rather than
+                      // leaving the last-focused مرتكز showing.
                       onBlur={() => release()}
                       onClick={() => hold(i)}
                     >
-                      {/* Echoes the signature circle: an outline that fills
-                          when the row is the one driving it. */}
+                      {/* Fills when the row is the one driving the art. */}
                       <span
                         className="mi-marker mt-1 size-4 shrink-0 self-start rounded-full border-2"
                         aria-hidden="true"
@@ -351,7 +358,8 @@ export function MeetInstructor({
                   </li>
                 );
               })}
-            </ul>
+              </ul>
+            </div>
 
             {/* Decorative SVG, so the description lives here instead. */}
             <p className="sr-only" aria-live="polite" aria-atomic="true">
@@ -421,108 +429,5 @@ function useSectionEnter(ref: RefObject<HTMLElement | null>) {
     io.observe(el);
     return () => io.disconnect();
     // Set up once: the section is server-rendered and static per mount.
-  }, []);
-}
-
-/**
- * Scrubs the signature circle closed against the section's progress through the
- * viewport: 0 when the section's top edge touches the viewport bottom, 1 when
- * the section's midpoint reaches the viewport midpoint. Once closed it latches,
- * the dash is dropped and every listener is torn down — it holds, it does not
- * loop or breathe.
- *
- * The dash length is computed in DEVICE pixels, recomputed on every read. That
- * is not belt-and-braces: `vector-effect: non-scaling-stroke` moves the whole
- * stroke operation — dashing included — into device space, while `pathLength`
- * normalisation resolves against the user-space length. Authoring
- * `pathLength="1" stroke-dasharray="1"` therefore yields a fixed arc (measured
- * here at ~88° of a 2552px circle: 621 user units applied as 621 device px)
- * that slides around the circle as the offset changes instead of growing from
- * the top. So: no pathLength, and both values in the space the UA actually
- * strokes in.
- *
- * The scroll read is rAF-throttled and only attached while the section is
- * actually intersecting.
- */
-function useSignatureScrub(
-  ref: RefObject<HTMLElement | null>,
-  circleRef: RefObject<SVGCircleElement | null>,
-) {
-  useIsoLayoutEffect(() => {
-    const el = ref.current;
-    const circle = circleRef.current;
-    if (!el || !circle) return;
-    if (typeof IntersectionObserver === "undefined") return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-
-    let frame = 0;
-    let done = false;
-
-    // user-space circumference × (device px per user unit)
-    const circumference = () => {
-      const svg = circle.ownerSVGElement;
-      const width = svg ? svg.getBoundingClientRect().width : 0;
-      return 2 * Math.PI * RADIUS * (width / VIEWBOX);
-    };
-
-    const draw = (p: number) => {
-      const c = circumference();
-      circle.style.strokeDasharray = String(c);
-      circle.style.strokeDashoffset = String(c * (1 - p));
-    };
-
-    draw(0); // unwritten, before first paint
-
-    const detach = () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-
-    const update = () => {
-      frame = 0;
-      if (done) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || 1;
-      const raw = (vh - rect.top) / ((vh + rect.height) / 2);
-      const p = raw < 0 ? 0 : raw > 1 ? 1 : raw;
-      if (p >= 1) {
-        done = true;
-        // Drop the dash rather than pinning offset 0 — a later resize would
-        // otherwise leave a device-px pattern shorter than the grown circle
-        // and re-open a gap.
-        circle.style.strokeDasharray = "";
-        circle.style.strokeDashoffset = "";
-        detach();
-        io.disconnect();
-        return;
-      }
-      draw(p);
-    };
-
-    function onScroll() {
-      if (!frame) frame = requestAnimationFrame(update);
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            window.addEventListener("scroll", onScroll, { passive: true });
-            window.addEventListener("resize", onScroll);
-            update();
-          } else {
-            detach();
-          }
-        }
-      },
-      { root: null, threshold: 0 },
-    );
-    io.observe(el);
-
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      detach();
-      io.disconnect();
-    };
   }, []);
 }

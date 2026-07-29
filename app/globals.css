@@ -713,138 +713,122 @@
   .ch-diagram[data-state="conflict"] .ch-heart { opacity: 0.4; }
 }
 
-/* --- قسم التعريف: the instructor signature + مرتكزات ----------------------
-   Section 2 holds two circles in tension; here they have resolved into one.
-   Each مرتكز drives that circle to its own state via `data-state` on the SVG
-   root, the same one-attribute contract the challenges diagram uses.
+/* --- قسم التعريف: the drawn forms + مرتكزات -------------------------------
+   One drawn artifact per مرتكز — an open book, a set of implements, a
+   travelled route — and each مرتكز drives its own via `data-state` on the SVG
+   root, the same one-attribute contract قسم التحديات uses.
 
-   THE SAME RULE APPLIES: a state change must animate from whatever is on
-   screen, never snap. Channels are therefore kept apart, because CSS applies
-   translate → rotate → scale → transform in that order and they compose:
+   THIS SECTION NO LONGER DRAWS LINES. Two earlier passes animated abstract
+   stroked geometry here (a ring resolving, arcs separating, tracings
+   accumulating) and both were rejected; the brief is to draw the thing rather
+   than allude to it. There is no stroke in the art and nothing scrubs a dash.
+   The scroll-drawn signature circle, and the ~80-line `useSignatureScrub` hook
+   that existed only to scrub it, were removed with it — do not reintroduce
+   either. If a future state needs motion, it moves a SHAPE.
 
-     translate → أدوات عملية, the three segments drawing apart
-     transform → منهج علميّ's ticks and خبرة ميدانية's rings, both scaled
-                 about the circle's centre
-     opacity   → which piece of geometry is currently speaking
+   THE RULE THAT STILL SHAPES ALL OF THIS: a state change must animate from
+   whatever is on screen, never snap. Two things follow.
 
-   No element is ever driven on two channels at once, and nothing here is both
-   animated and transitioned on the same one.
+   1. Channels are kept apart, because CSS applies translate → rotate → scale →
+      transform in that order and they compose:
+        rotate    → the book's pages settling onto the stack
+        translate → the implements rising into place
+        scale     → the waypoints filling in
+      No element is ever driven on two channels, and nothing is both animated
+      and transitioned on the same one.
+
+   2. Everything is always MOUNTED at opacity 0. Nothing renders conditionally,
+      or a transition would have nothing to interpolate from.
 
    THERE ARE NO KEYFRAME ANIMATIONS IN THIS SECTION, deliberately. Section 2's
-   circles breathe; this one does not — useSignatureScrub draws the circle
-   closed on arrival and then latches, and the note there is explicit that it
-   "holds, it does not loop or breathe". Adding an idle animation would
-   contradict that, so every piece of motion here is a transition. `scale` is
-   left unused for the same reason: it is the channel an always-on animation
-   would need, and there is no always-on animation.
+   circles breathe; this one holds. Every piece of motion here is a transition,
+   which is also what lets a state change interrupt cleanly at any point.
 
-   THE STATES NEVER TOUCH THE MAIN CIRCLE'S DASH. `stroke-dasharray` and
-   `stroke-dashoffset` on `.mi-circle` belong to useSignatureScrub, which
-   writes them imperatively in device pixels. The states work on separate
-   elements — ticks, arcs, rings — so the scroll-draw and the interaction
-   cannot race. The only property a state sets on the circle itself is
-   `opacity`, which is independent of the `stroke-opacity` attribute it
-   already carries.
-
-   Colour and easing are the section's, not this block's: lilac and coral on
-   ink (plum is 1.26:1 there and unusable), and `--ease-hero`, the curve the
-   hero, the nav and section 2 already share. */
+   Colour is the dark-section rule: lilac carries the forms (9.50:1 on ink),
+   coral marks exactly one element in each (3.08:1 — an accent, never the thing
+   that must be read), never plum (1.26:1). Easing is --ease-hero, the curve
+   the hero, the nav and section 2 already share. */
 
 @layer utilities {
   .mi-reveal,
-  .mi-signature {
+  .mi-art {
     --mi-ease: var(--ease-hero);
-    /* For motion whose MIDDLE has to be readable rather than its arrival —
-       see the note on .mi-point. Symmetric ease-in-out, not the site curve. */
-    --mi-settle: cubic-bezier(0.65, 0, 0.35, 1);
     --mi-move: 620ms;
     --mi-row-move: 240ms;
   }
 
-  .mi-point,
-  .mi-seg,
-  .mi-ghost {
-    /* Both are required: without view-box an SVG child transforms about its
-       own bounding box, so a translate resolves against the wrong reference. */
+  /* Whole-form visibility. Only the active مرتكز's artifact is on screen. */
+  .mi-book,
+  .mi-tools,
+  .mi-route {
+    opacity: 0;
+    transition: opacity var(--mi-move) var(--mi-ease);
+  }
+  .mi-art[data-state="method"] .mi-book,
+  .mi-art[data-state="tools"] .mi-tools,
+  .mi-art[data-state="field"] .mi-route {
+    opacity: 1;
+  }
+
+  /* --- منهج علميّ: the pages settle ------------------------------------
+     Hinged at the spine, so transform-origin is the spine and NOT the element's
+     own box — hence view-box. Each leaf rests lifted by its own --mi-lift and
+     rotates down to 0 in turn. */
+  .mi-page {
     transform-box: view-box;
-    transform-origin: 100px 100px;
+    transform-origin: 120px 100px;
+    rotate: var(--mi-lift);
+    transition: rotate var(--mi-move) var(--mi-ease);
+  }
+  .mi-art[data-state="method"] .mi-page {
+    rotate: 0deg;
+  }
+  .mi-page:nth-child(4) { transition-delay: 60ms; }
+  .mi-page:nth-child(5) { transition-delay: 170ms; }
+  .mi-page:nth-child(6) { transition-delay: 280ms; }
+
+  /* --- أدوات عملية: the implements rise --------------------------------
+     Equal rise, equal spacing, staggered arrival: a set being laid out, which
+     is the whole claim. Uneven would read as spillage. */
+  .mi-tool {
+    transform-box: view-box;
+    translate: 0 34px;
     transition:
       translate var(--mi-move) var(--mi-ease),
       opacity var(--mi-move) var(--mi-ease);
-  }
-
-  /* The circle is deliberately EXCLUDED from the rule above. It carries a
-     `transform="rotate(-90 100 100)"` attribute — which exists only to move the
-     dash origin to 12 o'clock so the scroll-draw grows clockwise from the top —
-     and that attribute already names its own centre. Adding a CSS
-     transform-origin on top applies the offset a second time and throws the
-     circle a full diameter down the page. The only property any state sets on
-     it is opacity, so it needs no transform plumbing at all. */
-  .mi-circle {
-    transition: opacity var(--mi-move) var(--mi-ease);
-  }
-
-  /* Everything except the circle rests invisible but MOUNTED — a state change
-     interpolates from here rather than mounting into place. */
-  .mi-point,
-  .mi-seg,
-  .mi-ghost {
     opacity: 0;
   }
+  .mi-art[data-state="tools"] .mi-tool {
+    translate: 0 0;
+    opacity: 1;
+  }
+  .mi-tool:nth-child(1) { transition-delay: 0ms; }
+  .mi-tool:nth-child(2) { transition-delay: 90ms; }
+  .mi-tool:nth-child(3) { transition-delay: 180ms; }
+  .mi-tool:nth-child(4) { transition-delay: 270ms; }
 
-  /* --- منهج علميّ ------------------------------------------------------
-     The points rest scattered inside the ring and travel onto it. Timing is
-     SPLIT so the behaviour reads as an argument rather than an arrival: they
-     fade in fast, where they are, and only then converge. One combined
-     transition would just show ten dots sliding in already half-visible.
-     Offsets come from the element's own style attribute — see the note in
-     instructor-signature.tsx on why they are not an nth-child table here. */
-  .mi-point {
-    translate: var(--mi-sx) var(--mi-sy);
-    /* NOT --mi-ease here, and this is the one place in the file that departs
-       from it. --ease-hero is heavily front-loaded — measured, it covers 92% of
-       the distance in the first 280ms — which is right for a state that should
-       snap into place, and wrong for this one, where the SCATTER is the claim
-       and has to be legible before it resolves. An ease-in-out starts slow, so
-       the cloud is readable for a beat, travels, then settles. */
+  /* --- خبرة ميدانية: the waypoints fill in ------------------------------
+     fill-box, not view-box: each waypoint scales about ITSELF, and fill-box is
+     what makes `transform-origin: center` mean the element's own centre. The
+     ribbon never draws — it is a filled shape that simply arrives. */
+  .mi-wp {
+    transform-box: fill-box;
+    transform-origin: center;
+    scale: 0;
     transition:
-      translate 700ms var(--mi-settle) 200ms,
-      opacity 180ms var(--mi-ease);
+      scale var(--mi-move) var(--mi-ease),
+      opacity var(--mi-move) var(--mi-ease);
+    opacity: 0;
   }
-  .mi-signature[data-state="method"] .mi-point {
-    opacity: 0.8;
-    translate: 0 0;
+  .mi-art[data-state="field"] .mi-wp {
+    scale: 1;
+    opacity: 1;
   }
-
-  /* --- أدوات عملية ------------------------------------------------------
-     Six identical segments, equal gaps, each stepping out by exactly the same
-     distance along its own radius. The EQUALITY is the metaphor: equal parts
-     evenly spaced read as a kit, where uneven pieces drifting read as a break.
-     The ring itself steps back so the segmentation is what carries. */
-  .mi-signature[data-state="tools"] .mi-seg {
-    opacity: 0.9;
-    translate: var(--mi-dx) var(--mi-dy);
-  }
-  .mi-signature[data-state="tools"] .mi-circle {
-    opacity: 0.2;
-  }
-
-  /* --- خبرة ميدانية -----------------------------------------------------
-     Traces accumulate one after another rather than appearing at once — the
-     stagger IS the meaning, so it is per-child delay, not a group fade. Each
-     also drifts out from a centre-ward rest, so a trace arrives rather than
-     switches on. */
-  .mi-ghost {
-    translate: var(--mi-sx) var(--mi-sy);
-  }
-  .mi-signature[data-state="field"] .mi-ghost {
-    opacity: 0.3;
-    translate: 0 0;
-  }
-  .mi-ghost:nth-child(1) { transition-delay: 0ms; }
-  .mi-ghost:nth-child(2) { transition-delay: 90ms; }
-  .mi-ghost:nth-child(3) { transition-delay: 180ms; }
-  .mi-ghost:nth-child(4) { transition-delay: 270ms; }
+  .mi-wp:nth-child(2) { transition-delay: 80ms; }
+  .mi-wp:nth-child(3) { transition-delay: 180ms; }
+  .mi-wp:nth-child(4) { transition-delay: 280ms; }
+  .mi-wp:nth-child(5) { transition-delay: 380ms; }
+  .mi-wp:nth-child(6) { transition-delay: 480ms; }
 
   /* The list — the marker echoes the circle and fills when its row is the one
      driving it. Lilac, not plum: this sits on ink, where plum is 1.26:1. */
@@ -874,8 +858,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mi-signature,
-  .mi-signature *,
+  .mi-art,
+  .mi-art *,
   .mi-marker,
   .mi-label {
     transition: none !important;
