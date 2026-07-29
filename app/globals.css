@@ -404,9 +404,10 @@
    column, because a full-bleed dot field is the stock SaaS background and that
    mask was the only thing stopping it reading as one. The rule survives; the
    CSS does not. It is now `GUARD` in the field component, enforced per dot as a
-   smooth ellipse around the type, which damps the lattice instead of deleting
-   it and so keeps working on a phone — the mask clamped itself off entirely
-   below 72rem, having no gutters left to live in. If a future section wants a
+   soft-edged quiet zone measured off the copy's own box, which damps the lattice
+   instead of deleting it and so keeps working on a phone — the mask clamped
+   itself off entirely below 72rem, having no gutters left to live in. If a
+   future section wants a
    quiet static dot texture, write it fresh against that section's ground; do
    not resurrect a plum-tinted one that was measured for #f8f6fb.
    ------------------------------------------------------------------------- */
@@ -419,6 +420,106 @@
   box-shadow:
     inset 0 1px 0 0 color-mix(in oklab, white 26%, transparent),
     0 14px 30px -12px color-mix(in oklab, var(--color-highlight) 60%, transparent);
+}
+
+/* --- Section 7's mockup, scaled to the window's HEIGHT --------------------
+   Section 7 is a one-screen band (`<Section screen>`; 90svh). As a single centred
+   column its content measures 840px before padding — tile, chip, headline,
+   subhead, form and a 332px phone — so on anything shorter than a ~900px window
+   the phone is what does not fit. The rhythm is already height-aware and the
+   band's padding contracts with it (see section.tsx); this is the rest of the
+   budget, and it comes out of the artwork because the alternatives are worse:
+   shrinking the TYPE costs legibility of real copy, and dropping the mockup
+   costs the section its product shot.
+
+   `zoom`, not `transform: scale()`, and that is the whole reason this rule
+   exists rather than a Tailwind utility: zoom scales the LAYOUT box, so the
+   column above it actually gets shorter. A transform would leave a 332px hole
+   and need a negative margin computed per step to match.
+
+   Ladder, not a formula: `zoom` takes a number, and there is no way to derive one
+   from `svh` in CSS — length ÷ length is not portable. Each step is measured
+   against the band's real budget at that height (the seeded copy at ≥1024px
+   wide), which is also why they are not evenly spaced.
+
+   THE COST IS LEGIBILITY OF THE DRAWING, and it is worth stating: the phone's
+   chat text is 12px, so at 0.62 it renders near 7px. The one thing the drawing
+   has to say is the source chip — `من دورة: التواصل الزوجي` — and on a short
+   window it says it as a shape rather than as words. That is the owner's call:
+   the band is one screen, in one column, with the copy at full size.
+
+   Only from `lg`. Below it the band cannot fit 90svh at all (a phone stack is
+   ~1170px against a ~760px budget), so it is a floor there and shrinking the art
+   would buy nothing.
+
+   The scale lives on `:root` rather than on the mockup, the way `--nav-h` does,
+   because the chips have to know it too: they are real CMS text and stay at full
+   size, so their scatter is anchored to a box that tracks the phone's scaled
+   width (see ai-assistant-preview.tsx). Left on the column's full width they end
+   up 200px from a phone half their height, floating in the band attached to
+   nothing. */
+:root {
+  --ai-mock: 1;
+}
+
+.ai-mock {
+  zoom: var(--ai-mock);
+}
+
+@media (min-width: 64rem) {
+  /* MEASURED, one step per 48px of window. The required scale is the band's
+     budget minus everything that is not the mockup, over the mockup's natural
+     332px, and it comes out almost linear in the window height: 0.97 at a 1008px
+     window, 0.72 at 900, 0.56 at 768, 0.41 at 673. Each step below carries the
+     value its band needs at its SHORTEST window, so the band fits across the
+     whole of it. Sweep the numbers again if the copy changes — the fixed part is
+     465px at 656 and 573 at 1008, and it is what these are derived from.
+
+     Ordered tallest-first: several max-heights match at once and the cascade
+     takes the last one, so the shortest applicable step wins. */
+  @media (max-height: 63rem) {
+    .ai-mock {
+      --ai-mock: 0.9;
+    }
+  }
+  @media (max-height: 60rem) {
+    .ai-mock {
+      --ai-mock: 0.81;
+    }
+  }
+  @media (max-height: 57rem) {
+    .ai-mock {
+      --ai-mock: 0.72;
+    }
+  }
+  @media (max-height: 54rem) {
+    .ai-mock {
+      --ai-mock: 0.64;
+    }
+  }
+  @media (max-height: 51rem) {
+    .ai-mock {
+      --ai-mock: 0.56;
+    }
+  }
+  @media (max-height: 48rem) {
+    .ai-mock {
+      --ai-mock: 0.49;
+    }
+  }
+  @media (max-height: 45rem) {
+    .ai-mock {
+      --ai-mock: 0.4;
+    }
+  }
+  /* ≤ 672px is the last step. Below it the band grows instead: the scale needed
+     at a 600px window is 0.22, which is a 63px sticker, and a section that looks
+     broken is not a section that fits. */
+  @media (max-height: 42rem) {
+    .ai-mock {
+      --ai-mock: 0.37;
+    }
+  }
 }
 
 /* Hero aurora — controlled, art-directed brand wash (not muddy WebGL). */
@@ -2077,3 +2178,4 @@
     transition: none !important;
   }
 }
+

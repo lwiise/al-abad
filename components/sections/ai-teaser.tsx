@@ -62,51 +62,43 @@ export function AiTeaser({
       /* ONE SCREEN — `min-h-[90svh]`, content centred in it. See `screen` in
          section.tsx for why it is a floor and not a fixed height.
 
-         WHY THE LAYOUT IS TWO COLUMNS FROM lg. As one centred stack this
-         section measured 1032px: 840 of content — tile 72, chip 34, headline
-         94, subhead 59, form 92, mockup 332, and 157 of gaps between them —
-         under 192 of band padding. Against a 90vh budget that is 1.5 screens on
-         a 1366×768 laptop and 1.27 on a 1440×900, which is the overflow this
-         rewrite answers.
+         THE LAYOUT IS UNCHANGED: one centred column, tile → chip → headline →
+         subhead → form → mockup, at every width it has ever had. Fitting 90vh is
+         done by COMPRESSION, in the order that costs the design least:
 
-         Compressing the stack does not close that gap. The two candidates were
-         measured before this was written:
+           1. The band's padding, which was 192px at md — more than a fifth of a
+              900px window — and is now height-aware (section.tsx). Worth ~100px
+              at a 768px window and invisible at any height.
+           2. The gaps between the six parts, likewise height-aware: the clamps
+              below hold the current rhythm on a tall window and tighten it on a
+              short one. Worth ~60px more, and also invisible — nothing changes
+              size, only the air between things.
+           3. The tile and the headline, the only two parts of the copy that
+              compress: the tile is a decorative icon and the headline clamps
+              between 28 and 36px the way hero.tsx's does. ~30px, and the last
+              compression that touches anything the reader looks at.
+           4. The mockup, which after 1–3 is still the one thing over budget on
+              any window shorter than ~1000px. It scales with the window height
+              (`.ai-mock` in globals.css), and that is where the remaining 166px
+              at 768 comes from.
 
-           - Tighter rhythm alone (height-aware padding and gaps, smaller tile)
-             recovers ~90px. It fits 90vh only above a ~1000px window; every
-             laptop still overflows.
-           - Scaling the mockup closes the rest arithmetically — and at
-             1366×768 the budget left for it is 191px against its natural 332,
-             i.e. 58%, which renders its 12px chat text at 7px. The drawing's
-             whole job is the source chip reading `من دورة: التواصل الزوجي`
-             (see the note in ai-assistant-preview.tsx). An illegible mockup is
-             not a mockup.
+         WHAT THAT COSTS, stated because it is a real cost and it was the argument
+         against doing it this way: the phone's chat text is 12px, and the scale is
+         0.72 at a 900px window, 0.56 at 768 and 0.40 at 673 — so from a laptop
+         down it renders at 7px or less and the source chip reads as a shape rather
+         than as words. Nothing the reader has to READ is compressed: the subhead,
+         the form, the note and the chips keep their sizes at every height, and the
+         headline never goes below 28px. Below ~672px the ladder stops and the band
+         grows instead — the scale needed at a 600px window is 0.22, and a 63px
+         sticker looks broken rather than compact.
 
-         So the height had to come out of the LAYOUT, and the axis a 1366×768
-         window has to spare is the horizontal one. Side by side, the band is
-         `max(copy, mockup) + padding` instead of the sum of the two, which fits
-         a 768px window with room over and leaves the mockup at full size and
-         the type at full size. Below lg it is the stacked centred column it has
-         always been.
-
-         WHERE THIS GIVES UP, stated rather than hidden: on a phone the stack is
-         ~1170px against a 760px budget, and no arrangement of a headline, a
-         subhead, an email capture, three feature chips and a product shot fits
-         one 390×844 screen. Something would have to be deleted — the mockup is
-         `aria-hidden` artwork and is the obvious candidate — and a marketing
-         section that drops its product shot on the majority of its traffic is a
-         worse outcome than a band that scrolls. So 90svh is the floor there and
-         the band grows past it. Do not "fix" that by hiding the preview.
-
-         WHAT THE TWO COLUMNS COST THE FIELD, and why it is not a regression:
-         the copy is no longer centred, so the quiet zone the dots damp
-         themselves into cannot be a fixed ellipse at the band's centre any
-         more. The field now MEASURES the block it has to keep legible — the
-         `data-ai-copy` box below — which is both correct for this layout and
-         correct for the stacked one, where the old fixed 34%-of-band centre was
-         a heuristic that drifted as the copy wrapped. It also lands the field's
-         bright half over the mockup's column, where the only things standing on
-         it are opaque. */
+         WHY THE FIELD'S GUARD IS NOW MEASURED. The quiet zone the dots damp
+         themselves into used to be an ellipse at a FIXED place — 34% of the band
+         height down. Every one of the four compressions above moves the copy, so
+         it no longer sits where that assumed; the field reads the `data-ai-copy`
+         box below and guards exactly that instead. It fixes an older drift too:
+         the fixed centre slid off the copy as soon as the headline wrapped to a
+         fifth line on a phone. */
       screen
       className="overflow-hidden"
       /* Full-bleed, so the field is the page's ground and not a texture inside
@@ -133,35 +125,29 @@ export function AiTeaser({
           them up as one rectangle showed none of them. Each part now arrives in
           reading order; see components/motion/sequence.tsx. */}
       <Sequence>
-        {/* The split is not even, and it changes at xl, because the two columns
-            hold different things — measured, not guessed.
+        <div className="text-center">
+          {/* WORDS INSIDE, ARTWORK OUTSIDE. The dot field reads this box and
+              holds itself to GUARD_MIN across it, so everything the reader has to
+              READ on the dark plate belongs in here. The mockup and the chips are
+              deliberately its siblings, not its children: they are opaque, they
+              carry their own ground, and guarding them would damp the field
+              across the whole band and leave the art nothing to be bright in.
 
-            From xl the mockup's column carries the chips SCATTERED around the
-            device, so it needs the device's 288 plus a gutter each side: 606 of
-            the 1072 that is left of the 1152 container once its padding and the
-            gap come out. The 466 that leaves the copy is the narrowest this
-            column gets before its headline takes a fourth line and the band stops
-            fitting a 673px window, which is what pins the ratio at 1:1.3.
-
-            Below xl the chips are a plain row above the device instead (there is
-            no gutter to scatter into at that width — see
-            ai-assistant-preview.tsx), so the column only has to hold the device
-            and the copy takes the larger half back.
-
-            Copy first in the DOM, which is both reading order and the order the
-            sequence arrives in. */}
-        <div className="lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:gap-x-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] xl:gap-x-8">
-          {/* The block the field guards, and the reason it is one element: the
-              dots read its box, so anything that must stay legible on the dark
-              plate belongs INSIDE it. The mockup and the chips are deliberately
-              outside — they are opaque, they carry their own ground, and
-              guarding them would damp the field across the whole band. */}
-          <div data-ai-copy className="text-center lg:text-start">
+              The gaps below are `clamp(floor, Nsvh, current)` — the rhythm as it
+              is on a tall window, tightening on a short one. It is the cheapest
+              height in the section: nothing changes size, only the air between
+              things, and it is worth ~60px at a 768px window. */}
+          <div data-ai-copy>
+            {/* The tile is height-aware too, and it is the only part of the copy
+                block that is: it is a decorative app icon rather than something
+                to read, so 24px off it on a short window costs nothing, and every
+                pixel the copy gives back is a pixel the mockup keeps. The cap is
+                the `md:size-18` it used to be. */}
             <span
               data-seq-item
-              className="ai-tile mx-auto flex size-16 items-center justify-center rounded-xl bg-highlight text-on-highlight md:size-18 lg:mx-0"
+              className="ai-tile mx-auto flex size-[clamp(3rem,7svh,4.5rem)] items-center justify-center rounded-xl bg-highlight text-on-highlight"
             >
-              <AssistantGlyph className="size-8 md:size-9" />
+              <AssistantGlyph className="size-[clamp(1.5rem,3.5svh,2.25rem)]" />
             </span>
 
             {/* Violet-tinted chip with a lilac label. Same fill-vs-text split it
@@ -171,18 +157,25 @@ export function AiTeaser({
                 white, is 1.26:1 here and unusable. */}
             <span
               data-seq-item
-              className="mt-6 inline-flex items-center gap-2 rounded-full border border-highlight/40 bg-highlight/15 px-3.5 py-1.5 text-sm font-medium text-lilac"
+              className="mt-[clamp(1rem,2.4svh,1.5rem)] inline-flex items-center gap-2 rounded-full border border-highlight/40 bg-highlight/15 px-3.5 py-1.5 text-sm font-medium text-lilac"
             >
               <span aria-hidden="true" className="size-1.5 rounded-full bg-highlight" />
               {badge || "قريباً"}
             </span>
 
-            {/* max-w-3xl is the CENTRED measure; in the two-column layout the
-                column is the measure and the cap would only ever cut it short of
-                its own half. */}
+            {/* Height-aware between 28 and 36px — the same device hero.tsx uses
+                on its own headline, and the same reason: on a short window the
+                axis that is scarce is the vertical one, so the size that matters
+                is a fraction of the HEIGHT. `min()` with a vw term so a narrow
+                window cannot blow it up. The cap is `md:text-4xl`, the floor is
+                just under the mobile `text-3xl`, and the line-height still comes
+                from the class. It is the one piece of real copy that compresses,
+                and it gives back ~6px of a 2-line headline; the subhead, the form
+                and the note keep their sizes at every height. */}
             <h2
               data-seq-item
-              className="mx-auto mt-4 max-w-3xl text-3xl font-bold text-white md:text-4xl lg:mx-0 lg:max-w-none"
+              className="mx-auto mt-[clamp(0.5rem,1.7svh,1rem)] max-w-3xl text-3xl font-bold text-white md:text-4xl"
+              style={{ fontSize: "clamp(1.75rem, min(3.6vw, 4.4svh), 2.25rem)" }}
             >
               <span className="block">{lead}</span>
               {/* Lilac, not violet — see the band note above. Flat either way:
@@ -193,12 +186,12 @@ export function AiTeaser({
 
             <p
               data-seq-item
-              className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-neutral-300 lg:mx-0"
+              className="mx-auto mt-[clamp(0.5rem,1.7svh,1rem)] max-w-2xl text-lg leading-relaxed text-neutral-300"
             >
               {subhead || FALLBACK_SUBHEAD}
             </p>
 
-            <div data-seq-item className="mt-8 flex justify-center lg:mt-7 lg:justify-start">
+            <div data-seq-item className="mt-[clamp(1.25rem,3.4svh,2rem)] flex justify-center">
               <AiWaitlistForm ctaLabel={ctaLabel} note={note} />
             </div>
           </div>

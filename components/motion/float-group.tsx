@@ -10,11 +10,10 @@ import { gsap, useGSAP } from "@/lib/gsap";
  * in, so nothing here grows the client bundle beyond this file — and gsap is
  * already on the homepage for AiOrbit in the final CTA.
  *
- * Desktop + no-reduced-motion only. Below xl the chips are a plain wrapped list
- * with nothing to float — bobbing the members of a flow row by different amounts
- * just breaks its baseline — which is why the query matches the same breakpoint
- * the scatter starts at; under reduced motion the matchMedia block never runs
- * and every chip sits exactly where CSS put it.
+ * Desktop + no-reduced-motion only. Below lg the chips are a plain wrapped list
+ * with nothing to float, which is why the query matches the same breakpoint the
+ * scatter starts at; under reduced motion the matchMedia block never runs and
+ * every chip sits exactly where CSS put it.
  *
  * GSAP writes `transform`. The chips' tilt is on the standalone `rotate`
  * property, which Tailwind v4 emits separately — two channels, one owner each.
@@ -34,7 +33,7 @@ export function FloatGroup({
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference) and (min-width: 1280px)", () => {
+      mm.add("(prefers-reduced-motion: no-preference) and (min-width: 1024px)", () => {
         gsap.to("[data-float]", {
           y: 9,
           duration: 3.4,

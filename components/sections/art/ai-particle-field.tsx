@@ -92,24 +92,24 @@ const RIM = 120;
    only its OUTER edge is soft.
 
    IT IS MEASURED, NOT POSITIONED. It used to be an ellipse at a fixed place —
-   centred on the band, 420px wide, 34% of the band height down — which held
-   only while section 7 was a single centred column. It is two columns from lg
-   (see ai-teaser.tsx), the copy sits in the start half, and a centred ellipse
-   leaves the outer third of every line of it under dots at full strength. So the
-   field now reads the box of the block it has to protect and guards THAT. The
-   stacked layout gains from this too: 34%-of-band was a heuristic that drifted
-   down past the copy as soon as the headline wrapped to a fourth line.
+   centred on the band, 420px wide, 34% of the band height down — which assumed
+   the copy always lands in the same place. It does not: section 7 is a
+   one-screen band now (see ai-teaser.tsx), so its rhythm, its tile and its
+   headline all move with the window height, and the copy block runs anywhere from
+   378px tall on a short window to 444 on a tall one — and 598 on a phone, where
+   34%-of-band had already drifted off the bottom of it as the headline wrapped to
+   a fifth line. So the field reads the box of the block it has to protect and
+   guards THAT, at whatever size the browser resolved it to.
 
    AND THE PLATEAU IS THE BOX, not an ellipse around it. An ellipse cannot
-   contain a rect without its radii being inflated by √2 to catch the corners,
-   and the copy box is 466×485 — nearly square — so that inflation would put the
-   flat minimum 390px above and below its centre and spread it across the band's
-   whole height. The field would be dead everywhere but the mockup's column.
-   `max(0, |d| - r)` per axis gives a plateau that is exactly the box, corners
-   included, with iso-lines that round themselves off outside it: the same smooth
-   falloff over half the damped area. What the earlier note ruled out was
-   `.dot-grid`'s HARD-EDGED rectangle, which fenced the column in a visible line;
-   nothing was ever wrong with the rectangle itself. */
+   contain a rect without its radii being inflated by √2 to catch the corners, and
+   on a 768×440 copy block that inflation would put the flat minimum 310px above
+   and below its centre — most of a short band's height — leaving the field dead
+   everywhere the reader can see it. `max(0, |d| - r)` per axis gives a plateau
+   that is exactly the box, corners included, with iso-lines that round themselves
+   off outside it: the same smooth falloff over a third less damped area. What the
+   earlier note ruled out was `.dot-grid`'s HARD-EDGED rectangle, which fenced the
+   column in a visible line; nothing was ever wrong with the rectangle itself. */
 
 /** Field strength across the type. Asserted in scripts/check-contrast.mjs. */
 const GUARD_MIN = 0.16;
@@ -124,8 +124,8 @@ const GUARD_PAD = 24;
 /** How far past the plateau the field takes to recover, in px. Wide enough that
  *  the quiet zone has no visible edge — a hard one would just redraw in dots the
  *  panel this section spent a redesign getting rid of — and narrow enough that
- *  full strength is reached within the gutter beside the copy, which is what
- *  keeps the mockup's half of the band bright. */
+ *  full strength is reached inside the gutter beside the content column, which is
+ *  what keeps the band's edges and its lower half bright. */
 const GUARD_RAMP = 150;
 
 /** Fallback geometry, used only if the guarded element is not given or not

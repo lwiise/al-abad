@@ -78,15 +78,14 @@ export function Section({
    * always taller than the screen it was meant to match. On a desktop the two
    * are identical.
    *
-   * The vertical padding goes height-aware with it. The standard `py-20 md:py-24`
-   * is 192px of the budget at md — more than a fifth of a 900px window — and it
-   * is dead space in a band whose whole point is that the content fits. `8svh`
-   * because the middle term is what actually applies on a PHONE, where 8% of a
-   * 844px screen is 67px and the neighbouring bands are 80: any less and the one
-   * band on the page that has to grow past its floor is also the one with the
-   * tightest rhythm on it. It reaches the standard 96px at a 1200px window and
-   * caps there; the 2.5rem floor is for windows short enough that padding, not
-   * the floor, is what the content is competing with.
+   * The vertical padding goes height-aware with it, and this is the first place
+   * the height comes from — the standard `py-20 md:py-24` is 192px, more than a
+   * fifth of a 900px window, and it is dead air in a band whose whole point is
+   * that the content fits. The clamp gives back ~100px of it on a 768px window
+   * and reaches the standard 96px at a ~2130px one. Because the content is
+   * CENTRED, the padding only ever binds when content + padding exceeds the
+   * band; above that the free space is split evenly and the padding is a floor
+   * on how close the band's edges may come.
    */
   screen?: boolean;
   className?: string;
@@ -110,7 +109,7 @@ export function Section({
       className={cn(
         bgMap[bg],
         screen
-          ? "flex min-h-[90svh] flex-col justify-center py-[clamp(2.5rem,8svh,6rem)]"
+          ? "flex min-h-[90svh] flex-col justify-center py-[clamp(2rem,4.5svh,6rem)]"
           : "py-20 md:py-24",
         bleed && "relative isolate",
         className,
