@@ -9,6 +9,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { CountUp } from "@/components/motion/count-up";
+import { Sequence } from "@/components/motion/sequence";
 import { Section, SectionHeading } from "../section";
 
 /** Minutes from a free-text duration like "45 دقيقة" / "ساعة" / "2 ساعة". */
@@ -36,68 +37,76 @@ export function CourseCurriculum({ modules }: { modules: CourseModuleRow[] }) {
 
   return (
     <Section bg="surface" id="curriculum">
-      <SectionHeading
-        align="center"
-        eyebrow="المنهج"
-        title="ماذا يتضمّن المحتوى؟"
-        sub="محتوى عمليّ مقسّم إلى محاور تأخذك خطوةً بخطوة."
-      />
+      {/* One observer for heading, stats and محاور so they cascade in reading
+          order. The heading is a single item, as in the FAQ: cascading its own
+          four lines as well would double the motion in one glance. */}
+      <Sequence>
+        <SectionHeading
+          data-seq-item
+          align="center"
+          eyebrow="المنهج"
+          title="ماذا يتضمّن المحتوى؟"
+          sub="محتوى عمليّ مقسّم إلى محاور تأخذك خطوةً بخطوة."
+        />
 
-      {/* stat badges */}
-      <ul className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-x-10 gap-y-5">
-        {stats.map((s) => (
-          <li key={s.label} className="flex items-center gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-background text-secondary shadow-sm ring-1 ring-border">
-              <s.icon className="size-5" aria-hidden="true" />
-            </span>
-            <span>
-              <span className="block text-2xl font-extrabold tabular-nums text-foreground">
-                <CountUp value={s.value} />
+        {/* stat badges — the marker stays on the <li>, never on the CountUp
+            span: nesting an item inside an item drifts, and the span is the
+            node CountUp's own observer watches. */}
+        <ul className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-x-10 gap-y-5">
+          {stats.map((s) => (
+            <li key={s.label} data-seq-item className="flex items-center gap-3">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-background text-secondary shadow-sm ring-1 ring-border">
+                <s.icon className="size-5" aria-hidden="true" />
               </span>
-              <span className="block text-xs text-foreground-subtle">{s.label}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
+              <span>
+                <span className="block text-2xl font-extrabold tabular-nums text-foreground">
+                  <CountUp value={s.value} />
+                </span>
+                <span className="block text-xs text-foreground-subtle">{s.label}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
 
-      <div className="mx-auto mt-10 max-w-3xl">
-        <Accordion type="single" collapsible className="rounded-2xl border border-border bg-background px-5">
-          {modules.map((m, i) => {
-            const lessons = m.lessons ?? 0;
-            return (
-              <AccordionItem key={m.id} value={m.id}>
-                <AccordionTrigger>
-                  <span className="flex flex-1 items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold tabular-nums text-primary">
-                      {i + 1}
-                    </span>
-                    <span className="text-start">{m.title}</span>
-                    {(lessons > 0 || m.duration) && (
-                      <span className="ms-auto hidden text-sm font-normal text-foreground-subtle sm:inline">
-                        {[lessons ? `${lessons} دروس` : null, m.duration].filter(Boolean).join(" · ")}
+        <div className="mx-auto mt-10 max-w-3xl">
+          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-background px-5">
+            {modules.map((m, i) => {
+              const lessons = m.lessons ?? 0;
+              return (
+                <AccordionItem key={m.id} value={m.id} data-seq-item>
+                  <AccordionTrigger>
+                    <span className="flex flex-1 items-center gap-3">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold tabular-nums text-primary">
+                        {i + 1}
                       </span>
+                      <span className="text-start">{m.title}</span>
+                      {(lessons > 0 || m.duration) && (
+                        <span className="ms-auto hidden text-sm font-normal text-foreground-subtle sm:inline">
+                          {[lessons ? `${lessons} دروس` : null, m.duration].filter(Boolean).join(" · ")}
+                        </span>
+                      )}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {lessons > 0 ? (
+                      <ul className="space-y-1.5">
+                        {Array.from({ length: lessons }).map((_, k) => (
+                          <li key={k} className="flex items-center gap-3 rounded-lg px-2 py-1.5">
+                            <PlayCircle className="size-4 shrink-0 text-secondary" aria-hidden="true" />
+                            <span className="text-foreground-muted">الدرس {k + 1}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>محتوى هذا المحور {m.duration ? `(${m.duration})` : ""}.</p>
                     )}
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  {lessons > 0 ? (
-                    <ul className="space-y-1.5">
-                      {Array.from({ length: lessons }).map((_, k) => (
-                        <li key={k} className="flex items-center gap-3 rounded-lg px-2 py-1.5">
-                          <PlayCircle className="size-4 shrink-0 text-secondary" aria-hidden="true" />
-                          <span className="text-foreground-muted">الدرس {k + 1}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>محتوى هذا المحور {m.duration ? `(${m.duration})` : ""}.</p>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
-      </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        </div>
+      </Sequence>
     </Section>
   );
 }

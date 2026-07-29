@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getSettings, waLink } from "@/lib/data";
 import { ContactForm } from "@/components/sections/contact-form";
 import { SocialIcon, SOCIAL_KEYS, SOCIAL_LABELS, WhatsappGlyph } from "@/components/site/icons";
+import { Reveal } from "@/components/motion/reveal";
+import { Sequence } from "@/components/motion/sequence";
 
 export const revalidate = 300;
 
@@ -19,22 +21,34 @@ export default async function ContactPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
       <header className="mb-12 text-center">
-        <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">
-          {settings?.contact_heading || "تواصل معنا"}
-        </h1>
-        <p className="mt-4 text-lg text-foreground-muted">
-          {settings?.contact_subhead || "سؤال عن دورة؟ أو رغبة في التسجيل؟ نحن هنا لمساعدتك."}
-        </p>
+        <Reveal>
+          <h1 className="text-4xl font-extrabold text-foreground md:text-5xl">
+            {settings?.contact_heading || "تواصل معنا"}
+          </h1>
+          <p className="mt-4 text-lg text-foreground-muted">
+            {settings?.contact_subhead || "سؤال عن دورة؟ أو رغبة في التسجيل؟ نحن هنا لمساعدتك."}
+          </p>
+        </Reveal>
       </header>
 
-      <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
-        <div className="rounded-2xl border border-border bg-background p-6 shadow-sm md:p-8">
+      {/* One observer for both columns: the form is the ask and the contact
+          cards are the alternatives to it, so they arrive out of it rather than
+          as a second slab. The <aside> itself is not an item — its cards are,
+          which is exactly what the descendant selector buys over Stagger.
+          Document order is reading order here (the form is the start column in
+          RTL), so no ordering fix is needed. */}
+      <Sequence className="grid gap-10 lg:grid-cols-[1fr_360px]">
+        <div
+          data-seq-item
+          className="rounded-2xl border border-border bg-background p-6 shadow-sm md:p-8"
+        >
           <ContactForm />
         </div>
 
         <aside className="space-y-6">
           {wa && (
             <a
+              data-seq-item
               href={wa}
               target="_blank"
               rel="noopener noreferrer"
@@ -51,7 +65,7 @@ export default async function ContactPage() {
           )}
 
           {email && (
-            <div className="rounded-2xl border border-border bg-surface p-5">
+            <div data-seq-item className="rounded-2xl border border-border bg-surface p-5">
               <p className="font-bold text-foreground">البريد الإلكتروني</p>
               <a
                 href={`mailto:${email}`}
@@ -64,7 +78,7 @@ export default async function ContactPage() {
           )}
 
           {SOCIAL_KEYS.some((k) => social[k]) && (
-            <div className="rounded-2xl border border-border bg-surface p-5">
+            <div data-seq-item className="rounded-2xl border border-border bg-surface p-5">
               <p className="mb-3 font-bold text-foreground">تابعنا</p>
               <div className="flex flex-wrap gap-2">
                 {SOCIAL_KEYS.map((k) =>
@@ -85,7 +99,7 @@ export default async function ContactPage() {
             </div>
           )}
         </aside>
-      </div>
+      </Sequence>
     </div>
   );
 }

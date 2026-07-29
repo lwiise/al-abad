@@ -4,19 +4,25 @@ import { useRef, type ElementType, type ReactNode } from "react";
 import { useReveal } from "./use-reveal";
 
 /**
- * Seconds between consecutive items. Deliberately short: this is a section
- * assembling itself, not a slideshow. Past ~0.1s the eye starts reading the
- * gap instead of the content.
+ * Seconds between consecutive items. This is a section assembling itself, not
+ * a slideshow: 0.1s is the far edge of useful — past it the eye starts reading
+ * the gap instead of the content. It is also the step `Stagger` has shipped at
+ * since day one (`amount = 0.1`), so the two primitives now cascade at the
+ * same rate instead of at two rates nobody chose.
  */
-const STEP = 0.07;
+const STEP = 0.1;
 
 /**
  * Ceiling on the accumulated delay. Without it a long list (the FAQ ships a
  * dozen questions) would still be arriving a second and a half after the
  * section landed, which reads as jank rather than as choreography. Items past
  * the cap arrive together — by then they are below the fold anyway.
+ *
+ * Tuned on the item count, not the clock: the cap has always cut in at the
+ * sixth item or so, and 0.6 / 0.1 keeps that where 0.45 / 0.1 would drop it to
+ * four and a half, splitting the FAQ into two visible clumps.
  */
-const MAX_DELAY = 0.45;
+const MAX_DELAY = 0.6;
 
 /**
  * Sequenced entrance for a composed block.
