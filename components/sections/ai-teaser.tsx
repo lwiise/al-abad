@@ -29,25 +29,31 @@ export function AiTeaser({
   const { lead, tail } = splitAtEllipsis(headline || FALLBACK_HEADLINE);
 
   return (
-    /* A plain white band, the same full-width sheet every other section is
-       printed on — no inset card. Two earlier versions boxed this content: a
-       violet `.ai-shimmer` card (which it shared verbatim with the final CTA one
-       screen later, so the page said the same thing twice), then a `bg-surface`
-       panel behind a hairline border. Both fenced the section off inside a
-       column narrower than the page, and the grey ground read as a widget
-       dropped onto the site rather than part of it.
+    /* The `surface` tone the section has always had, now carried by the BAND
+       rather than by a card. It was an inset panel — same #f8f6fb, but behind a
+       `rounded-[2rem]` border with a shadow — and before that a violet
+       `.ai-shimmer` card, which shared its formula verbatim with the final CTA
+       one screen later, so the page said the same thing twice. Boxing the
+       content into a column narrower than the page made it read as a widget
+       dropped onto the site; the tone belongs to the section, so the section
+       takes it edge to edge.
 
-       What is left to separate section 7 from section 6 — also white — is not a
-       band tone: it is the dot texture framing the full width, the violet
-       app-icon tile opening the section, and the violet headline tail. Violet
-       still marks the section, as fills on a light ground. */
+       This is the site's one white/`surface` band adjacency, and it is an owner
+       decision — section 6 above is `background`, and #f8f6fb against #ffffff is
+       1.07:1, so that boundary is faint by design. What carries the section is
+       the tone plus the dot texture in the gutters, the violet app-icon tile and
+       the violet headline tail. Violet stays fills-on-a-light-ground. Don't
+       generalise this into alternating white and surface elsewhere — see the
+       `Section` bg map. */
     <Section
-      bg="background"
+      bg="surface"
       className="overflow-hidden"
       /* Full-bleed, so the dots frame the page and not a content column: with
          the panel gone, a texture stopping at max-w-6xl would just redraw the
          card edge in dots. Its mask fades INWARD, so nothing lands behind the
-         type — see `.dot-grid` in globals.css. */
+         type — see `.dot-grid` in globals.css. It has to be this separate layer
+         and never the band itself: `mask-image` masks `background-color` too, so
+         masking the section would eat the surface tone along with the dots. */
       bleed={
         <span aria-hidden="true" className="dot-grid pointer-events-none absolute inset-0 -z-10" />
       }
@@ -99,10 +105,12 @@ export function AiTeaser({
           </div>
 
           {/* Wrapped rather than marked on its own root: the preview is art,
-              and it should not have to know about the entrance system. Its
-              device deliberately bleeds past the bottom of the band (-mb-16,
-              clipped by the Section's overflow-hidden), so the rise reads as
-              the mockup sliding up into the section. */}
+              and it should not have to know about the entrance system. The
+              device is shown whole and seated by its shadow — it has not bled
+              past the band since the panel was dropped, because the only edge
+              left to bleed against is the section boundary. The rise still
+              reads as the mockup arriving last, which is all the sequence
+              needs from it. */}
           <div data-seq-item>
             <AiAssistantPreview points={items} />
           </div>

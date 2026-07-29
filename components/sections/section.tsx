@@ -6,13 +6,19 @@ type Bg = "background" | "surface" | "lilac" | "ink" | "plum" | "hero";
 /**
  * The section rhythm is white ↔ lilac, with ink as the dark anchor.
  *
- * `surface` (#f8f6fb) is kept for cards and insets but is NOT the alternating
- * band: measured against #ffffff it is 1.07:1, which is below the threshold of
+ * `surface` (#f8f6fb) is for cards and insets and is NOT the alternating band:
+ * measured against #ffffff it is 1.07:1, which is below the threshold of
  * perception — alternating the two produces no rhythm at all, just a page that
  * looks flat and slightly dirty. `lilac` (#ebe3f7) is 1.25:1 against white,
  * a step you can actually see. Verify with `pnpm check-contrast`.
  *
- * `hero` is the one exception, and it is the opposite intent: it holds the tone
+ * Section 7 (الذكاء) is the one band that takes `surface`, by owner decision:
+ * the tone was its inset panel's, and the panel was dropped in favour of
+ * carrying it edge to edge. It sits under section 6's `background`, so that one
+ * boundary is deliberately faint and the dot texture and violet fills do the
+ * marking. It is an exception, not a licence to alternate the two.
+ *
+ * `hero` is the other exception, and it is the opposite intent: it holds the tone
  * section 1 ends on instead of stepping away from it, so section 2 reads as the
  * same sheet of paper the hero is printed on. It belongs to section 2 alone —
  * see `.section-hero-surface` in globals.css. Anywhere else it would just be
