@@ -3,17 +3,20 @@ import { cn } from "@/lib/utils";
 /**
  * The art of قسم التعريف — one drawn form per مرتكز.
  *
- * A DELIBERATE DEPARTURE FROM HOUSE STYLE, and worth naming as one. Everything
- * else drawn on this site is hairline stroke: the challenges diagram, the hero
- * backdrop, the orbit accents, the Najdi tile — all `fill="none"` with a 1–1.75
- * non-scaling stroke, and the only fills anywhere are sub-6-unit dots, 12–14%
- * washes sitting *behind* a stroke, and imported brand logos. Nothing on the
- * site has a silhouette that carries its meaning.
+ * A DELIBERATE DEPARTURE FROM HOUSE STYLE, and worth naming as one. Every other
+ * drawing on this site is built from hairline stroke on a 400 × 340 canvas —
+ * the challenges diagram in section 2, the step diagrams in section 5, the
+ * outcome diagrams in section 6 — 1.25px non-scaling, plum for structure and
+ * coral for the moment that matters. They do use fills, but as accents *within*
+ * a stroked figure; the stroke is always what describes the thing. Nowhere else
+ * does a silhouette carry the meaning on its own.
  *
- * These do. There is no `stroke` attribute in this file at all, by instruction:
- * two earlier passes at this section drew the three مرتكزات as abstract
- * geometry — a ring resolving, arcs separating, tracings accumulating — and
- * both were rejected. The brief is to draw the thing, not to allude to it.
+ * Here it does, and here there is no stroke at all. That is not drift: the
+ * owner's instruction for this section was "instead of lines, draw and animate
+ * something that reflects the content — no line animation", after two passes of
+ * abstract stroked geometry were rejected. Section 3 is the exception on
+ * purpose. If the register is ever reconciled, it is reconciled deliberately,
+ * not by someone assuming this file drifted.
  *
  * So each مرتكز gets an artifact of the practice, and the motion is the artifact
  * being used rather than a line being drawn:
