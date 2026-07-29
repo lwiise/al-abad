@@ -170,7 +170,7 @@ export function ImageField({
         name={`${name}__file`}
         onChange={handleChange}
         className={cn(
-          fieldClasses,
+          fieldClasses(),
           "file:me-3 file:rounded-md file:border-0 file:bg-surface-strong file:px-3 file:py-1 file:text-sm file:text-primary",
         )}
       />

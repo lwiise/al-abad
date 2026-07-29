@@ -38,7 +38,9 @@ const CHIP_SLOTS: Slot[] = [
 
 export function AiAssistantPreview({ points }: { points: string[] }) {
   return (
-    <div className="relative mt-12 md:mt-16">
+    // `isolate` so the bloom's -z-10 stays inside this drawing and cannot land
+    // behind the band's dot field, which sits at the same depth one level up.
+    <div className="relative isolate mt-12 md:mt-16">
       {/* Below lg these are a plain centered wrap list above the device; from lg
           they scatter around it. Logical start/end, so RTL mirrors for free. */}
       <FloatGroup
@@ -68,12 +70,25 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
         })}
       </FloatGroup>
 
-      {/* Shown whole, sitting on the band's own white. It used to be cropped by
-          the panel's bottom edge — with no panel there is nothing to crop
-          against but the section boundary, and a phone sliced off where the
-          white meets the lilac below reads as a rendering fault, not a product
-          shot. The shadow is what seats it now. */}
+      {/* Shown whole, sitting on the band's own ground. It used to be cropped
+          by the panel's bottom edge — with no panel there is nothing to crop
+          against but the section boundary, and a phone sliced off at the band
+          edge reads as a rendering fault, not a product shot.
+
+          On the light band the ink-tinted `--shadow-xl` seated it. On night a
+          shadow is invisible — a dark blur on a dark plate — so the light comes
+          from the other side instead: a violet bloom the device stands in
+          front of. It is also the band's only atmosphere, and it is down HERE
+          on purpose. Anywhere higher it would sit under the headline and raise
+          the ground's luminance exactly where the type needs it lowest; down
+          here everything near it is opaque (this device, the chips) so it costs
+          no contrast at all. The shadow stays for the light contexts the
+          drawing may be reused in. */}
       <div aria-hidden="true" className="relative mx-auto mt-8 w-60 sm:w-64 lg:mt-0 lg:w-72">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-[-55%] top-[8%] -z-10 h-[76%] rounded-[100%] bg-highlight/25 blur-3xl"
+        />
         <div className="rounded-[2rem] border border-border-strong bg-background p-2 shadow-xl">
           <div className="rounded-[1.6rem] bg-surface px-4 pt-3 pb-8">
             <span className="mx-auto block h-1 w-14 rounded-full bg-border-strong" />

@@ -70,14 +70,14 @@ const VARIANTS = ["primary", "secondary", "outline", "ghost", "danger"] as const
 const TONES = ["published", "draft", "highlight", "neutral"] as const;
 
 /** Homepage order — keep in sync with app/(marketing)/page.tsx. */
-const RHYTHM: { n: number; name: string; bg: string; tone: string }[] = [
+const RHYTHM: { n: number; name: string; bg: string; tone: string; dark?: boolean }[] = [
   { n: 1, name: "الواجهة", bg: "bg-background", tone: "أرضية فاتحة + لوح neutral-900" },
   { n: 2, name: "المشكلة", bg: "section-hero-surface", tone: "امتداد سطح الواجهة" },
-  { n: 3, name: "التعريف", bg: "bg-ink", tone: "ink — المرساة الداكنة" },
+  { n: 3, name: "التعريف", bg: "bg-ink", tone: "ink — مرساة داكنة", dark: true },
   { n: 4, name: "الدورات", bg: "bg-background", tone: "background" },
   { n: 5, name: "كيف نعمل", bg: "bg-surface-strong", tone: "lilac" },
   { n: 6, name: "النتائج", bg: "bg-background", tone: "background" },
-  { n: 7, name: "الذكاء", bg: "bg-surface", tone: "surface — الاستثناء الوحيد" },
+  { n: 7, name: "الذكاء", bg: "bg-neutral-900", tone: "night + حقل نقاط حيّ", dark: true },
   { n: 8, name: "الآراء", bg: "bg-background", tone: "background + بطاقات surface" },
   { n: 9, name: "الأسئلة", bg: "bg-background", tone: "background" },
   { n: 10, name: "الدعوة", bg: "bg-background", tone: "background + بطاقة فاتحة" },
@@ -113,7 +113,7 @@ export default function StyleguidePage() {
       <Section bg="surface">
         <Group
           title="إيقاع الأقسام"
-          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، مع ink مرساةً داكنة واحدة. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك. القسم ٢ استثناء مقصود: يواصل لون surface نفسه — وهو اللون الذي تنتهي عليه الواجهة — فيقرآن ورقةً واحدة بلا خطّ فاصل. والقسم ٧ هو الاستعمال المقصود لـ surface: الشريط يبقى أبيض، واللوحة الداخلية هي التي تفصل — بحدٍّ شعري وظلٍّ ناعم، فالفصل يقع على الحدّ والظلّ لا على فرق ١٫٠٧:١."
+          note="ترتيب الصفحة الرئيسية. التناوب أبيض ↔ lilac، ومرساتان داكنتان: القسم ٣ على ink والقسم ٧ على night. لا يُستخدم surface شريطاً متناوباً: الفرق بينه وبين الأبيض ١٫٠٧:١، أي دون عتبة الإدراك. القسم ٢ استثناء مقصود: يواصل لون surface نفسه — وهو اللون الذي تنتهي عليه الواجهة — فيقرآن ورقةً واحدة بلا خطّ فاصل. والقسم ٧ هو أغمق درجة في السلّم (neutral-900) لأن أرضيته حقل نقاطٍ حيّ: كل ما يكسبه اللوح من عمقٍ يُصرف في سطوع النقاط، وعلى ink كان الحقل سيُخفَّت حتى يزول. تبقى الأقسام ٨ و٩ و١٠ ثلاثة أشرطة بيضاء متتالية بلا خطوة بينها — قرارُ مالك، والفارق أن الدخول إليها صار من أحدّ قطعٍ في الصفحة."
         >
           <ul className="overflow-hidden rounded-2xl border border-border-strong">
             {RHYTHM.map((r) => (
@@ -121,20 +121,18 @@ export default function StyleguidePage() {
                 <span
                   dir="ltr"
                   className={`w-6 shrink-0 font-mono text-xs ${
-                    r.bg === "bg-ink" ? "text-white/55" : "text-foreground-subtle"
+                    r.dark ? "text-white/55" : "text-foreground-subtle"
                   }`}
                 >
                   {r.n}
                 </span>
-                <span
-                  className={`flex-1 font-medium ${r.bg === "bg-ink" ? "text-white" : "text-foreground"}`}
-                >
+                <span className={`flex-1 font-medium ${r.dark ? "text-white" : "text-foreground"}`}>
                   {r.name}
                 </span>
                 <span
                   dir="ltr"
                   className={`font-mono text-xs ${
-                    r.bg === "bg-ink" ? "text-white/74" : "text-foreground-muted"
+                    r.dark ? "text-white/74" : "text-foreground-muted"
                   }`}
                 >
                   {r.tone}
