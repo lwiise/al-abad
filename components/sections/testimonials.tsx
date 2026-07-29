@@ -25,7 +25,7 @@ export function Testimonials({
   if (testimonials.length === 0) return null;
 
   return (
-    <Section bg="lilac" className="overflow-hidden">
+    <Section bg="background" className="overflow-hidden">
       <Sequence>
         {/* decorative quote flourish */}
         <div data-seq-item>
@@ -71,10 +71,14 @@ export function Testimonials({
               </CarouselItem>
             ))}
           </CarouselContent>
+          {/* The primitive defaults to a white fill, which is right on a tinted
+              band and near-invisible on this one — a 40px disc held only by a
+              #e6e1ee hairline. `surface` is the inset tone, so the buttons stay
+              discs on the white sheet. */}
           {testimonials.length > 1 && (
             <div className="mt-7 flex justify-center gap-3">
-              <CarouselPrevious />
-              <CarouselNext />
+              <CarouselPrevious className="bg-surface hover:bg-surface-strong" />
+              <CarouselNext className="bg-surface hover:bg-surface-strong" />
             </div>
           )}
         </Carousel>
@@ -84,9 +88,16 @@ export function Testimonials({
 }
 
 // overlapping ring avatars (logical overlap in RTL via negative margin-inline-start)
+//
+// The ring has to be the BAND's colour, not a tone near it: its whole job is to
+// cut a gap between two overlapping lilac fallback circles, and it can only do
+// that by matching what surrounds them. It was `ring-surface` while this section
+// was lilac and read fine there by accident — #f8f6fb is 1.07:1 against the
+// white band, so on this ground the same ring disappears and the cluster fuses
+// into one blob.
 function cnRing(i: number) {
   return [
-    "size-12 ring-2 ring-surface",
+    "size-12 ring-2 ring-background",
     i > 0 ? "-ms-3" : "",
   ].join(" ");
 }

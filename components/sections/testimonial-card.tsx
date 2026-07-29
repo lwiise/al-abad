@@ -15,8 +15,13 @@ export function TestimonialCard({ t, featured = false }: { t: TestimonialRow; fe
   return (
     <figure
       className={cn(
+        // The plain card takes `surface`, not `background`: the section is a
+        // white band now, and a white card on it is 1:1 with its own ground —
+        // nothing but a hairline and a soft shadow standing between the quote
+        // and the page. `surface` is the documented inset tone and is what
+        // keeps this a card. The featured card is unaffected; it is ink.
         "flex h-full flex-col rounded-3xl border p-7 shadow-sm",
-        featured ? "dark-depth border-transparent bg-ink text-white" : "border-border bg-background",
+        featured ? "dark-depth border-transparent bg-ink text-white" : "border-border bg-surface",
       )}
     >
       <blockquote className={cn("flex-1 leading-loose", featured ? "text-white/90" : "text-foreground")}>
