@@ -13,7 +13,9 @@ update public.site_settings set
   hero_primary_cta_url    = '#courses',
   hero_secondary_cta_label = 'تعرّف على الأستاذ علي',
   hero_secondary_cta_url  = '/نبذة',
-  ai_headline             = 'مساعدك الذكي للتعلّم',
+  -- The ellipsis is load-bearing: the section splits the headline there and sets
+  -- the tail in violet. No ellipsis means one flat line and no accent.
+  ai_headline             = 'سؤالك لا ينتظر موعد الدرس… مساعدك الذكي يجيب فوراً',
   ai_subhead              = 'مساعدٌ ذكيّ مدرَّب على محتوى الأكاديمية، يجيب أسئلتك ويرشدك خطوة بخطوة — متاحٌ على مدار الساعة.',
   ai_points               = '["إجاباتٌ فورية من الدورات","إرشادٌ بين الدروس","متاحٌ دائماً"]'::jsonb,
   problem_points          = '["ضعف التواصل","تكرار الخلافات","حيرة الاختيار الزواجي","فتور العلاقة","القلق والضغوط الأسرية"]'::jsonb,
@@ -44,6 +46,8 @@ update public.site_settings set
   outcomes_heading        = 'ماذا ستكتسب؟',
   outcomes_subhead        = 'ليست معلومات تُنسى، بل تغييرٌ تعيشه في علاقتك.',
   ai_badge                = 'قريباً',
+  ai_cta_label            = 'انضم لقائمة الانتظار',
+  ai_note                 = 'لن نشارك بريدك مع أحد، ويمكنك إلغاء الاشتراك في أي وقت.',
   testimonials_ribbon     = 'قصص نجاح حقيقية',
   testimonials_eyebrow    = 'آراء المتدربين',
   testimonials_heading    = 'بعضٌ مما قاله الأحباب',

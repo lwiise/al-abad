@@ -116,6 +116,8 @@ export interface SiteSettingsRow extends Timestamps {
   ai_headline: string | null;
   ai_subhead: string | null;
   ai_points: Json | null;
+  ai_cta_label: string | null;
+  ai_note: string | null;
   // lists
   problem_points: Json | null;
   outcome_points: Json | null;

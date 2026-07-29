@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Split a headline at the ellipsis so the tail can be set apart typographically
- * (Ruqʿah calligraphy in the hero and the closing CTA).
+ * — Ruqʿah calligraphy in the hero and the closing CTA, violet in section 7.
  *
  * The `…` is the editor's marker, not ours: headlines are CMS copy, so nothing
  * here may hard-code the words, and guessing "the last two words" would break
