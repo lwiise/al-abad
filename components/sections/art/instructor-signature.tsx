@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import type { CSSProperties, RefObject } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,10 +8,23 @@ import { cn } from "@/lib/utils";
  * line whose stroke runs lilac → coral: both colours, one continuous stroke.
  *
  * Every state is driven by `data-state` alone; all the motion lives in
- * `app/globals.css` under `.mi-*`, so this file stays one circle plus the three
- * pieces of satellite geometry the مرتكزات reveal. All of that geometry is
- * ALWAYS in the tree at opacity 0 — that is what lets a state change animate
- * FROM whatever is currently on screen instead of mounting into place.
+ * `app/globals.css` under `.mi-*`. What lives here is the geometry, and the
+ * per-element constants that geometry implies.
+ *
+ * EACH STATE HAS TO ARGUE ITS مرتكز, not merely appear. Section 2 sets the
+ * standard: ضعف التواصل breaks its strokes into travelling gaps, فتور العلاقة
+ * drains coral to grey. A state that would suit any label is decoration. So:
+ *
+ *   منهج علميّ    points scattered inside the ring travel and land exactly ON
+ *                 it — method is what turns scattered observation into a rule
+ *   أدوات عملية   the ring resolves into six IDENTICAL segments, equal gaps,
+ *                 each stepping out the same distance — equal parts evenly
+ *                 spaced is a kit; uneven pieces drifting is a break
+ *   خبرة ميدانية  faint tracings of the circle accumulate at slight offsets,
+ *                 one after another — each a past case, the solid line their sum
+ *
+ * Converge, distribute, accumulate: three different KINDS of motion, so they
+ * stay distinguishable in peripheral vision.
  *
  * TWO CONSTRAINTS SHAPE THE GEOMETRY:
  *
@@ -21,10 +34,11 @@ import { cn } from "@/lib/utils";
  *    there on why they cannot be authored declaratively. The states work on
  *    separate elements, so the two can never race.
  *
- * 2. Every satellite element sits INSIDE r=99. Browsers clip `<svg>` at the
- *    viewBox, so anything at a larger radius would hard-cut against the box
- *    rather than against the container the way the main circle deliberately
- *    does. Ticks point inward, rings contract, arcs rotate rather than expand.
+ * 2. Browsers clip `<svg>` at the viewBox, so NOTHING may exceed 100 units
+ *    from the centre — in either its resting or its active position. Every
+ *    figure below is derived and asserted at the bottom of this file rather
+ *    than typed by hand: a first hand-picked scatter reached 110.7 and would
+ *    have cut the points off against the box.
  *
  * Decorative: the section carries a visually-hidden live region that says what
  * this is doing, so the SVG itself is aria-hidden.
@@ -44,32 +58,130 @@ export const VIEWBOX = 200;
 export const RADIUS = 99;
 const CENTRE = VIEWBOX / 2;
 
-/** منهج علميّ — twelve radial marks, a measured scale rather than a plain ring. */
-const TICKS = Array.from({ length: 12 }, (_, i) => {
-  const a = (i * 30 * Math.PI) / 180;
-  const cos = Math.cos(a);
-  const sin = Math.sin(a);
+/** Furthest any element may sit from the centre before the viewBox clips it. */
+const LIMIT = CENTRE;
+
+const rad = (deg: number) => (deg * Math.PI) / 180;
+const round = (n: number) => +n.toFixed(2);
+const onCircle = (r: number, deg: number): [number, number] => [
+  round(CENTRE + r * Math.cos(rad(deg))),
+  round(CENTRE + r * Math.sin(rad(deg))),
+];
+
+// ---------------------------------------------------------------------------
+// منهج علميّ — scattered points that resolve onto the ring
+// ---------------------------------------------------------------------------
+
+const POINT_R = 1.75;
+const POINT_HOME_R = 97.5;
+
+/**
+ * Per point: how far IN from its home position it rests, and how far along the
+ * tangent. Both are applied along the point's own radius, which is what keeps
+ * every scattered position inside the box no matter how large the numbers look
+ * — an outward component is what would clip. Varied so the cloud reads as
+ * scatter rather than a uniform contraction.
+ */
+const POINT_SCATTER: [inward: number, tangent: number][] = [
+  [22, 7],
+  [13, -9],
+  [26, 4],
+  [17, 10],
+  [11, -6],
+  [24, -8],
+  [15, 6],
+  [28, -3],
+  [12, 9],
+  [19, -11],
+];
+
+const POINTS = POINT_SCATTER.map(([inward, tangent], i) => {
+  const deg = i * 36;
+  const [cx, cy] = onCircle(POINT_HOME_R, deg);
+  const ux = Math.cos(rad(deg));
+  const uy = Math.sin(rad(deg));
+  // -radial * inward  +  tangent * jitter
   return {
-    x1: +(CENTRE + 84 * cos).toFixed(2),
-    y1: +(CENTRE + 84 * sin).toFixed(2),
-    x2: +(CENTRE + 92 * cos).toFixed(2),
-    y2: +(CENTRE + 92 * sin).toFixed(2),
+    cx,
+    cy,
+    sx: round(-ux * inward - uy * tangent),
+    sy: round(-uy * inward + ux * tangent),
   };
 });
 
+// ---------------------------------------------------------------------------
+// أدوات عملية — the ring as six identical, evenly spaced segments
+// ---------------------------------------------------------------------------
+
+const SEG_R = 91;
+const SEG_SPAN = 54; // six of these plus six 6° gaps = 360
+const SEG_STEP = 7; // every segment steps out by exactly this much
+
+const SEGMENTS = Array.from({ length: 6 }, (_, i) => {
+  const from = i * 60 + 3;
+  const [x1, y1] = onCircle(SEG_R, from);
+  const [x2, y2] = onCircle(SEG_R, from + SEG_SPAN);
+  const mid = from + SEG_SPAN / 2;
+  return {
+    // large-arc-flag 0 (span < 180°), sweep-flag 1 (increasing angle)
+    d: `M ${x1} ${y1} A ${SEG_R} ${SEG_R} 0 0 1 ${x2} ${y2}`,
+    dx: round(SEG_STEP * Math.cos(rad(mid))),
+    dy: round(SEG_STEP * Math.sin(rad(mid))),
+  };
+});
+
+// ---------------------------------------------------------------------------
+// خبرة ميدانية — faint tracings that accumulate
+// ---------------------------------------------------------------------------
+
+const GHOST_R = 93;
+
 /**
- * أدوات عملية — the ring as three separable segments.
+ * Offset centres, so the traces overlap rather than nest — nested rings read as
+ * one target, overlapping ones as separate records of the same thing.
  *
- * Each spans 116° with a 4° gap, so together they read as the closed circle
- * until the state rotates them apart. They rotate rather than translate
- * outward: rotation keeps every point at r=99 and so cannot clip (see
- * constraint 2 above).
+ * Each also rests pulled back toward the centre along its own offset direction
+ * and settles outward into place, so a trace arrives rather than switches on.
  */
-const ARCS = [
-  "M 100 1 A 99 99 0 0 1 188.98 143.4",
-  "M 185.74 149.5 A 99 99 0 0 1 17.93 155.36",
-  "M 14.26 149.5 A 99 99 0 0 1 93.09 1.24",
-];
+const GHOSTS = [
+  [-4, -2.5],
+  [3.5, -4],
+  [-2.5, 4],
+  [4, 3],
+].map(([ox, oy]) => {
+  const len = Math.hypot(ox, oy);
+  return {
+    cx: CENTRE + ox,
+    cy: CENTRE + oy,
+    // toward the centre, 4 units
+    sx: round((-ox / len) * 4),
+    sy: round((-oy / len) * 4),
+  };
+});
+
+// ---------------------------------------------------------------------------
+// Clip assertions — cheap, and they run wherever this module is imported.
+// ---------------------------------------------------------------------------
+
+const reach = (dx: number, dy: number, r = 0) => Math.hypot(dx, dy) + r;
+
+for (const p of POINTS) {
+  const home = reach(p.cx - CENTRE, p.cy - CENTRE, POINT_R);
+  const rest = reach(p.cx + p.sx - CENTRE, p.cy + p.sy - CENTRE, POINT_R);
+  if (home > LIMIT || rest > LIMIT) {
+    throw new Error(`Signature point escapes the viewBox: home ${home}, rest ${rest}`);
+  }
+}
+if (SEG_R + SEG_STEP > LIMIT) throw new Error("Signature segments escape the viewBox");
+for (const g of GHOSTS) {
+  const home = reach(g.cx - CENTRE, g.cy - CENTRE, GHOST_R);
+  const rest = reach(g.cx + g.sx - CENTRE, g.cy + g.sy - CENTRE, GHOST_R);
+  if (home > LIMIT || rest > LIMIT) {
+    throw new Error(`Signature ghost escapes the viewBox: home ${home}, rest ${rest}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 
 export function InstructorSignature({
   state,
@@ -95,40 +207,20 @@ export function InstructorSignature({
         </linearGradient>
       </defs>
 
-      {/* خبرة ميدانية — traces that contract inward as accumulated layers.
-          Start life exactly on the main circle so they emerge from it. */}
-      <circle
-        className="mi-ring mi-ring-1"
-        cx={CENTRE}
-        cy={CENTRE}
-        r={RADIUS}
-        stroke="var(--color-lilac)"
-        strokeWidth="1"
-        vectorEffect="non-scaling-stroke"
-      />
-      <circle
-        className="mi-ring mi-ring-2"
-        cx={CENTRE}
-        cy={CENTRE}
-        r={RADIUS}
-        stroke="var(--color-lilac)"
-        strokeWidth="1"
-        vectorEffect="non-scaling-stroke"
-      />
-
-      {/* منهج علميّ */}
-      <g className="mi-ticks">
-        {TICKS.map((t, i) => (
-          <line
+      {/* خبرة ميدانية — behind the ring, so they read as what it was built from.
+          The stagger that makes them accumulate is in globals.css. */}
+      <g className="mi-ghosts">
+        {GHOSTS.map((g, i) => (
+          <circle
             key={i}
-            x1={t.x1}
-            y1={t.y1}
-            x2={t.x2}
-            y2={t.y2}
+            className="mi-ghost"
+            cx={g.cx}
+            cy={g.cy}
+            r={GHOST_R}
             stroke="var(--color-lilac)"
-            strokeWidth="1.25"
-            strokeLinecap="round"
+            strokeWidth="1"
             vectorEffect="non-scaling-stroke"
+            style={{ "--mi-sx": `${g.sx}px`, "--mi-sy": `${g.sy}px` } as CSSProperties}
           />
         ))}
       </g>
@@ -146,24 +238,43 @@ export function InstructorSignature({
         // stroke then grows clockwise from there.
         transform={`rotate(-90 ${CENTRE} ${CENTRE})`}
         stroke="url(#instructor-signature)"
-        strokeWidth="1.25"
         strokeOpacity="0.35"
+        strokeWidth="1.25"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />
 
-      {/* أدوات عملية — drawn last so the segments read above the ring they
-          separate out of. */}
-      <g className="mi-arcs">
-        {ARCS.map((d, i) => (
+      {/* أدوات عملية */}
+      <g className="mi-segs">
+        {SEGMENTS.map((s, i) => (
           <path
             key={i}
-            className="mi-arc"
-            d={d}
+            className="mi-seg"
+            d={s.d}
             stroke="url(#instructor-signature)"
             strokeWidth="1.5"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
+            // Inline rather than an nth-child table in globals.css (the shape
+            // `.ch-dots` uses): these are DERIVED from the same numbers that
+            // place the segment, so keeping them together is what stops the two
+            // drifting apart. The behaviour still lives entirely in the CSS.
+            style={{ "--mi-dx": `${s.dx}px`, "--mi-dy": `${s.dy}px` } as CSSProperties}
+          />
+        ))}
+      </g>
+
+      {/* منهج علميّ — drawn last so the points land on top of the line. */}
+      <g className="mi-points">
+        {POINTS.map((p, i) => (
+          <circle
+            key={i}
+            className="mi-point"
+            cx={p.cx}
+            cy={p.cy}
+            r={POINT_R}
+            fill="var(--color-lilac)"
+            style={{ "--mi-sx": `${p.sx}px`, "--mi-sy": `${p.sy}px` } as CSSProperties}
           />
         ))}
       </g>

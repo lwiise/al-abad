@@ -747,20 +747,22 @@
   .mi-reveal,
   .mi-signature {
     --mi-ease: var(--ease-hero);
+    /* For motion whose MIDDLE has to be readable rather than its arrival —
+       see the note on .mi-point. Symmetric ease-in-out, not the site curve. */
+    --mi-settle: cubic-bezier(0.65, 0, 0.35, 1);
     --mi-move: 620ms;
     --mi-row-move: 240ms;
   }
 
-  .mi-ticks,
-  .mi-arc,
-  .mi-ring {
+  .mi-point,
+  .mi-seg,
+  .mi-ghost {
     /* Both are required: without view-box an SVG child transforms about its
-       own bounding box, so a scale about "the centre" lands somewhere else. */
+       own bounding box, so a translate resolves against the wrong reference. */
     transform-box: view-box;
     transform-origin: 100px 100px;
     transition:
       translate var(--mi-move) var(--mi-ease),
-      transform var(--mi-move) var(--mi-ease),
       opacity var(--mi-move) var(--mi-ease);
   }
 
@@ -777,49 +779,65 @@
 
   /* Everything except the circle rests invisible but MOUNTED — a state change
      interpolates from here rather than mounting into place. */
-  .mi-ticks,
-  .mi-arc,
-  .mi-ring {
+  .mi-point,
+  .mi-seg,
+  .mi-ghost {
     opacity: 0;
   }
 
-  /* منهج علميّ — twelve marks measure themselves out from the centre. */
-  .mi-ticks {
-    transform: scale(0.92);
+  /* --- منهج علميّ ------------------------------------------------------
+     The points rest scattered inside the ring and travel onto it. Timing is
+     SPLIT so the behaviour reads as an argument rather than an arrival: they
+     fade in fast, where they are, and only then converge. One combined
+     transition would just show ten dots sliding in already half-visible.
+     Offsets come from the element's own style attribute — see the note in
+     instructor-signature.tsx on why they are not an nth-child table here. */
+  .mi-point {
+    translate: var(--mi-sx) var(--mi-sy);
+    /* NOT --mi-ease here, and this is the one place in the file that departs
+       from it. --ease-hero is heavily front-loaded — measured, it covers 92% of
+       the distance in the first 280ms — which is right for a state that should
+       snap into place, and wrong for this one, where the SCATTER is the claim
+       and has to be legible before it resolves. An ease-in-out starts slow, so
+       the cloud is readable for a beat, travels, then settles. */
+    transition:
+      translate 700ms var(--mi-settle) 200ms,
+      opacity 180ms var(--mi-ease);
   }
-  .mi-signature[data-state="method"] .mi-ticks {
-    opacity: 0.55;
-    transform: scale(1);
+  .mi-signature[data-state="method"] .mi-point {
+    opacity: 0.8;
+    translate: 0 0;
   }
 
-  /* أدوات عملية — the ring comes apart into three segments, each drawing in
-     along its OWN radius so the gaps between their ends open up. Inward, not
-     outward: the browser clips at the viewBox, and these already sit at r=99.
-     Per-element direction as a variable is section 2's pressure-dot pattern. */
-  .mi-arc:nth-child(1) { --mi-dx: -10.18px; --mi-dy: 6.36px; }
-  .mi-arc:nth-child(2) { --mi-dx: -0.42px; --mi-dy: -11.99px; }
-  .mi-arc:nth-child(3) { --mi-dx: 10.59px; --mi-dy: 5.63px; }
-
-  .mi-signature[data-state="tools"] .mi-arc {
+  /* --- أدوات عملية ------------------------------------------------------
+     Six identical segments, equal gaps, each stepping out by exactly the same
+     distance along its own radius. The EQUALITY is the metaphor: equal parts
+     evenly spaced read as a kit, where uneven pieces drifting read as a break.
+     The ring itself steps back so the segmentation is what carries. */
+  .mi-signature[data-state="tools"] .mi-seg {
     opacity: 0.9;
     translate: var(--mi-dx) var(--mi-dy);
   }
-  /* The ring itself steps back so the segmentation is what reads. */
   .mi-signature[data-state="tools"] .mi-circle {
-    opacity: 0.25;
+    opacity: 0.2;
   }
 
-  /* خبرة ميدانية — traces contract inward off the ring, accumulated layers.
-     They start life exactly on the circle, so they emerge from it rather than
-     appearing beside it. */
-  .mi-signature[data-state="field"] .mi-ring-1 {
-    opacity: 0.45;
-    transform: scale(0.8);
+  /* --- خبرة ميدانية -----------------------------------------------------
+     Traces accumulate one after another rather than appearing at once — the
+     stagger IS the meaning, so it is per-child delay, not a group fade. Each
+     also drifts out from a centre-ward rest, so a trace arrives rather than
+     switches on. */
+  .mi-ghost {
+    translate: var(--mi-sx) var(--mi-sy);
   }
-  .mi-signature[data-state="field"] .mi-ring-2 {
+  .mi-signature[data-state="field"] .mi-ghost {
     opacity: 0.3;
-    transform: scale(0.6);
+    translate: 0 0;
   }
+  .mi-ghost:nth-child(1) { transition-delay: 0ms; }
+  .mi-ghost:nth-child(2) { transition-delay: 90ms; }
+  .mi-ghost:nth-child(3) { transition-delay: 180ms; }
+  .mi-ghost:nth-child(4) { transition-delay: 270ms; }
 
   /* The list — the marker echoes the circle and fills when its row is the one
      driving it. Lilac, not plum: this sits on ink, where plum is 1.26:1. */
