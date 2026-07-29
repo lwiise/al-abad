@@ -130,6 +130,13 @@ pairs.push(["btn outline+ghost/dark — white on ink", WHITE, T("ink"), AA]);
 pairs.push(["focus ring on background", T("focus"), T("background"), UI]);
 pairs.push(["focus ring on surface", T("focus"), T("surface"), UI]);
 
+// Section 7's second headline line. Violet as TEXT is a size rule, not a ban:
+// 30px bold clears the large-text threshold. Nothing smaller may be violet on a
+// light ground — the "قريباً" chip sets its label in plum and keeps violet in
+// the fill and the dot.
+pairs.push(["highlight as large heading on background", T("highlight"), T("background"), LARGE]);
+pairs.push(["highlight as large heading on surface", T("highlight"), T("surface"), LARGE]);
+
 /**
  * DELIBERATELY NOT ASSERTED — and please don't add them back.
  *
@@ -177,11 +184,13 @@ const known = new Map([
   ],
   [
     "on-highlight on highlight",
-    "White on violet #a551fc is 4.05:1 — clears large text and UI, short of AA for a " +
-      "normal-weight label. Violet is scoped to the AI band and 'قريباً' badges. The AI " +
-      "band's own background is .ai-shimmer, whose stops (#7c3aed / #6d28d9) are darker " +
-      "than the flat token and do pass; the exposed case is a small badge label. Raising " +
-      "it means darkening the highlight token, which is an owner decision.",
+    "White on violet #a551fc is 4.05:1 — clears the 3:1 UI/graphics threshold, short of AA " +
+      "for a normal-weight label. After the section-7 rebuild the only white-on-violet left " +
+      "on the site is line art inside violet tiles — the app icon, the mock's avatar, its " +
+      "send arrow — all decorative graphics measured against 3:1. Anything violet carrying " +
+      "a small LABEL now " +
+      "sets that label in plum on a violet tint instead — the same fill-vs-text split that " +
+      "accent-strong makes for coral. Raising the token itself is an owner decision.",
   ],
   [
     "violet on ink",

@@ -52,6 +52,30 @@ export function SocialIcon({ name, className }: { name: string; className?: stri
   );
 }
 
+/**
+ * The assistant's mark — a speech bubble with a spark inside it.
+ *
+ * Not lucide's bare `Sparkles`: a spark on its own says "AI", which is the one
+ * thing about this feature nobody needs help understanding. The bubble is what
+ * says it *answers you*. Line art, currentColor, decorative.
+ */
+export function AssistantGlyph({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M20.5 11.9c0 4.2-3.8 7.6-8.5 7.6-.92 0-1.8-.13-2.62-.36L4.2 20.6l1.15-3.62C4.03 15.62 3.5 13.83 3.5 11.9 3.5 7.7 7.3 4.3 12 4.3s8.5 3.4 8.5 7.6Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 7.9l.92 2.18L15.1 11l-2.18.92L12 14.1l-.92-2.18L8.9 11l2.18-.92L12 7.9Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function WhatsappGlyph({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>

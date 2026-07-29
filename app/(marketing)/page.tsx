@@ -84,6 +84,8 @@ export default async function HomePage() {
         subhead={settings?.ai_subhead}
         points={asList(settings?.ai_points)}
         badge={settings?.ai_badge}
+        ctaLabel={settings?.ai_cta_label}
+        note={settings?.ai_note}
       />
       <Testimonials
         testimonials={testimonials}

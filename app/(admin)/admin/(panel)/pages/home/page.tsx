@@ -95,7 +95,9 @@ export default async function HomePageSettings(props: {
           <TextField name="ai_badge" label="شارة القسم" defaultValue={str("ai_badge")} placeholder="قريباً" />
           <TextField name="ai_headline" label="العنوان" defaultValue={str("ai_headline")} />
           <AreaField name="ai_subhead" label="العنوان الفرعي" defaultValue={str("ai_subhead")} rows={2} />
-          <AreaField name="ai_points" label="النقاط" defaultValue={listVal("ai_points")} help="سطر واحد لكل نقطة" rows={4} />
+          <AreaField name="ai_points" label="النقاط" defaultValue={listVal("ai_points")} help="تظهر كبطاقات عائمة حول المحادثة — سطر واحد لكل نقطة" rows={4} />
+          <TextField name="ai_cta_label" label="نص الزر" defaultValue={str("ai_cta_label")} placeholder="انضم لقائمة الانتظار" />
+          <TextField name="ai_note" label="ملاحظة تحت النموذج" defaultValue={str("ai_note")} help="طمأنة قصيرة عن البريد الإلكتروني" />
         </Section>
 
         <Section title="قسم آراء المتدربين">

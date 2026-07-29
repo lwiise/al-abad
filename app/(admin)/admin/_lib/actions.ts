@@ -263,6 +263,8 @@ export async function saveSettings(formData: FormData) {
       ai_headline: text("ai_headline"),
       ai_subhead: text("ai_subhead"),
       ai_points: list("ai_points"),
+      ai_cta_label: text("ai_cta_label"),
+      ai_note: text("ai_note"),
       testimonials_eyebrow: text("testimonials_eyebrow"),
       testimonials_heading: text("testimonials_heading"),
       faq_eyebrow: text("faq_eyebrow"),
