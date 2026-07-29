@@ -45,7 +45,11 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
     // are: section 7 is one screen (see ai-teaser.tsx), and 64px of air above the
     // artwork is the easiest 30 of them to give back on a short window. The cap
     // is the `md:mt-16` this used to be, so a tall window is unchanged.
-    <div className="relative isolate mt-[clamp(1.5rem,4svh,4rem)]">
+    // `w-full` because the section now hands this to a flex row (to pin it to the
+    // band's bottom edge) and a flex item is shrink-to-fit by default — without it
+    // the chips' frame below would measure its `100%` against the device's own
+    // width instead of the content column's.
+    <div className="relative isolate mt-[clamp(1.5rem,4svh,4rem)] w-full">
       {/* THE SCATTER'S FRAME, and it tracks the mockup's scale. The chips are
           positioned as a fraction of this box, so left at the section's full
           column — which is what it was when the device was always 288px — a
@@ -94,10 +98,13 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
           })}
         </FloatGroup>
 
-        {/* Shown whole, sitting on the band's own ground. It used to be cropped
-            by the panel's bottom edge — with no panel there is nothing to crop
-            against but the section boundary, and a phone sliced off at the band
-            edge reads as a rendering fault, not a product shot.
+        {/* Shown whole, and STANDING ON the band's bottom edge — the section
+            zeroes its bottom padding and bottom-aligns this box (see
+            ai-teaser.tsx), so the drawing runs from under the form to the boundary
+            with the white section below and there is no plate showing beneath it.
+            Whole, not cropped: sliced at the boundary a phone reads as a rendering
+            fault rather than as a product shot, which is why the scale is what
+            gives and the drawing always ends where the band does.
 
             On the light band the ink-tinted `--shadow-xl` seated it. On night a
             shadow is invisible — a dark blur on a dark plate — so the light comes
@@ -108,12 +115,13 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
             here everything near it is opaque (this device, the chips) so it costs
             no contrast at all. The shadow stays for the light contexts the
             drawing may be reused in. */}
-        {/* `.ai-mock` SCALES THIS BY THE WINDOW HEIGHT (globals.css), because the
-            band is one screen and on anything shorter than ~900px the phone is what
-            does not fit. Scaled and not resized: this box is sized by its own
-            content, so NARROWING it makes it ~30px TALLER as the bubbles wrap, and
-            the whole exercise is height. Everything the drawing is made of goes
-            down together — including the bloom, which is a child and therefore
+        {/* `.ai-mock` SIZES THIS FROM THE WINDOW HEIGHT (globals.css): it takes
+            whatever the copy leaves, which is 0.5× on a 673px window and 1.37× —
+            larger than it was ever drawn — from 1105px up. Scaled and not resized:
+            this box is sized by its own content, so NARROWING it makes it ~30px
+            TALLER as the bubbles wrap, and the whole exercise is height.
+            Everything the drawing is made of goes down or up together — including
+            the bloom, which is a child and therefore
             keeps its exact relationship to the device. The chips are NOT children,
             so they stay at full size and the scatter still frames the phone; they
             carry the real CMS copy and are the one part of this drawing that is
