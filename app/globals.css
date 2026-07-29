@@ -275,13 +275,39 @@
       opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s),
       transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s);
   }
+
+  /* Sequenced entrance — the composed-block case; see components/motion/
+     sequence.tsx. Selected as a DESCENDANT of the root rather than a direct
+     child, which is the one difference from data-stagger above and the whole
+     reason this exists: the parts of a built section (chip, headline, form,
+     illustration) sit at different depths inside a padded card, so a
+     direct-child rule can only ever reach the card.
+
+     Same curve as the two rules above, deliberately. These three are one
+     family — a fourth hand-typed near-identical cubic-bezier is exactly the
+     drift `--ease-hero` was introduced to stop. The rise is a touch taller
+     (18px vs 16px) and the duration a touch shorter, because each item here
+     moves alone rather than as part of a slab. */
+  [data-seq="hidden"] [data-seq-item] {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  [data-seq="shown"] [data-seq-item] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) var(--seq-delay, 0s),
+      transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) var(--seq-delay, 0s);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   [data-reveal="hidden"],
   [data-reveal="shown"],
   [data-stagger="hidden"] > *,
-  [data-stagger="shown"] > * {
+  [data-stagger="shown"] > *,
+  [data-seq="hidden"] [data-seq-item],
+  [data-seq="shown"] [data-seq-item] {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;

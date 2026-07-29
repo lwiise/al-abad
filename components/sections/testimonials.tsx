@@ -1,5 +1,6 @@
 import type { TestimonialRow } from "@/lib/database.types";
 import { Reveal } from "@/components/motion/reveal";
+import { Sequence } from "@/components/motion/sequence";
 import { QuoteMark } from "@/components/ui/quote-mark";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -25,12 +26,14 @@ export function Testimonials({
 
   return (
     <Section bg="lilac" className="overflow-hidden">
-      <Reveal>
+      <Sequence>
         {/* decorative quote flourish */}
-        <QuoteMark className="mx-auto mb-4 text-center" />
+        <div data-seq-item>
+          <QuoteMark className="mx-auto mb-4 text-center" />
+        </div>
 
         {/* overlapping avatar cluster */}
-        <div className="flex justify-center">
+        <div data-seq-item className="flex justify-center">
           <div className="flex flex-row-reverse">
             {testimonials.slice(0, 5).map((t, i) => (
               <Avatar
@@ -45,11 +48,20 @@ export function Testimonials({
         </div>
 
         <div className="mt-6 text-center">
-          <p className="text-sm font-medium text-secondary">{eyebrow || "آراء المتدربين"}</p>
-          <h2 className="mt-2 text-3xl font-bold text-foreground md:text-4xl">{heading || "بعضٌ مما قاله الأحباب"}</h2>
+          <p data-seq-item className="text-sm font-medium text-secondary">
+            {eyebrow || "آراء المتدربين"}
+          </p>
+          <h2 data-seq-item className="mt-2 text-3xl font-bold text-foreground md:text-4xl">
+            {heading || "بعضٌ مما قاله الأحباب"}
+          </h2>
         </div>
-      </Reveal>
+      </Sequence>
 
+      {/* One Reveal, NOT a Sequence, and not per-slide either. Embla drives the
+          track by transforming it, and the viewport clips on both axes — a
+          per-slide rise would be cut off against that edge on the way up, and
+          slides past the fold would animate where nobody can see them. The
+          carousel is one object here; the header above is the composed part. */}
       <Reveal>
         <Carousel className="mt-12" opts={{ align: "start" }}>
           <CarouselContent>
