@@ -706,6 +706,162 @@
   .ch-diagram[data-state="conflict"] .ch-heart { opacity: 0.4; }
 }
 
+/* --- قسم التعريف: the instructor signature + مرتكزات ----------------------
+   Section 2 holds two circles in tension; here they have resolved into one.
+   Each مرتكز drives that circle to its own state via `data-state` on the SVG
+   root, the same one-attribute contract the challenges diagram uses.
+
+   THE SAME RULE APPLIES: a state change must animate from whatever is on
+   screen, never snap. Channels are therefore kept apart, because CSS applies
+   translate → rotate → scale → transform in that order and they compose:
+
+     translate → أدوات عملية, the three segments drawing apart
+     transform → منهج علميّ's ticks and خبرة ميدانية's rings, both scaled
+                 about the circle's centre
+     opacity   → which piece of geometry is currently speaking
+
+   No element is ever driven on two channels at once, and nothing here is both
+   animated and transitioned on the same one.
+
+   THERE ARE NO KEYFRAME ANIMATIONS IN THIS SECTION, deliberately. Section 2's
+   circles breathe; this one does not — useSignatureScrub draws the circle
+   closed on arrival and then latches, and the note there is explicit that it
+   "holds, it does not loop or breathe". Adding an idle animation would
+   contradict that, so every piece of motion here is a transition. `scale` is
+   left unused for the same reason: it is the channel an always-on animation
+   would need, and there is no always-on animation.
+
+   THE STATES NEVER TOUCH THE MAIN CIRCLE'S DASH. `stroke-dasharray` and
+   `stroke-dashoffset` on `.mi-circle` belong to useSignatureScrub, which
+   writes them imperatively in device pixels. The states work on separate
+   elements — ticks, arcs, rings — so the scroll-draw and the interaction
+   cannot race. The only property a state sets on the circle itself is
+   `opacity`, which is independent of the `stroke-opacity` attribute it
+   already carries.
+
+   Colour and easing are the section's, not this block's: lilac and coral on
+   ink (plum is 1.26:1 there and unusable), and `--ease-hero`, the curve the
+   hero, the nav and section 2 already share. */
+
+@layer utilities {
+  .mi-reveal,
+  .mi-signature {
+    --mi-ease: var(--ease-hero);
+    --mi-move: 620ms;
+    --mi-row-move: 240ms;
+  }
+
+  .mi-ticks,
+  .mi-arc,
+  .mi-ring {
+    /* Both are required: without view-box an SVG child transforms about its
+       own bounding box, so a scale about "the centre" lands somewhere else. */
+    transform-box: view-box;
+    transform-origin: 100px 100px;
+    transition:
+      translate var(--mi-move) var(--mi-ease),
+      transform var(--mi-move) var(--mi-ease),
+      opacity var(--mi-move) var(--mi-ease);
+  }
+
+  /* The circle is deliberately EXCLUDED from the rule above. It carries a
+     `transform="rotate(-90 100 100)"` attribute — which exists only to move the
+     dash origin to 12 o'clock so the scroll-draw grows clockwise from the top —
+     and that attribute already names its own centre. Adding a CSS
+     transform-origin on top applies the offset a second time and throws the
+     circle a full diameter down the page. The only property any state sets on
+     it is opacity, so it needs no transform plumbing at all. */
+  .mi-circle {
+    transition: opacity var(--mi-move) var(--mi-ease);
+  }
+
+  /* Everything except the circle rests invisible but MOUNTED — a state change
+     interpolates from here rather than mounting into place. */
+  .mi-ticks,
+  .mi-arc,
+  .mi-ring {
+    opacity: 0;
+  }
+
+  /* منهج علميّ — twelve marks measure themselves out from the centre. */
+  .mi-ticks {
+    transform: scale(0.92);
+  }
+  .mi-signature[data-state="method"] .mi-ticks {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+
+  /* أدوات عملية — the ring comes apart into three segments, each drawing in
+     along its OWN radius so the gaps between their ends open up. Inward, not
+     outward: the browser clips at the viewBox, and these already sit at r=99.
+     Per-element direction as a variable is section 2's pressure-dot pattern. */
+  .mi-arc:nth-child(1) { --mi-dx: -10.18px; --mi-dy: 6.36px; }
+  .mi-arc:nth-child(2) { --mi-dx: -0.42px; --mi-dy: -11.99px; }
+  .mi-arc:nth-child(3) { --mi-dx: 10.59px; --mi-dy: 5.63px; }
+
+  .mi-signature[data-state="tools"] .mi-arc {
+    opacity: 0.9;
+    translate: var(--mi-dx) var(--mi-dy);
+  }
+  /* The ring itself steps back so the segmentation is what reads. */
+  .mi-signature[data-state="tools"] .mi-circle {
+    opacity: 0.25;
+  }
+
+  /* خبرة ميدانية — traces contract inward off the ring, accumulated layers.
+     They start life exactly on the circle, so they emerge from it rather than
+     appearing beside it. */
+  .mi-signature[data-state="field"] .mi-ring-1 {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+  .mi-signature[data-state="field"] .mi-ring-2 {
+    opacity: 0.3;
+    transform: scale(0.6);
+  }
+
+  /* The list — the marker echoes the circle and fills when its row is the one
+     driving it. Lilac, not plum: this sits on ink, where plum is 1.26:1. */
+  .mi-row {
+    min-height: 3.5rem;
+    cursor: pointer;
+  }
+  .mi-marker,
+  .mi-label {
+    transition:
+      background-color var(--mi-row-move) var(--mi-ease),
+      border-color var(--mi-row-move) var(--mi-ease),
+      color var(--mi-row-move) var(--mi-ease),
+      scale var(--mi-row-move) var(--mi-ease);
+  }
+  .mi-marker {
+    border-color: color-mix(in oklab, var(--color-lilac) 34%, transparent);
+  }
+  .mi-row[aria-pressed="true"] .mi-marker {
+    background-color: var(--color-lilac);
+    border-color: var(--color-lilac);
+    scale: 1.15;
+  }
+  .mi-row[aria-pressed="true"] .mi-label {
+    color: var(--color-lilac);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mi-signature,
+  .mi-signature *,
+  .mi-marker,
+  .mi-label {
+    transition: none !important;
+  }
+
+  /* No special-casing needed here, unlike section 2's تكرار الخلافات: only the
+     transitions are stripped, the per-state declarations survive, and all
+     three states differ from idle by which geometry is visible rather than by
+     where it is in a cycle. Each therefore still has a distinct static frame. */
+}
+
 /* Radix accordion expand/collapse */
 @keyframes accordion-down {
   from {

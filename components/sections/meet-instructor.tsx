@@ -1,10 +1,25 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type RefObject,
+} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
+import {
+  INSTRUCTOR_STATES,
+  InstructorSignature,
+  RADIUS,
+  VIEWBOX,
+  type SignatureState,
+} from "./art/instructor-signature";
 
 const FALLBACK =
   "يجمع الأستاذ علي العباد في دوراته بين العمق العلمي والخبرة العملية، ليقدّم لك أدواتٍ واضحةً وقابلةً للتطبيق في حياتك الزوجية — منهجٌ يأخذ بيدك من فهم الذات إلى بناء علاقةٍ متوازنةٍ وسعيدة.";
@@ -32,10 +47,38 @@ const MARKERS = ["منهج علميّ", "أدوات عملية", "خبرة مي�
  */
 const PILLAR_NOTES = ["", "", ""];
 
-// Signature geometry. Kept here because useSignatureScrub has to convert the
-// circle's length into device pixels, and that conversion needs the viewBox.
-const VIEWBOX = 200;
-const RADIUS = 99;
+/** Desktop: how long the signature holds a state after the pointer leaves.
+ *  Shorter than --mi-move (620ms) on purpose — a quick sweep off a row and
+ *  back must never reset the art to idle mid-transition. */
+const RETURN_TO_IDLE_MS = 400;
+
+/** Below this the layout stacks and there is no hover to rest against. */
+const STACKED = "(max-width: 1079.98px)";
+
+/**
+ * What the signature is doing, in Arabic, for people who cannot see it. Keyed
+ * by state rather than by label so it survives an editor rewording the
+ * مرتكزات in the CMS; the label itself is read out alongside it.
+ */
+const SIGNATURE_DESCRIPTION: Record<SignatureState, string> = {
+  idle: "دائرة واحدة مغلقة، خطّها يتدرّج من البنفسجي الفاتح إلى المرجاني.",
+  method: "اثنتا عشرة علامة قياس تظهر داخل الدائرة، موزّعة بانتظام.",
+  tools: "الدائرة تنفصل إلى ثلاثة أقواس ينسحب كلٌّ منها إلى الداخل فتتّسع الفجوات بينها.",
+  field: "دائرتان أخريان تنكمشان إلى الداخل كطبقاتٍ متراكمة حول المركز.",
+};
+
+/** The layout is external state, so read it as such rather than in an effect. */
+function useStackedLayout() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(STACKED);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(STACKED).matches,
+    () => false,
+  );
+}
 
 // Layout effect on the client (runs before paint → no flash of the animated-in
 // state), plain effect on the server so SSR doesn't warn. Mirrors use-reveal.ts.
@@ -86,6 +129,43 @@ export function MeetInstructor({
 
   const markerList = markers && markers.length ? markers : MARKERS;
 
+  // --- Which مرتكز is driving the signature -------------------------------
+  // Same model as قسم التحديات (challenges-board.tsx): one index of state, a
+  // short grace period before returning to idle, and a single `data-state`
+  // string as the only thing crossing into CSS.
+  const [chosen, setChosen] = useState<number | null>(null);
+  const stacked = useStackedLayout();
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearIdleTimer = () => {
+    if (idleTimer.current) {
+      clearTimeout(idleTimer.current);
+      idleTimer.current = null;
+    }
+  };
+
+  useEffect(() => clearIdleTimer, []);
+
+  const hold = useCallback((index: number) => {
+    clearIdleTimer();
+    setChosen(index);
+  }, []);
+
+  const release = useCallback(() => {
+    clearIdleTimer();
+    idleTimer.current = setTimeout(() => setChosen(null), RETURN_TO_IDLE_MS);
+  }, []);
+
+  // Stacked, the signature is on screen with nothing to hover, so nothing
+  // chosen means the first مرتكز. On desktop the section rests in idle until a
+  // pointer or the keyboard reaches a row.
+  const active = chosen ?? (stacked ? 0 : null);
+
+  // The CMS supplies the مرتكزات, so the count is not fixed at three — states
+  // cycle rather than fall off the end.
+  const state: SignatureState =
+    active === null ? "idle" : INSTRUCTOR_STATES[active % INSTRUCTOR_STATES.length];
+
   return (
     <section
       ref={root}
@@ -107,18 +187,24 @@ export function MeetInstructor({
           className="flex flex-col min-[1080px]:grid min-[1080px]:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] min-[1080px]:items-center min-[1080px]:gap-x-12"
         >
           {/* ---- Portrait -------------------------------------------------
-              Column 1 = the right in RTL. Bottom-aligned and pulled past the
-              section's bottom padding so it bleeds into the ink edge instead
-              of sitting in a padded box; the extra svh clips the asset's own
-              bottom 10% — a patterned tablecloth he is sitting behind, which
-              reads as a foreign grey slab against ink. Single column below
-              1080px puts it straight after the h2 — keeps the face high on a
-              phone — where it sits in flow and cannot bleed, so the tablecloth
-              is taken off with a short base fade instead (see the Image). */}
+              Column 1 = the right in RTL, bottom-aligned and pulled slightly
+              past the section's bottom padding so it bleeds into the ink edge
+              instead of sitting in a padded box.
+
+              SIZED BY ASPECT RATIO, NOT VIEWPORT HEIGHT. This box used to be
+              h-[46svh] / h-[70svh] with a -mb of calc(10rem + 8svh), which
+              made both the figure's size AND its crop point a function of the
+              window's height: on a 1378x602 window that resolved to a 432px
+              image floating in a 658px column with 113px of dead space each
+              side, cut off at 49% of its height; on a 1440x1080 window the
+              same rules cut it at 38%. coach.png is 1779x1736 — effectively
+              square — so a square box matches it exactly and leaves no gap,
+              and a fixed -mb crops identically at every size. Same pattern as
+              hero.tsx and course-hero.tsx, which were already doing this. */}
           <figure
             data-enter=""
             style={{ transitionDelay: "0ms" }}
-            className="relative order-3 mt-8 h-[46svh] w-full data-[enter=hidden]:translate-y-8 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[900ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:col-start-1 min-[1080px]:row-start-1 min-[1080px]:-ms-6 min-[1080px]:mt-0 min-[1080px]:-mb-[calc(10rem_+_8svh)] min-[1080px]:h-[70svh] min-[1080px]:self-end"
+            className="relative order-3 mt-8 aspect-square w-full data-[enter=hidden]:translate-y-8 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[900ms] data-[enter=shown]:ease-[var(--ease-hero)] min-[1080px]:col-start-1 min-[1080px]:row-start-1 min-[1080px]:mt-0 min-[1080px]:-mb-16 min-[1080px]:self-end"
           >
             {/* ONE light pool, brand purple, wide falloff — something for the
                 figure to stand in front of. There is no second one on the copy
@@ -141,18 +227,30 @@ export function MeetInstructor({
               style={{ background: "rgb(9 6 14 / 0.72)" }}
             />
 
-            <Signature circleRef={signature} />
+            {/* Positioned by the wrapper, not by the <svg>: an svg's intrinsic
+                sizing does not resolve an inset-driven box the way a div does.
+                Sized larger than the column so the circle crops at the edges. */}
+            <div className="pointer-events-none absolute inset-x-[-18%] top-[-26%] -z-10 aspect-square">
+              <InstructorSignature
+                state={state}
+                circleRef={signature}
+                className="size-full"
+              />
+            </div>
 
-            {/* Base fade below 1080px only. Above it the section's own bottom
-                edge crops the tablecloth off, which is the bleed the layout
-                wants; masking there as well would dissolve the figure before
-                it ever reached the edge. */}
+            {/* Base fade at EVERY size. The asset's bottom ~10% is a patterned
+                tablecloth he is sitting behind, which reads as a foreign grey
+                slab against ink. It used to be left to the section's own
+                bottom edge to crop above 1080px — but that edge was a
+                function of viewport height, so the tablecloth reappeared on
+                short windows. The mask removes it deterministically, and the
+                figure now dissolves into the ink rather than hard-cutting. */}
             <Image
               src={imageUrl || "/coach.png"}
               alt="الأستاذ علي العباد"
               fill
               sizes="(max-width: 1080px) 90vw, 620px"
-              className="object-contain object-bottom [mask-image:linear-gradient(to_top,transparent_0,transparent_4%,black_14%)] min-[1080px]:[mask-image:none]"
+              className="object-contain object-bottom [mask-image:linear-gradient(to_top,transparent_0,transparent_4%,black_14%)]"
             />
           </figure>
 
@@ -197,26 +295,70 @@ export function MeetInstructor({
                 with hairline rules — not pills, which read as metadata. Rows
                 stay full-width stacked at every size; the 46ch cap is repeated
                 here because the copy wrapper is display:contents below 1080px
-                and so cannot constrain them. */}
+                and so cannot constrain them.
+
+                Each row is a real <button>, so the keyboard gets the same
+                behaviour as the pointer for free and `aria-pressed` can do
+                double duty as the a11y state and the CSS hook. */}
             <ul className="order-5 mt-10 max-w-[46ch]">
-              {markerList.map((m, i) => (
-                <li
-                  key={m}
-                  data-enter=""
-                  style={{ transitionDelay: `${240 + i * 80}ms` }}
-                  className="border-t border-white/10 py-4 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
-                >
-                  <p className="font-display text-[17px] font-bold text-white/90">{m}</p>
-                  {/* Renders only once PILLAR_NOTES is filled in — see the TODO
-                      at the top of this file. */}
-                  {PILLAR_NOTES[i] ? (
-                    <p className="mt-1 text-[14px] leading-[1.7] text-white/55">
-                      {PILLAR_NOTES[i]}
-                    </p>
-                  ) : null}
-                </li>
-              ))}
+              {markerList.map((m, i) => {
+                const isActive = active === i;
+                return (
+                  <li
+                    key={m}
+                    data-enter=""
+                    style={{ transitionDelay: `${240 + i * 80}ms` }}
+                    className="border-t border-white/10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={isActive}
+                      className="mi-row flex w-full items-center gap-4 py-4 text-start"
+                      // Pointer enter/leave are gated to a mouse: touch
+                      // synthesises both and would fight the tap.
+                      onPointerEnter={(e) => {
+                        if (e.pointerType === "mouse") hold(i);
+                      }}
+                      onPointerLeave={(e) => {
+                        if (e.pointerType === "mouse") release();
+                      }}
+                      onFocus={() => hold(i)}
+                      // Unlike section 2, focus does NOT latch here: tabbing
+                      // out of the list returns the signature to idle rather
+                      // than leaving the last-focused مرتكز showing.
+                      onBlur={() => release()}
+                      onClick={() => hold(i)}
+                    >
+                      {/* Echoes the signature circle: an outline that fills
+                          when the row is the one driving it. */}
+                      <span
+                        className="mi-marker mt-1 size-4 shrink-0 self-start rounded-full border-2"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0">
+                        <span className="mi-label block font-display text-[17px] font-bold text-white/90">
+                          {m}
+                        </span>
+                        {/* Renders only once PILLAR_NOTES is filled in — see
+                            the TODO at the top of this file. */}
+                        {PILLAR_NOTES[i] ? (
+                          <span className="mt-1 block text-[14px] leading-[1.7] text-white/55">
+                            {PILLAR_NOTES[i]}
+                          </span>
+                        ) : null}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
+
+            {/* Decorative SVG, so the description lives here instead. */}
+            <p className="sr-only" aria-live="polite" aria-atomic="true">
+              {active === null
+                ? SIGNATURE_DESCRIPTION.idle
+                : `${markerList[active]}: ${SIGNATURE_DESCRIPTION[state]}`}
+            </p>
 
             {/* Ghost button. Secondary by construction — it must not compete
                 with the coral primary CTAs elsewhere on the page, so the accent
@@ -242,57 +384,6 @@ export function MeetInstructor({
         </div>
       </div>
     </section>
-  );
-}
-
-/**
- * The signature: ONE circle.
- *
- * The connection art in section 2 holds two circles in tension. Here they have
- * resolved into a single line whose stroke runs lilac → coral: both colours,
- * one continuous stroke. There is deliberately no second circle and no label.
- * Sized larger than the column so it crops at the edges.
- *
- * Lilac rather than plum for the first stop — plum is 1.26:1 on ink. See the
- * note on the section itself.
- *
- * NOTE: this arc originally closed a three-beat progression that began with the
- * hero's two ripple emitters. Those were removed at the owner's request, so the
- * sequence now starts at section 2 — two circles resolving into one — rather
- * than at the hero.
- */
-function Signature({ circleRef }: { circleRef: RefObject<SVGCircleElement | null> }) {
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-x-[-18%] top-[-26%] -z-10 aspect-square"
-    >
-      <svg viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`} fill="none" className="size-full">
-        <defs>
-          <linearGradient id="instructor-signature" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0" style={{ stopColor: "var(--color-lilac)" }} />
-            <stop offset="1" style={{ stopColor: "var(--color-coral)" }} />
-          </linearGradient>
-        </defs>
-        {/* No stroke-dasharray here on purpose: the circle renders CLOSED for
-            SSR, no-JS and reduced motion, and only useSignatureScrub adds the
-            dash. See the note there on why the dash cannot be authored. */}
-        <circle
-          ref={circleRef}
-          cx={VIEWBOX / 2}
-          cy={VIEWBOX / 2}
-          r={RADIUS}
-          // rotate -90° so the dash origin (3 o'clock) moves to the top; the
-          // stroke then grows clockwise from there.
-          transform={`rotate(-90 ${VIEWBOX / 2} ${VIEWBOX / 2})`}
-          stroke="url(#instructor-signature)"
-          strokeWidth="1.25"
-          strokeOpacity="0.35"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
-    </div>
   );
 }
 
