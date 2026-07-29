@@ -14,18 +14,6 @@ const FALLBACK_STATS = [
   { value: "+١٠٠ ألف", label: "ساعة تدريب" },
 ];
 
-/**
- * Split the headline at the ellipsis so the tail can be set in Ruqʿah.
- *
- * The split itself lives in lib/utils — section 7 needs the same device to set
- * its tail in violet, and two hand-written copies of it is how the seven
- * duplicated heading rules happened. Only the naming is hero-local.
- */
-function splitHeadline(value: string): { lead: string; calligraphic: string | null } {
-  const { lead, tail } = splitAtEllipsis(value);
-  return { lead, calligraphic: tail };
-}
-
 /** Entrance delay. One shared curve and duration; only the offset changes. */
 const enter = (ms: number): CSSProperties => ({ animationDelay: `${ms}ms` });
 
@@ -63,7 +51,7 @@ export function Hero({
   trustBadge?: string | null;
   stats?: StatRow[];
 }) {
-  const { lead, calligraphic } = splitHeadline(headline || DEFAULT_HEADLINE);
+  const { lead, tail: calligraphic } = splitAtEllipsis(headline || DEFAULT_HEADLINE);
   const pills = stats.length
     ? stats.slice(0, 3).map((s) => ({ value: s.value, label: s.label }))
     : FALLBACK_STATS;

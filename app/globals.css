@@ -424,6 +424,37 @@
   }
 }
 
+/* Closing CTA sheet — the light counterpart to the hero aurora, so the page
+   opens and closes on the same kind of surface.
+
+   Deliberately NOT a saturated two-hue linear gradient: that "purple gradient
+   on white" is the generic-template look CLAUDE.md rules out, and our palette
+   is plum/violet, so it is one careless `from-primary to-highlight` away at all
+   times. What is here instead is a lilac sheet with two low-opacity radial
+   blooms — plum for depth in the far corner, coral to seat the CTA button in
+   its own light. Violet stays out of it: it belongs to the AI band. */
+@layer utilities {
+  .cta-sheet {
+    background:
+      radial-gradient(
+        62% 78% at 88% 4%,
+        color-mix(in oklab, var(--color-accent) 16%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        66% 82% at 4% 100%,
+        color-mix(in oklab, var(--color-primary) 13%, transparent),
+        transparent 72%
+      ),
+      linear-gradient(
+        168deg,
+        color-mix(in oklab, var(--color-lilac) 88%, var(--color-background)) 0%,
+        var(--color-background) 58%,
+        color-mix(in oklab, var(--color-lilac) 55%, var(--color-background)) 100%
+      );
+  }
+}
+
 /* --- قسم التحديات: the challenges diagram + list -------------------------
    Two overlapping sources — two people, and the interference where they meet.
    Each challenge drives the diagram to its own state via `data-state` on the

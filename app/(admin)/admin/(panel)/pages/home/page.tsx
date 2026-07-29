@@ -113,13 +113,16 @@ export default async function HomePageSettings(props: {
         </Section>
 
         <Section title="الدعوة النهائية (Final CTA)">
-          <TextField name="final_cta_heading" label="العنوان" defaultValue={str("final_cta_heading")} />
+          <TextField name="final_cta_eyebrow" label="شارة الصدارة" defaultValue={str("final_cta_eyebrow")} help="النص الصغير أعلى البطاقة" />
+          <TextField name="final_cta_heading" label="العنوان" defaultValue={str("final_cta_heading")} help="ضع «…» قبل الكلمة الأخيرة لتُكتب بخط الرقعة" />
+          <AreaField name="final_cta_subhead" label="العنوان الفرعي" defaultValue={str("final_cta_subhead")} rows={2} />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField name="final_cta_primary_label" label="زر رئيسي — النص" defaultValue={str("final_cta_primary_label")} />
             <TextField name="final_cta_primary_url" label="زر رئيسي — الرابط" defaultValue={str("final_cta_primary_url")} dir="ltr" />
             <TextField name="final_cta_secondary_label" label="زر ثانوي — النص" defaultValue={str("final_cta_secondary_label")} />
             <TextField name="final_cta_secondary_url" label="زر ثانوي — الرابط" defaultValue={str("final_cta_secondary_url")} dir="ltr" />
           </div>
+          <TextField name="final_cta_proof" label="سطر الثقة" defaultValue={str("final_cta_proof")} help="يظهر بجانب صور المتدربين أسفل البطاقة" />
         </Section>
 
         <Section title="قسم المدونة">

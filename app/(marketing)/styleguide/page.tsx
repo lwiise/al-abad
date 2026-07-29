@@ -80,7 +80,7 @@ const RHYTHM: { n: number; name: string; bg: string; tone: string }[] = [
   { n: 7, name: "الذكاء", bg: "bg-background", tone: "background + لوحة surface" },
   { n: 8, name: "الآراء", bg: "bg-surface-strong", tone: "lilac" },
   { n: 9, name: "الأسئلة", bg: "bg-background", tone: "background" },
-  { n: 10, name: "الدعوة", bg: "bg-background", tone: "background + شريط العلامة" },
+  { n: 10, name: "الدعوة", bg: "bg-background", tone: "background + بطاقة فاتحة" },
   { n: 11, name: "المدونة", bg: "bg-surface-strong", tone: "lilac" },
 ];
 

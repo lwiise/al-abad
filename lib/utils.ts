@@ -7,11 +7,13 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Split CMS copy at the first ellipsis so the tail can be styled differently.
+ * Split a headline at the ellipsis so the tail can be set apart typographically
+ * — Ruqʿah calligraphy in the hero and the closing CTA, violet in section 7.
  *
- * Two callers, two treatments: the hero sets its tail in Ruqʿah, section 7 sets
- * its tail in violet. Neither may hard-code the tail — the headline is CMS copy
- * and an editor can change it. No ellipsis means no second line.
+ * The `…` is the editor's marker, not ours: headlines are CMS copy, so nothing
+ * here may hard-code the words, and guessing "the last two words" would break
+ * the moment someone rewrites the line. No ellipsis means no tail — the
+ * headline simply renders as one line.
  */
 export function splitAtEllipsis(value: string): { lead: string; tail: string | null } {
   const i = value.indexOf("…");

@@ -1,5 +1,5 @@
 -- ============================================================================
--- 0006_ai_waitlist_section.sql — the waiting-list section's two owner-facing
+-- 0007_ai_waitlist_section.sql — the waiting-list section's two owner-facing
 -- strings: the submit button's label and the reassurance note under the form.
 -- ============================================================================
 -- Both were hardcoded in components/sections/ai-waitlist-form.tsx. They are the

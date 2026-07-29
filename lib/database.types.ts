@@ -126,11 +126,14 @@ export interface SiteSettingsRow extends Timestamps {
   vision_cta_label: string | null;
   vision_cta_url: string | null;
   // final CTA
+  final_cta_eyebrow: string | null;
   final_cta_heading: string | null;
+  final_cta_subhead: string | null;
   final_cta_primary_label: string | null;
   final_cta_primary_url: string | null;
   final_cta_secondary_label: string | null;
   final_cta_secondary_url: string | null;
+  final_cta_proof: string | null;
   // contact / social
   about_body: string | null;
   whatsapp_number: string | null;

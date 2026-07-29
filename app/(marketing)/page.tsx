@@ -100,11 +100,15 @@ export default async function HomePage() {
         helpCtaLabel={settings?.faq_help_cta_label}
       />
       <FinalCta
+        eyebrow={settings?.final_cta_eyebrow}
         heading={settings?.final_cta_heading}
+        subhead={settings?.final_cta_subhead}
         primaryLabel={settings?.final_cta_primary_label}
         primaryUrl={settings?.final_cta_primary_url}
         secondaryLabel={settings?.final_cta_secondary_label}
         waHref={wa}
+        proofLabel={settings?.final_cta_proof}
+        testimonials={testimonials}
       />
       <BlogTeaser
         posts={posts}
