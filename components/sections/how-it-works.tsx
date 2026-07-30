@@ -1,5 +1,4 @@
 import type { HowItWorksStepRow } from "@/lib/database.types";
-import { Reveal } from "@/components/motion/reveal";
 import { HowItWorksSteps } from "./how-it-works-steps";
 import { Section, SectionHeading } from "./section";
 
@@ -22,12 +21,11 @@ export function HowItWorks({
 
   return (
     <Section bg="lilac">
-      <Reveal>
-        <SectionHeading
-          title={heading || "كيف تبدأ؟"}
-          sub={subhead || "ثلاث خطوات بسيطة من التصفّح إلى التطبيق."}
-        />
-      </Reveal>
+      <SectionHeading
+        lines
+        title={heading || "كيف تبدأ؟"}
+        sub={subhead || "ثلاث خطوات بسيطة من التصفّح إلى التطبيق."}
+      />
 
       {/* Each step holds the screen on its own — see how-it-works-steps.tsx.
           The dotted connector that used to run behind three side-by-side cards

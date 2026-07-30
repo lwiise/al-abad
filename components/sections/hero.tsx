@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import type { StatRow } from "@/lib/database.types";
 import { buttonClasses } from "@/components/ui/button";
 import { cn, splitAtEllipsis } from "@/lib/utils";
+import { Parallax } from "@/components/motion/parallax";
 import { HeroBackdrop } from "./art/hero-backdrop";
 
 const DEFAULT_HEADLINE = "زواج أكثر وعياً… وعلاقة تدوم";
@@ -102,13 +103,27 @@ export function Hero({
               below the baseline, and commits 55ac189 / 6a3c0c1 are the record
               of what giant Arabic does when it is clipped or left to inherit a
               bundled line-height. Hence the explicit leading and padding. */}
-          <span
+          <Parallax
+            as="span"
             aria-hidden="true"
+            // The back wall of the plate, and the layer that carries the
+            // hero's depth on the way out. It lags the scroll by 18% of its
+            // own height, which is the largest drift anywhere on the site and
+            // is affordable precisely because this layer is decorative: it is
+            // already `aria-hidden`, already clipped horizontally by the
+            // plate, and the portrait occludes it by design. Nothing here has
+            // to stay where it was put.
+            //
+            // `mode="exit"` is mandatory above the fold — see use-parallax.ts.
+            // Under the default the word would render displaced on first
+            // paint, before the reader had scrolled at all.
+            speed={0.18}
+            mode="exit"
             className="pointer-events-none absolute inset-x-0 top-[7%] select-none whitespace-nowrap text-center font-display font-bold text-white/14"
             style={{ fontSize: "clamp(3.25rem,17vw,15rem)", lineHeight: 1, paddingBottom: "0.2em" }}
           >
             {WORDMARK}
-          </span>
+          </Parallax>
 
           {/* --- Headline ----------------------------------------------------
               Lead above, calligraphic tail below — the natural reading order,
@@ -189,7 +204,28 @@ export function Hero({
             {/* The lg step matters: between 1024 and 1280 the layout is still
                 stacked, and a 22rem cap there would render the figure SMALLER
                 than the old 4/5 box did. */}
-            <div className="relative mx-auto aspect-square w-full max-w-[19rem] sm:max-w-[22rem] lg:max-w-[27rem] xl:mx-0 xl:h-full xl:w-auto xl:max-w-[44vw]">
+            {/* The figure leads the scroll very slightly — a fifth of what the
+                ground word lags by, and in the opposite direction, so the two
+                separate by 23% of their heights across the exit. That spread
+                is what is actually felt as depth; the individual drifts are
+                below the threshold of being noticed as movement, which is the
+                intent.
+
+                Small, and deliberately so: on xl this box is anchored to the
+                plate's bottom edge, so any real travel would either lift the
+                figure off that edge or push it into the clip. At -0.05 the
+                excursion is ~20px into a bottom mask that is already
+                transparent for its last 14%, so neither edge is ever visible.
+
+                Applied HERE, on the inner box, and not on the `.hero-enter`
+                parent: that parent's entrance keyframe owns `transform`, and
+                two owners on one channel is the drift this repo keeps writing
+                rules about. Parent and child compose cleanly instead. */}
+            <Parallax
+              speed={-0.05}
+              mode="exit"
+              className="relative mx-auto aspect-square w-full max-w-[19rem] sm:max-w-[22rem] lg:max-w-[27rem] xl:mx-0 xl:h-full xl:w-auto xl:max-w-[44vw]"
+            >
               {/* One pool for the figure to stand in front of, the same device
                   as meet-instructor's, tuned for this ground. */}
               <div
@@ -224,7 +260,7 @@ export function Hero({
                 sizes="(max-width: 1280px) 88vw, 44vw"
                 className="object-contain object-bottom [mask-image:linear-gradient(to_top,transparent_0,transparent_4%,black_14%)]"
               />
-            </div>
+            </Parallax>
           </div>
 
           {/* --- The two blocks ----------------------------------------------

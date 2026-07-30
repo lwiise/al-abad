@@ -339,6 +339,55 @@
   }
 }
 
+/* --- Smooth scroll (Lenis) ----------------------------------------------
+   Four rules, and every one of them is load-bearing — see
+   components/motion/smooth-scroll.tsx for why the library is here at all.
+
+   Lenis scrolls the REAL window rather than transforming a wrapper, which is
+   the property that lets everything already built on scroll position keep
+   working untouched: the nav sentinel's IntersectionObserver, the observers
+   behind all 34 entrances, and `position: fixed`. The classes below are added
+   to <html> by the library itself. */
+html.lenis,
+html.lenis body {
+  /* A percentage height on either would cap the scrollable area at one
+     viewport and there would be nothing left to scroll. */
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  /* Native smooth scrolling and interpolated smooth scrolling are two engines
+     driving one value; with both on, an anchor jump fights the interpolation
+     and lands somewhere neither of them intended. We don't set
+     `scroll-behavior: smooth` anywhere, so this is belt and braces against
+     someone adding it later. */
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  /* Opt-out hook for anything that scrolls INSIDE itself (a long dropdown, a
+     modal body). Without it, reaching the end of the inner scroller hands the
+     gesture to the interpolated page scroll underneath. */
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* --- Masked line reveal --------------------------------------------------
+   `.lr-line` is the class SplitText stamps on each line it wraps; see
+   components/motion/line-reveal.tsx for why the split is by LINE and never by
+   character (Arabic is cursive — the same reason letter-spacing is nulled).
+
+   There is deliberately no `will-change` rule here. It belongs on the element
+   only while it is actually moving, and a static rule cannot express that:
+   SplitText does NOT revert itself when its tween finishes — the wrappers live
+   until the component unmounts — so a `will-change: transform` written here
+   would pin a compositor layer per line for the entire life of the page, on
+   every split heading, to buy roughly one second of smoothness each. It is set
+   and then cleared around the tween in line-reveal.tsx instead. */
+
 /* --- Moving sheen — shared by the two brand gradient bands --------------- */
 /* Section 10's final CTA and the vision band. Section 7 used to be the third;
    see the "Section 7 — the assistant band" block below for why it no longer
