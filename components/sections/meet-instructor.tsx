@@ -350,23 +350,40 @@ export function MeetInstructor({
             <div ref={pillars} className="relative order-5 mt-10">
               <div
                 aria-hidden="true"
-                className="pointer-events-none mx-auto mb-8 w-32 max-w-full aspect-square min-[1080px]:absolute min-[1080px]:end-0 min-[1080px]:top-1/2 min-[1080px]:mx-0 min-[1080px]:mb-0 min-[1080px]:w-40 min-[1080px]:-translate-y-1/2"
+                className="pointer-events-none relative mx-auto mb-8 w-40 max-w-full aspect-square min-[1080px]:absolute min-[1080px]:end-0 min-[1080px]:top-1/2 min-[1080px]:mx-0 min-[1080px]:mb-0 min-[1080px]:w-44 min-[1080px]:-translate-y-1/2"
               >
+                {/* A lilac bloom under the artifact. On a light band a shadow
+                    would do this job; on ink the whole ramp is invisible, so
+                    CLAUDE.md's rule is light instead of shade — same device as
+                    `.ai-tile`. Without it a pale drawing on a dark plate reads
+                    as a grey doodle in the gutter rather than as a lit object,
+                    which is most of why the section did not announce itself. */}
+                <span className="mi-bloom" />
                 <InstructorSignature state={state} className="size-full" />
               </div>
 
               {/* Capped narrower than the 46ch the copy uses: the row rules run
                   the width of this list, and at 46ch they ran straight through
-                  the art in the gutter beside it. */}
-              <ul className="max-w-[46ch] min-[1080px]:max-w-[27ch]">
+                  the art in the gutter beside it. 25ch rather than 27 because
+                  the art grew into that gutter. */}
+              <ul className="max-w-[46ch] min-[1080px]:max-w-[25ch]">
               {markerList.map((m, i) => {
                 const isActive = active === i;
                 return (
                   <li
                     key={m}
                     data-enter=""
+                    // The spine: each row draws its own segment as the scroll
+                    // reaches it, so the list visibly fills in one by one. This
+                    // is the part that makes the section announce itself — the
+                    // artifact in the gutter changing was the whole signal
+                    // before, and a reader scrolling past did not catch it.
+                    // Cumulative, not just-the-current-one: three dots filling
+                    // down a line reads as progress, one dot moving reads as a
+                    // hover state that happens to follow you.
+                    data-reached={active !== null && i <= active}
                     style={{ transitionDelay: `${240 + i * 80}ms` }}
-                    className="border-t border-white/10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
+                    className="mi-step border-t border-white/10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
                   >
                     <button
                       type="button"
