@@ -913,10 +913,11 @@ html.lenis body {
   .ch-dots circle:nth-child(6) { --ch-dx: 22px; --ch-dy: -20px; }
 
   /* The list — the marker echoes the diagram's circles and fills when its row
-     is the one driving them. */
+     is the one driving them. The rows are read, not pressed: the scroll picks
+     which one is active (see challenges-board.tsx), so there is no pointer
+     cursor and no pressed state to style. */
   .ch-row {
     min-height: 3.5rem;
-    cursor: pointer;
   }
   .ch-marker,
   .ch-label {
@@ -934,12 +935,12 @@ html.lenis body {
   }
   /* The marker is meant to read as one of the diagram's circles, so it takes
      the same emitter colour: plum, matching the hero's upper-right pool. */
-  .ch-row[aria-pressed="true"] .ch-marker {
+  .ch-row[data-active] .ch-marker {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
     scale: 1.15;
   }
-  .ch-row[aria-pressed="true"] .ch-label {
+  .ch-row[data-active] .ch-label {
     color: var(--color-primary);
     font-weight: 600;
   }
@@ -2107,9 +2108,16 @@ html.lenis body {
 @media (prefers-reduced-motion: reduce) {
   /* Neither stage ever switches to scroll mode (useScrollDeck checks the same
      preference), so all that is left is to hold every diagram at its resting
-     pose — the finished state of its step or its outcome. */
+     pose — the finished state of its step or its outcome.
+
+     التحديات is here for the same reason since its drawing went scroll-driven:
+     no trigger is created under this preference, so the state never leaves
+     idle, and stopping the ambient breathing with it leaves the section a
+     still drawing rather than one that moves on its own forever. */
   .art,
   .art *,
+  .ch-diagram,
+  .ch-diagram *,
   .deck-card,
   .deck-rail-label {
     animation: none !important;
