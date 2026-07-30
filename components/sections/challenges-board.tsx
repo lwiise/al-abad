@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from "react";
 import { ScrollTrigger } from "@/lib/gsap";
 import {
   CHALLENGE_STATES,
@@ -9,20 +16,33 @@ import {
 } from "./art/challenges-diagram";
 import { HeadingRule } from "./section";
 
+/** Client-only before paint, so the stage never flashes unpinned. */
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 /**
- * The reading line: whichever row is crossing it is the row the drawing answers
- * to. Just below the middle of the window, and both layouts want it there for
- * different reasons — which is why it is one number and not a pair keyed to the
- * 1080px switch.
+ * `scroll` holds the board still and lets the scroll walk the list; `static` is
+ * the section as tall as its content, the way the server renders it. `top` and
+ * `height` are the pinned board's measured offset and height — the CSS sticks
+ * the stage at the first, and the trigger's own start/end are read off both.
+ */
+type Stage = { mode: "static" | "scroll"; top: number; height: number };
+
+const UNPINNED: Stage = { mode: "static", top: 0, height: 0 };
+
+/**
+ * The reading line, used in `static` mode only — pinned there is nothing for a
+ * row to cross, so the track's own progress picks the challenge instead.
  *
- * Stacked, the diagram sticks at `top-20` and covers the top ~400px, so the
- * line has to clear it: the active row is then always the one BELOW the
- * artwork, never one of the rows passing behind it. Wide, the diagram sits
- * beside the list and the constraint is the other end — the last challenge has
- * to take the drawing while the drawing is still clear of the fixed nav. At 50%
- * the six pressure dots of القلق arrive with their top row already behind the
- * header on a 768px laptop: the section's last state, half hidden. Higher than
- * this and the list's last row is under the fold when its first row lights up.
+ * Just below the middle of the window, and both layouts want it there for
+ * different reasons. Stacked, the diagram sticks at `top-20` and covers the top
+ * ~400px, so the line has to clear it: the active row is then always the one
+ * BELOW the artwork, never one of the rows passing behind it. Wide, the diagram
+ * sits beside the list and the constraint is the other end — the last challenge
+ * has to take the drawing while the drawing is still clear of the fixed nav. At
+ * 50% the six pressure dots of القلق arrive with their top row already behind
+ * the header on a 768px laptop: the section's last state, half hidden. Higher
+ * than this and the list's last row is under the fold when its first row lights
+ * up.
  */
 const FOCUS_LINE = "55%";
 
@@ -58,38 +78,118 @@ const MIN_DWELL_MS = 650;
 const CLASH_HALF_CYCLE_MS = 600;
 
 /**
- * Which row the scroll is on — `null` until the list reaches the line.
- *
- * One trigger over the whole list rather than one per row: past the end the
- * progress stays at 1, so the last challenge KEEPS the drawing while the
- * section leaves instead of the diagram snapping back to idle with the list
- * still on screen. Below the start it is 0, which is idle — the section rests
- * until the reader arrives at it, and rests again if they scroll back above it.
+ * The clearance the pinned board keeps above itself: the scrolled height of the
+ * fixed nav plus 1rem, read from the same custom property `.ch-stage` falls
+ * back to so the two cannot drift on the number that matters.
  */
-function useScrolledRow(
-  list: RefObject<HTMLElement | null>,
-  count: number,
-): number | null {
-  const [row, setRow] = useState<number | null>(null);
+function navClearance() {
+  const nav = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue("--nav-h-scrolled"),
+  );
+  return (Number.isFinite(nav) ? nav : 64) + 16;
+}
 
-  useEffect(() => {
-    const el = list.current;
-    if (!el) return;
+/**
+ * Pin the board — but only where the board FITS the window.
+ *
+ * A sticky stage taller than the screen does not scroll inside itself; it holds
+ * at the top and its bottom is simply never reachable, which on a phone means
+ * the last two challenges light up below the fold. The board is ~840px there
+ * against a ~660–750px window, so this measures rather than guesses: the fit is
+ * re-read after the font swap and on every resize. Where it does not fit, the
+ * section keeps the unpinned behaviour — the diagram stuck to the top of the
+ * screen, the rows walking under it — which is what a phone already had.
+ *
+ * The offset is measured in the same pass: half the leftover window, so the
+ * held board is centred, floored at the nav clearance.
+ */
+function useStage(
+  track: RefObject<HTMLElement | null>,
+  board: RefObject<HTMLElement | null>,
+): Stage {
+  const [stage, setStage] = useState<Stage>(UNPINNED);
+
+  useIsoLayoutEffect(() => {
+    const el = board.current;
+    const outer = track.current;
+    if (!el || !outer) return;
     // The drawing used to move only for a reader who pointed at a row; it now
     // moves at everybody, so the preference is honoured by never driving it at
-    // all. No trigger, no state change — the diagram holds its resting pose,
-    // and globals.css stops its breathing to match.
+    // all — and a section that holds the screen is the last thing to force on
+    // somebody who asked for less motion. No pin, no trigger, no state change:
+    // the diagram holds its resting pose and globals.css stops its breathing.
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
-    // Equal bands, one per row: the list's own travel past the line, divided by
-    // the number of challenges on it.
+    let live = true;
+    const measure = () => {
+      if (!live) return;
+      const height = el.offsetHeight;
+      const clear = navClearance();
+      // + 2rem so a board that only just fits still has air under it.
+      if (height + clear + 32 > window.innerHeight) {
+        setStage((prev) => (prev.mode === "static" ? prev : UNPINNED));
+        return;
+      }
+      const top = Math.max(clear, Math.round((window.innerHeight - height) / 2));
+      outer.style.setProperty("--ch-stick-top", `${top}px`);
+      setStage((prev) =>
+        prev.mode === "scroll" && prev.top === top && prev.height === height
+          ? prev
+          : { mode: "scroll", top, height },
+      );
+    };
+
+    measure();
+    // The board's height moves with the font swap; the window's with a resize.
+    document.fonts?.ready.then(measure).catch(() => {});
+    window.addEventListener("resize", measure);
+    return () => {
+      live = false;
+      window.removeEventListener("resize", measure);
+    };
+  }, [track, board]);
+
+  return stage;
+}
+
+/**
+ * Which challenge the scroll is on — `null` before it reaches the first.
+ *
+ * Pinned, the timeline is the stage's own sticky travel, which is bounded by
+ * the two moments CSS itself uses: the board's top reaching its sticky offset,
+ * and the track's bottom reaching the board's bottom. That distance is the
+ * track's hold padding exactly, divided into equal bands. Unpinned it is the
+ * list's passage across the reading line instead. Either way one trigger, and
+ * the same arithmetic.
+ *
+ * Past the end the progress stays at 1, so the last challenge KEEPS the drawing
+ * while the section leaves rather than the diagram snapping back to idle in
+ * front of the reader. Below the start it is 0, which is idle — the board
+ * arrives at rest, takes its first challenge on the first pixel of the walk,
+ * and rests again if the reader scrolls back above it.
+ */
+function useScrolledRow(
+  track: RefObject<HTMLElement | null>,
+  list: RefObject<HTMLElement | null>,
+  count: number,
+  stage: Stage,
+): number | null {
+  const [row, setRow] = useState<number | null>(null);
+  const { mode, top, height } = stage;
+
+  useEffect(() => {
+    const pinned = mode === "scroll";
+    const el = pinned ? track.current : list.current;
+    if (!el) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
     const apply = (p: number) =>
       setRow(p <= 0 ? null : Math.min(count - 1, Math.floor(p * count)));
 
     const st = ScrollTrigger.create({
       trigger: el,
-      start: `top ${FOCUS_LINE}`,
-      end: `bottom ${FOCUS_LINE}`,
+      start: pinned ? `top ${top}px` : `top ${FOCUS_LINE}`,
+      end: pinned ? `bottom ${top + height}px` : `bottom ${FOCUS_LINE}`,
       onUpdate: (self) => apply(self.progress),
       // Leaving either end is a progress change the update pass can land on the
       // same frame; refresh re-reads after fonts swap and on resize.
@@ -102,7 +202,7 @@ function useScrolledRow(
       st.kill();
       setRow(null);
     };
-  }, [list, count]);
+  }, [track, list, count, mode, top, height]);
 
   return row;
 }
@@ -141,8 +241,11 @@ export function ChallengesBoard({
   heading: string;
   lede: string;
 }) {
+  const track = useRef<HTMLDivElement>(null);
+  const board = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLUListElement>(null);
-  const active = useHeld(useScrolledRow(list, items.length));
+  const stage = useStage(track, board);
+  const active = useHeld(useScrolledRow(track, list, items.length, stage));
 
   const state: DiagramState =
     active === null ? "idle" : CHALLENGE_STATES[active % CHALLENGE_STATES.length];
@@ -164,52 +267,77 @@ export function ChallengesBoard({
   }, [state]);
 
   return (
-    <div className="flex flex-col gap-8 min-[1080px]:grid min-[1080px]:grid-cols-[1fr_0.9fr] min-[1080px]:gap-x-16">
-      <header className="min-[1080px]:col-start-1 min-[1080px]:row-start-1">
-        <h2 className="text-3xl font-bold text-foreground md:text-4xl">{heading}</h2>
-        <HeadingRule />
-        {/* The strongest sentence in the section, and the second thing read. */}
-        <p className="mt-5 max-w-[52ch] text-xl text-foreground-muted">{lede}</p>
-      </header>
+    // Track and stage are sized in globals.css — see the `.ch-track` block for
+    // what `scroll` mode costs in scroll distance and why it is a hold rather
+    // than a deal: the whole board stays put, only the row and the drawing move.
+    <div
+      ref={track}
+      className="ch-track"
+      data-ch={stage.mode}
+      style={{ "--ch-count": items.length } as CSSProperties}
+    >
+      <div className="ch-stage">
+        <div
+          ref={board}
+          className="flex flex-col gap-8 min-[1080px]:grid min-[1080px]:grid-cols-[1fr_0.9fr] min-[1080px]:gap-x-16"
+        >
+          <header className="min-[1080px]:col-start-1 min-[1080px]:row-start-1">
+            <h2 className="text-3xl font-bold text-foreground md:text-4xl">{heading}</h2>
+            <HeadingRule />
+            {/* The strongest sentence in the section, and the second thing read. */}
+            <p className="mt-5 max-w-[52ch] text-xl text-foreground-muted">{lede}</p>
+          </header>
 
-      {/* Stacked: sticks below the header so it stays in view while the list
-          scrolls. Ground of its own so rows pass behind it, not through — must
-          match the section's band, which is now section 1's surface, or the
-          diagram sits in a visible rectangle as the list scrolls under it. */}
-      <div className="sticky top-20 z-10 -mx-2 bg-surface px-2 pb-4 min-[1080px]:static min-[1080px]:z-auto min-[1080px]:mx-0 min-[1080px]:col-start-2 min-[1080px]:row-start-1 min-[1080px]:row-end-3 min-[1080px]:self-center min-[1080px]:px-0 min-[1080px]:pb-0">
-        {/* Sized in globals.css, not with responsive utilities: the 1080px
-            breakpoint has to be an arbitrary variant, and Tailwind orders those
-            ahead of the named ones, so `sm:` would win at desktop widths. */}
-        <ChallengesDiagram state={state} ref={diagram} />
-        {/* One standing sentence, not a live region. The drawing used to change
-            because a reader chose a row, which is an action worth announcing;
-            it now changes because the page scrolled, and narrating that would
-            read out five descriptions to somebody who never asked for one. The
-            list itself carries every challenge as text. */}
-        <p className="sr-only">
-          رسم توضيحي: دائرتان متداخلتان تمثّلان طرفَي العلاقة، وفي منطقة تداخلهما
-          قلب — ويتبدّل شكلهما مع كل تحدٍّ من القائمة أثناء التمرير.
-        </p>
-      </div>
+          {/* Stacked and UNPINNED: sticks below the header so it stays in view
+              while the list scrolls. Ground of its own so rows pass behind it,
+              not through — must match the section's band, which is now section
+              1's surface, or the diagram sits in a visible rectangle as the
+              list scrolls under it. Pinned, nothing scrolls under it and
+              globals.css flattens it back into the board. */}
+          <div className="ch-plate sticky top-20 z-10 -mx-2 bg-surface px-2 pb-4 min-[1080px]:static min-[1080px]:z-auto min-[1080px]:mx-0 min-[1080px]:col-start-2 min-[1080px]:row-start-1 min-[1080px]:row-end-3 min-[1080px]:self-center min-[1080px]:px-0 min-[1080px]:pb-0">
+            {/* Sized in globals.css, not with responsive utilities: the 1080px
+                breakpoint has to be an arbitrary variant, and Tailwind orders
+                those ahead of the named ones, so `sm:` would win at desktop
+                widths. */}
+            <ChallengesDiagram state={state} ref={diagram} />
+            {/* One standing sentence, not a live region. The drawing used to
+                change because a reader chose a row, which is an action worth
+                announcing; it now changes because the page scrolled, and
+                narrating that would read out five descriptions to somebody who
+                never asked for one. The list itself carries every challenge as
+                text. */}
+            <p className="sr-only">
+              رسم توضيحي: دائرتان متداخلتان تمثّلان طرفَي العلاقة، وفي منطقة
+              تداخلهما قلب — ويتبدّل شكلهما مع كل تحدٍّ من القائمة أثناء التمرير.
+            </p>
+          </div>
 
-      <ul
-        ref={list}
-        className="divide-y divide-border-strong border-y border-border-strong min-[1080px]:col-start-1 min-[1080px]:row-start-2"
-      >
-        {items.map((item, i) => (
-          // Not a control any more: the scroll chooses the row, so there is
-          // nothing here to press. The marker echoes the diagram's circles —
-          // an outline that fills while its row is driving them.
-          <li
-            key={i}
-            className="ch-row flex items-center gap-4 py-4"
-            data-active={active === i ? "true" : undefined}
+          <ul
+            ref={list}
+            className="divide-y divide-border-strong border-y border-border-strong min-[1080px]:col-start-1 min-[1080px]:row-start-2"
           >
-            <span className="ch-marker size-4 shrink-0 rounded-full border-2" aria-hidden="true" />
-            <span className="ch-label text-lg font-medium">{item}</span>
-          </li>
-        ))}
-      </ul>
+            {items.map((item, i) => (
+              // Not a control any more: the scroll chooses the row, so there is
+              // nothing here to press. The marker echoes the diagram's circles
+              // — an outline that fills while its row is driving them.
+              <li
+                key={i}
+                className="ch-row flex items-center gap-4 py-4"
+                data-active={active === i ? "true" : undefined}
+              >
+                <span
+                  className="ch-marker size-4 shrink-0 rounded-full border-2"
+                  aria-hidden="true"
+                />
+                <span className="ch-label text-lg font-medium">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      {/* The hold: the scroll distance the board stays put for. Empty, and a
+          sibling rather than padding on the track — see the `.ch-hold` note. */}
+      <div className="ch-hold" aria-hidden="true" />
     </div>
   );
 }
