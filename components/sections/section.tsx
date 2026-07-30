@@ -62,10 +62,10 @@ export function Section({
   id?: string;
   bg?: Bg;
   /**
-   * One-screen band: at least 90svh tall, with the content vertically centred
+   * One-screen band: at least 95svh tall, with the content vertically centred
    * in whatever is left over.
    *
-   * `min-h`, never `h`: a band that is exactly 90svh either clips its content or
+   * `min-h`, never `h`: a band that is exactly 95svh either clips its content or
    * scrolls inside itself the moment the window is short, the copy wraps to more
    * lines or the reader has bumped their font size. A floor grows instead, which
    * is the only failure mode that keeps every word on the page. It is the
@@ -109,7 +109,7 @@ export function Section({
       className={cn(
         bgMap[bg],
         screen
-          ? "flex min-h-[90svh] flex-col justify-center py-[clamp(2rem,4.5svh,6rem)]"
+          ? "flex min-h-[95svh] flex-col justify-center py-[clamp(2rem,4.5svh,6rem)]"
           : "py-20 md:py-24",
         bleed && "relative isolate",
         className,

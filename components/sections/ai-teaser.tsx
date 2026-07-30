@@ -59,11 +59,11 @@ export function AiTeaser({
        apart than before, not closer. */
     <Section
       bg="night"
-      /* ONE SCREEN — `min-h-[90svh]`, content centred in it. See `screen` in
+      /* ONE SCREEN — `min-h-[95svh]`, content centred in it. See `screen` in
          section.tsx for why it is a floor and not a fixed height.
 
          THE LAYOUT IS UNCHANGED: one centred column, tile → chip → headline →
-         subhead → form → mockup, at every width it has ever had. Fitting 90vh is
+         subhead → form → mockup, at every width it has ever had. Fitting 95vh is
          done by COMPRESSION, in the order that costs the design least:
 
            1. The band's padding, which was 192px at md — more than a fifth of a
@@ -79,18 +79,31 @@ export function AiTeaser({
               compression that touches anything the reader looks at.
            4. The mockup, which after 1–3 is still the one thing over budget on
               any window shorter than ~1000px. It scales with the window height
-              (`.ai-mock` in globals.css), and that is where the remaining 166px
-              at 768 comes from.
+              (`.ai-mock` in globals.css).
 
-         WHAT THAT COSTS, stated because it is a real cost and it was the argument
-         against doing it this way: the phone's chat text is 12px, and the scale is
-         0.72 at a 900px window, 0.56 at 768 and 0.40 at 673 — so from a laptop
-         down it renders at 7px or less and the source chip reads as a shape rather
-         than as words. Nothing the reader has to READ is compressed: the subhead,
-         the form, the note and the chips keep their sizes at every height, and the
-         headline never goes below 28px. Below ~672px the ladder stops and the band
-         grows instead — the scale needed at a 600px window is 0.22, and a 63px
-         sticker looks broken rather than compact.
+         AND THE MOCKUP TAKES EVERYTHING THAT IS LEFT, THEN 56px MORE. The band's
+         bottom padding is zero here (`pb-0`), the mockup is bottom-aligned in a
+         `flex-1` box, and it bleeds 56px (of its own scale) PAST the bottom edge,
+         where the band's `overflow-hidden` cuts it — see `.ai-mock` in
+         globals.css. So the drawing runs from under the form straight through the
+         boundary, and the cut lands partway down its input bar rather than on its
+         last pixel. It used to have ~100px of empty plate under a shrunken phone;
+         then it ended exactly at the edge; now it carries on past it, which is
+         what the squared bottom corners in ai-assistant-preview.tsx are for.
+
+         The bleed is also what buys the size: sized against `323 − 56` rather
+         than its full height, every rung of the ladder is ~1.45× what it was.
+         0.87 at a 768px window, 1.21 at 865, 1.47 at 1009, and 1.92 — 553px wide,
+         nearly twice what the drawing was ever drawn at — from 1105 up. Slack the
+         ladder cannot use opens up between the form and the phone, where it is
+         invisible, rather than under the phone, where it read as a gap.
+
+         WHAT THAT COSTS: the phone still scales below 1 on a short window — 0.87
+         at 768, 0.75 at 720 — so its 12px chat text renders around 10px there.
+         That is the first version of this ladder where the drawing stays readable
+         on a laptop. Nothing the reader has to READ is compressed either way: the
+         subhead, the form, the note and the chips keep their sizes at every
+         height, and the headline never goes below 28px.
 
          WHY THE FIELD'S GUARD IS NOW MEASURED. The quiet zone the dots damp
          themselves into used to be an ellipse at a FIXED place — 34% of the band
@@ -100,7 +113,16 @@ export function AiTeaser({
          the fixed centre slid off the copy as soon as the headline wrapped to a
          fifth line on a phone. */
       screen
-      className="overflow-hidden"
+      /* `pb-0` so the mockup can reach the band's bottom edge — see the note
+         above. The top padding stays: the copy needs its clearance from the
+         boundary above, and from the nav when the band is scrolled to the top of
+         the window. */
+      className="overflow-hidden pb-0"
+      /* The container and the sequence both have to STRETCH for the mockup's
+         `flex-1` to have anything to grow into: the container is the band's flex
+         item, the sequence is the container's, and a chain of `flex-1` is what
+         turns "95svh tall" into "the drawing gets whatever the copy does not". */
+      containerClassName="flex flex-1 flex-col"
       /* Full-bleed, so the field is the page's ground and not a texture inside
          a content column — a lattice stopping at max-w-6xl would just redraw
          the panel edge this section spent a redesign getting rid of. The field
@@ -124,8 +146,8 @@ export function AiTeaser({
           objects — icon, chip, headline, subhead, form, mockup — and sliding
           them up as one rectangle showed none of them. Each part now arrives in
           reading order; see components/motion/sequence.tsx. */}
-      <Sequence>
-        <div className="text-center">
+      <Sequence className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col text-center">
           {/* WORDS INSIDE, ARTWORK OUTSIDE. The dot field reads this box and
               holds itself to GUARD_MIN across it, so everything the reader has to
               READ on the dark plate belongs in here. The mockup and the chips are
@@ -201,8 +223,18 @@ export function AiTeaser({
               light band the device was seated by its shadow; on night a shadow
               is invisible, so it is seated by the violet bloom the preview
               carries instead. The rise still reads as the mockup arriving last,
-              which is all the sequence needs from it. */}
-          <div data-seq-item>
+              which is all the sequence needs from it.
+
+              `flex-1` + `items-end` is what puts the drawing THROUGH the band's
+              bottom edge: this box takes every pixel the copy leaves, the mockup
+              sits at the bottom of it, and its negative bottom margin carries it
+              past the boundary. Any height the scale ladder cannot use — a very
+              tall window, past the 1.92 cap — opens as air ABOVE the phone rather
+              than as a gap below it. `min-h-0` because a flex item's default
+              `min-height: auto` refuses to shrink below its content, which on a
+              phone (where the band is already over 95svh) would have this box
+              fighting the copy for room instead of just taking what is left. */}
+          <div data-seq-item className="flex min-h-0 flex-1 items-end justify-center">
             <AiAssistantPreview points={items} />
           </div>
         </div>

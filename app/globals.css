@@ -444,34 +444,45 @@
     0 14px 30px -12px color-mix(in oklab, var(--color-highlight) 60%, transparent);
 }
 
-/* --- Section 7's mockup, scaled to the window's HEIGHT --------------------
-   Section 7 is a one-screen band (`<Section screen>`; 90svh). As a single centred
-   column its content measures 840px before padding — tile, chip, headline,
-   subhead, form and a 332px phone — so on anything shorter than a ~900px window
-   the phone is what does not fit. The rhythm is already height-aware and the
-   band's padding contracts with it (see section.tsx); this is the rest of the
-   budget, and it comes out of the artwork because the alternatives are worse:
-   shrinking the TYPE costs legibility of real copy, and dropping the mockup
-   costs the section its product shot.
+/* --- Section 7's mockup, sized to the space the copy leaves ---------------
+   Section 7 is a one-screen band (`<Section screen>`; 95svh) whose bottom padding
+   is zero, and its mockup is bottom-aligned in a `flex-1` box (see
+   ai-teaser.tsx). So the drawing's budget is everything the copy does not use,
+   measured from under the form to the band's bottom EDGE, and this is what turns
+   that budget into a size.
 
-   `zoom`, not `transform: scale()`, and that is the whole reason this rule
-   exists rather than a Tailwind utility: zoom scales the LAYOUT box, so the
-   column above it actually gets shorter. A transform would leave a 332px hole
-   and need a negative margin computed per step to match.
+   `zoom`, not `transform: scale()`, and that is the whole reason this rule exists
+   rather than a Tailwind utility: zoom scales the LAYOUT box, so the phone
+   actually occupies the height it is given — a transform would paint it larger
+   while the box stayed 332px, and the bottom of the drawing would leave the band.
 
    Ladder, not a formula: `zoom` takes a number, and there is no way to derive one
-   from `svh` in CSS — length ÷ length is not portable. Each step is measured
-   against the band's real budget at that height (the seeded copy at ≥1024px
-   wide), which is also why they are not evenly spaced.
+   from `svh` in CSS — dividing a length by a length is not portable. Each step is
+   MEASURED: with the mockup out of the way, the copy plus the band's top padding
+   plus the gap leaves 167px at a 625px window and 512 at 1105, against the 267px
+   the drawing occupies per 1.0 of scale (its 323 natural less the 56 it bleeds
+   past the edge), so the max scale runs 0.62 → 1.92 across the range. Each 48px step carries
+   what its band needs at its SHORTEST window — the binding end — so `max-height:
+   57rem` is the 865px case, not the 912px one. Slack the ladder cannot use opens
+   ABOVE the phone, where it is invisible, so a step that undershoots costs a
+   little size and never a gap under the drawing.
 
-   THE COST IS LEGIBILITY OF THE DRAWING, and it is worth stating: the phone's
-   chat text is 12px, so at 0.62 it renders near 7px. The one thing the drawing
-   has to say is the source chip — `من دورة: التواصل الزوجي` — and on a short
-   window it says it as a shape rather than as words. That is the owner's call:
-   the band is one screen, in one column, with the copy at full size.
+   IT GOES WELL ABOVE 1. The owner asked for the phone 40% larger again, and the
+   bleed is what pays for it: sized against 267 rather than 332, every step is
+   ~1.45× what it was. 1.47 at a 1008px window, 1.92 at 1105 and above — 553px
+   wide, nearly twice what the drawing was ever drawn at. Capped at 1.92 because a
+   1300px-tall window would otherwise allow 2.55, and past that the phone stops
+   being the section's product shot and starts being its subject while the copy
+   above it does not grow to match.
 
-   Only from `lg`. Below it the band cannot fit 90svh at all (a phone stack is
-   ~1170px against a ~760px budget), so it is a floor there and shrinking the art
+   THE COST IS THE OTHER END. At 0.87 (a 768px window) the phone's 12px chat text
+   renders near 10px, which is the first ladder this section has had where the
+   drawing stays readable on a laptop.
+   Nothing the reader has to read is compressed — see ai-teaser.tsx — but the
+   drawing is, and that is the trade this band makes for one screen in one column.
+
+   Only from `lg`. Below it the band cannot fit 95svh at all (a phone stack is
+   ~1170px against a ~760px budget), so it is a floor there and scaling the art
    would buy nothing.
 
    The scale lives on `:root` rather than on the mockup, the way `--nav-h` does,
@@ -479,67 +490,96 @@
    size, so their scatter is anchored to a box that tracks the phone's scaled
    width (see ai-assistant-preview.tsx). Left on the column's full width they end
    up 200px from a phone half their height, floating in the band attached to
-   nothing. */
+   nothing.
+
+   Ordered tallest-first: several max-heights match at once and the cascade takes
+   the last one, so the shortest applicable step wins. */
 :root {
   --ai-mock: 1;
 }
 
 .ai-mock {
   zoom: var(--ai-mock);
+  /* THE BLEED. The drawing does not stop at the band's bottom edge, it runs
+     through it: the section clips there (`overflow-hidden`, `pb-0`), and this
+     pushes the phone's bottom that far past the edge so the cut lands partway
+     down its input bar rather than on its last pixel. Unscaled px, because the
+     margin is on the ZOOMED element and therefore scales with it — the crop is
+     always the same 56px of the drawing, whatever size the drawing is.
+
+     It is also what lets the phone be 40% larger than the space it is given: the
+     ladder below sizes it against `332 − 56`, not 332. And it is why the mockup
+     is bottom-aligned rather than top-aligned in its slot — with the bleed the
+     phone always reaches the edge, so any height the ladder cannot use opens
+     ABOVE it, where it is invisible, instead of below it as a gap. */
+  margin-bottom: -56px;
 }
 
 @media (min-width: 64rem) {
-  /* MEASURED, one step per 48px of window. The required scale is the band's
-     budget minus everything that is not the mockup, over the mockup's natural
-     332px, and it comes out almost linear in the window height: 0.97 at a 1008px
-     window, 0.72 at 900, 0.56 at 768, 0.41 at 673. Each step below carries the
-     value its band needs at its SHORTEST window, so the band fits across the
-     whole of it. Sweep the numbers again if the copy changes — the fixed part is
-     465px at 656 and 573 at 1008, and it is what these are derived from.
-
-     Ordered tallest-first: several max-heights match at once and the cascade
-     takes the last one, so the shortest applicable step wins. */
+  /* The cap, and the value for any window taller than the last step. */
+  .ai-mock {
+    --ai-mock: 1.92;
+  }
+  /* ≤ 1104px */
+  @media (max-height: 69rem) {
+    .ai-mock {
+      --ai-mock: 1.76;
+    }
+  }
+  /* ≤ 1056px */
+  @media (max-height: 66rem) {
+    .ai-mock {
+      --ai-mock: 1.61;
+    }
+  }
+  /* ≤ 1008px */
   @media (max-height: 63rem) {
     .ai-mock {
-      --ai-mock: 0.9;
+      --ai-mock: 1.47;
     }
   }
+  /* ≤ 960px */
   @media (max-height: 60rem) {
     .ai-mock {
-      --ai-mock: 0.81;
+      --ai-mock: 1.34;
     }
   }
+  /* ≤ 912px */
   @media (max-height: 57rem) {
     .ai-mock {
-      --ai-mock: 0.72;
+      --ai-mock: 1.21;
     }
   }
+  /* ≤ 864px */
   @media (max-height: 54rem) {
     .ai-mock {
-      --ai-mock: 0.64;
+      --ai-mock: 1.08;
     }
   }
+  /* ≤ 816px */
   @media (max-height: 51rem) {
     .ai-mock {
-      --ai-mock: 0.56;
+      --ai-mock: 0.98;
     }
   }
+  /* ≤ 768px */
   @media (max-height: 48rem) {
     .ai-mock {
-      --ai-mock: 0.49;
+      --ai-mock: 0.87;
     }
   }
+  /* ≤ 720px */
   @media (max-height: 45rem) {
     .ai-mock {
-      --ai-mock: 0.4;
+      --ai-mock: 0.75;
     }
   }
-  /* ≤ 672px is the last step. Below it the band grows instead: the scale needed
-     at a 600px window is 0.22, which is a 63px sticker, and a section that looks
-     broken is not a section that fits. */
+  /* ≤ 672px — the last step. Past here the band grows instead: the scale a
+     600px window would need is 0.3, and a 86px sticker looks broken rather than
+     compact. */
   @media (max-height: 42rem) {
     .ai-mock {
-      --ai-mock: 0.37;
+      --ai-mock: 0.62;
     }
   }
 }
