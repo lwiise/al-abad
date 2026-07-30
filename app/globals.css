@@ -808,6 +808,29 @@ html.lenis body {
      under the reader's thumb — the stack is over 300px tall on a phone, so that
      is most of the screen. */
   touch-action: pan-y;
+  /* ONE explicit track that may not exceed the container, and this is the line
+     that keeps the deck on a phone.
+
+     A grid item's `min-width` is `auto`, and an `auto` track is floored at its
+     items' MIN-CONTENT — so the cell is as wide as the widest thing that
+     refuses to wrap, whatever the container says. The caption's name and title
+     are `truncate`, i.e. `white-space: nowrap`, and a nowrap line's min-content
+     is the ENTIRE string: «مدربة في مجال تطوير الذات، حاصلة على شهادة المرأة
+     القيادية الناجحة» measured 439px, so at 390px the track came out 439 and
+     every sheet with it — the quote severed at BOTH band edges and the fan
+     clipped away, since `.tm-plate`'s `overflow-hidden` is what stops it
+     reaching the document. `min-w-0` on the caption's own wrapper does not
+     reach this: it clears the automatic minimum for that flex item, not the
+     min-content the nowrap line contributes up through the figcaption to the
+     card and on into the track.
+
+     It only ever showed on phones, which is why it shipped: from `lg` the deck
+     is 672px, wider than the longest title, so the floor never binds. Fixing it
+     HERE rather than with `min-w-0` on the sheets is deliberate — the deck's
+     cell is the container's width by definition, and stating that once holds
+     for whatever the owner types into the CMS next. Truncation is then free to
+     do its job: the title ellipsises at the card's edge instead of setting it. */
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* The sheet. A pale glass card, lit from the same corner the plate is: 0% of
