@@ -5,6 +5,7 @@ import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { WhatsappFloat } from "@/components/site/whatsapp-float";
 import { ScrollRefresh } from "@/components/motion/scroll-refresh";
+import { SmoothScroll } from "@/components/motion/smooth-scroll";
 
 export default async function MarketingLayout({ children }: { children: ReactNode }) {
   const settings = await getSettings();
@@ -43,6 +44,11 @@ export default async function MarketingLayout({ children }: { children: ReactNod
         href={waLink(settings?.whatsapp_number, "السلام عليكم، لدي استفسار عن الدورات")}
       />
       <ScrollRefresh />
+      {/* Marketing pages only. The admin panel is a tool — it has forms, long
+          tables and a sidebar that must answer the scroll wheel exactly and
+          immediately, and interpolating that would make it feel slower to use,
+          not more expensive. */}
+      <SmoothScroll />
     </>
   );
 }

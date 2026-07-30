@@ -86,6 +86,28 @@ The bleed is also what buys the size, because the ladder sizes the drawing again
 - **`/styleguide`** (noindex) renders every token, variant and section tone on one page. Check it after any colour change.
 - **Type:** **Readex Pro** for display/headings (`--font-display`, applied to `h1–h6`) + **IBM Plex Sans Arabic** for body (`--font-sans`); both via `next/font/google`. Body 400 with generous line-height (~1.8 for Arabic). Modular scale + soft radii/shadows are tokenised in `@theme`. (Replaced the original Tajawal in Phase 2.1.)
 
+### Motion — two axes, and the page needs both
+
+**Threshold motion** is what the site was built on: an IntersectionObserver crosses a line, an attribute flips, one 560ms transition plays and is never heard from again. Three primitives express it and they differ only in *what* they move — `Reveal` (one element), `Stagger` (a flat row of direct children), `Sequence` (arbitrary descendants at any depth, in reading order). They share a timing family on purpose: 24px, 560ms, `cubic-bezier(0.16, 1, 0.3, 1)`.
+
+That axis alone is why the page read as boring, and the reason is structural rather than a matter of tuning. There were **34 threshold entrances and no second gesture**, so every element on the site arrived the same way, once, and nothing on the page was aware of the scroll itself — only of having been passed. A reader who scrolls slowly, stops, or scrolls back up saw exactly what one who flicked past saw: nothing. Adding a 35th `Reveal` cannot fix that; it is the shape of the gesture, not its quantity.
+
+**Scroll-linked motion** is the other axis. It ties a transform to scroll POSITION, so the page answers continuously and in both directions.
+
+- **`SmoothScroll`** (Lenis, marketing layout only) is the foundation and the single largest change in how the site feels. It is driven off `gsap.ticker` — never its own rAF — because Lenis and ScrollTrigger reading the scroll on two clocks trails every scrubbed animation by a frame. `lagSmoothing(0)` goes with it and is not optional. Touch is left native; interpolating a touch drag throws away the OS momentum and is the reason smooth scroll has the reputation it has. Under `prefers-reduced-motion` the instance is never constructed — absent, not merely faster.
+- **`Parallax` / `useParallax`** drifts decorative and figurative layers only. Never text, which must hold still to be read. The ceiling is 25% of the element's height and everything shipped is between 6% and 18%: past a quarter the layer visibly slides against its neighbours and reads as the cheap version of the effect being bought. **`mode="exit"` is mandatory above the fold** — under the default `"pass"` an element already on screen at scroll 0 is already most of the way through its journey and renders visibly displaced before the reader has scrolled at all.
+- **`LineReveal`** splits a heading into its rendered lines and rises each one out from behind its own `overflow` mask. This is the gesture that most separates an authored page from a templated one, and it is `SectionHeading lines`.
+
+**Splitting Arabic by character is banned, and this is not a stylistic preference.** Arabic is cursive: per-character elements sever the joins and render words in isolated forms — the same destruction `letter-spacing` causes, which is why globals.css nulls it site-wide. So the per-character stagger that half the award-site reference set uses on its Latin display type is unavailable here at any quality. Lines are safe for a structural reason rather than a lucky one: a line break can only fall where the text was already allowed to break. `course-hero.tsx` reaches the same conclusion from the other direction and splits by words. Lines are also the better gesture regardless of script — per-character motion on a 40px headline is confetti; per-line motion is a masthead.
+
+**One owner per channel, and transform is the contested one.** `.hero-enter` owns `transform` via its entrance keyframe, and `meet-instructor`'s `<figure>` owns it via a Tailwind translate. Parallax therefore goes on a nested element in both, never on the animating one — parent and child compose, two owners on one channel drift. Same rule the challenges diagram and the مرتكزات artifacts already state.
+
+**`will-change` is set around the tween, never in CSS.** SplitText does **not** revert itself when its tween finishes — the wrappers live until unmount — so a static `will-change: transform` on `.lr-line` would pin a compositor layer per line for the life of the page to buy one second of smoothness each. `line-reveal.tsx` promotes on `onStart` and demotes on `onComplete`.
+
+**Reserve `lines` for headings that carry their section.** It is the loudest gesture on the page and stops being an event if every h2 has it — four of the eleven homepage sections use it, and they are the four that had nothing else. It **replaces** the wrapping `Reveal` rather than joining it: a heading that slides up as a block *and* unmasks its own lines is two entrances on one element, and the block's transform drags the masks along so neither lands.
+
+**Built and used zero times:** `TiltCard`, `MagneticLink`, `FloatGroup`, `SvgDraw`. They are pointer/decorative effects rather than scroll ones. Wire them or delete them; leaving them is how a motion layer accumulates gestures nobody chose.
+
 ## RTL / Arabic conventions
 
 - Root layout is `<html lang="ar" dir="rtl">` with IBM Plex Sans Arabic as the default sans + Readex Pro for headings (`next/font/google`, arabic+latin subsets).

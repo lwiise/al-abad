@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { LineReveal } from "@/components/motion/line-reveal";
 
 type Bg = "background" | "surface" | "lilac" | "ink" | "night" | "plum" | "hero";
 
@@ -179,6 +180,25 @@ export function HeadingRule({
  * unconditionally would mean the next person to add a `Sequence` inherits a
  * four-step cascade they never asked for and never saw in a diff.
  *
+ * `lines` is the third way, and it is the one that reads as typeset: the
+ * eyebrow, the h2 and the sub are each split into their rendered LINES, and
+ * every line rises out from behind its own edge in reading order. See
+ * `components/motion/line-reveal.tsx` — in particular for why the split is by
+ * line and never by character, which is not a stylistic preference but a hard
+ * constraint of setting Arabic.
+ *
+ * It **replaces** the outer `<Reveal>` these headings used to sit in rather
+ * than joining it, and it **overrides `seq`**, enforced below rather than
+ * merely documented. Both rules are the same rule: a heading that slides up as
+ * a block *and* unmasks its own lines is two entrances on one element, and the
+ * block's transform drags the masks along with it so neither gesture lands.
+ * One entrance per element. The rule is the only part left static — it is a
+ * 48×4px bar and nothing tracks it.
+ *
+ * Reserve it for headings that carry the section: it is the loudest gesture on
+ * the page and stops being an event if every h2 has it. Four of the eleven
+ * homepage sections use it, and they are the four that had nothing else.
+ *
  * The `Omit` on the spread is load-bearing: `ComponentProps<"div">` carries
  * `title?: string` (the tooltip attribute), which intersects with this
  * component's required `title: string` to `never`.
@@ -190,6 +210,7 @@ export function SectionHeading({
   align = "center",
   light = false,
   seq = false,
+  lines = false,
   className,
   ...rest
 }: {
@@ -200,14 +221,19 @@ export function SectionHeading({
   light?: boolean;
   /** Cascade the heading's own parts instead of arriving as one item. */
   seq?: boolean;
+  /** Split the h2 into lines and unmask them in reading order. */
+  lines?: boolean;
   className?: string;
 } & Omit<ComponentProps<"div">, "title" | "children" | "className">) {
   // undefined → React omits the attribute entirely, so this is inert when off.
   // The selector matches on presence, so the empty string is enough when on.
-  const item = seq ? "" : undefined;
+  // `lines` wins outright where both are set — see the note above.
+  const item = seq && !lines ? "" : undefined;
+  const line = lines ? "" : undefined;
+  const Wrap = lines ? LineReveal : "div";
 
   return (
-    <div
+    <Wrap
       {...rest}
       className={cn(
         align === "center" ? "mx-auto max-w-2xl text-center" : "max-w-2xl text-start",
@@ -220,6 +246,7 @@ export function SectionHeading({
       {eyebrow && (
         <p
           data-seq-item={item}
+          data-lines={line}
           className={cn("mb-3 text-sm font-medium", light ? "text-lilac" : "text-secondary")}
         >
           {eyebrow}
@@ -227,6 +254,7 @@ export function SectionHeading({
       )}
       <h2
         data-seq-item={item}
+        data-lines={line}
         className={cn(
           "text-3xl font-bold md:text-4xl",
           light ? "text-white" : "text-foreground",
@@ -242,6 +270,7 @@ export function SectionHeading({
       {sub && (
         <p
           data-seq-item={item}
+          data-lines={line}
           className={cn(
             "mt-4 text-lg leading-relaxed",
             light ? "text-neutral-300" : "text-foreground-muted",
@@ -250,6 +279,6 @@ export function SectionHeading({
           {sub}
         </p>
       )}
-    </div>
+    </Wrap>
   );
 }
