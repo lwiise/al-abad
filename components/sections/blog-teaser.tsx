@@ -2,7 +2,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import type { BlogPostRow } from "@/lib/database.types";
-import { Reveal } from "@/components/motion/reveal";
 import { Stagger } from "@/components/motion/stagger";
 import { Section, SectionHeading } from "./section";
 import { PostCard } from "./post-card";
@@ -22,12 +21,11 @@ export function BlogTeaser({
 
   return (
     <Section bg="lilac">
-      <Reveal>
-        <SectionHeading
-          title={heading || "أحدث المقالات"}
-          sub={subhead || "مقالاتٌ تثري وعيك حول العلاقة الزوجية."}
-        />
-      </Reveal>
+      <SectionHeading
+        lines
+        title={heading || "أحدث المقالات"}
+        sub={subhead || "مقالاتٌ تثري وعيك حول العلاقة الزوجية."}
+      />
       <Stagger className="mt-12 grid gap-6 md:grid-cols-3">
         {posts.map((p, i) => (
           <PostCard key={p.id} post={p} index={i} />

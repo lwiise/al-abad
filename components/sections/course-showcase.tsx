@@ -27,13 +27,14 @@ export function CourseShowcase({
 
   return (
     <Section id="courses" bg="background">
-      <Reveal>
-        <SectionHeading
-          eyebrow={eyebrow || "الدورات"}
-          title={heading || "دوراتٌ تأخذ بيدك خطوة بخطوة"}
-          sub={subhead || "محتوى عمليّ مصمّم لتطبّقه في حياتك — اختر ما يناسب وضعك وابدأ اليوم."}
-        />
-      </Reveal>
+      {/* `lines` rather than a wrapping `Reveal` — see the note on
+          `SectionHeading`. The two are alternatives, never a pair. */}
+      <SectionHeading
+        lines
+        eyebrow={eyebrow || "الدورات"}
+        title={heading || "دوراتٌ تأخذ بيدك خطوة بخطوة"}
+        sub={subhead || "محتوى عمليّ مصمّم لتطبّقه في حياتك — اختر ما يناسب وضعك وابدأ اليوم."}
+      />
 
       <div className="mt-12 space-y-6">
         <Reveal>
