@@ -56,12 +56,13 @@ export function Faq({
               corners were the sole hint that the questions were a surface
               rather than just an indented list.
 
-              This is also the card CLAUDE.md's section 8·9·10 note is about: it
-              permits three white bands in a row on the grounds that "a card
-              carries a border and a shadow and a band cannot" — which was true
-              of الآراء's testimonial cards and not of this one. Now it is true
-              of both, and the الآراء → الأسئلة boundary rests on what that note
-              claims it rests on. */}
+              This is also the card CLAUDE.md's white-run note is about. That run
+              was 8·9·10 and is 9·10 now — الآراء went to the `plum` band, so the
+              الآراء → الأسئلة boundary is a 9.41:1 cut and no longer rests on a
+              card edge at all. What the note still covers is 9 → 10, and the
+              argument it makes there — "a card carries a border and a shadow and
+              a band cannot" — is only true of this one because the shadow was
+              added. Don't take it off. */}
           <Accordion
             type="single"
             collapsible

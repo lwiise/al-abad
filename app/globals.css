@@ -691,6 +691,219 @@ html.lenis body {
   }
 }
 
+/* ===========================================================================
+   Section 8 — الآراء: the deck on a lit plum plate
+   ===========================================================================
+   The owner asked this section to look like a reference frame: a deep, lit dark
+   ground with a fanned stack of pale quote cards on it, two arrows flanking the
+   stack, a proof line and a button beneath. Drawn in the palette rather than in
+   the reference's indigo — see components/sections/testimonials.tsx for why the
+   band is PLUM and not a third neutral dark.
+
+   DELIBERATELY NOT WRAPPED IN @layer. Tailwind v4 treats rules inside
+   `@layer utilities` as utility candidates and only emits the ones it matches,
+   which silently drops compound selectors like `.tm-card[data-depth="1"]`.
+   Plain top-level CSS is emitted verbatim — the same reason the nav/hero and
+   scroll-deck blocks are written this way.
+
+   THE CEILING ON THE BLOOM IS A CONTRAST BUDGET, NOT A TASTE CALL. Everything
+   on this plate is white, lilac or neutral-300, and neutral-300 is the binding
+   one: the subhead and the proof line are body-size, so they need 4.5:1 against
+   the BRIGHTEST pixel the ground is allowed to reach. Plum is 6.07:1 for
+   neutral-300 bare, and every point of lilac mixed into it spends that. At 10%
+   the peak ground is #674c75 and neutral-300 still measures 4.73:1; at 16% it is
+   4.09 and the subhead fails. So 10% is the cap and it is asserted in
+   `pnpm check-contrast` (search "s8") — which prints 4.75 for that pair rather
+   than 4.73, because the audit composites in floating point and a real ground
+   quantises to 8 bits per channel. The rounded figure is what the browser
+   actually paints, so it is the one quoted here; both clear AA either way.
+
+   The drama comes from the OTHER end —
+   the plate falls away to neutral-900 in the start-side corners, which is a
+   2.03:1 sweep across the band and costs no legibility at all, because
+   darkening a dark ground only ever helps the type standing on it.
+   ------------------------------------------------------------------------- */
+
+/* The plate. `bg-primary` is the band's own colour (the `plum` tone in
+   section.tsx); everything here is painted over it.
+
+   THE LIGHT FALLS AT THE END EDGE, which is the left in RTL, and that is a
+   mirror of the reference rather than a copy of it: the frame puts its bloom at
+   the top-RIGHT, the corner an LTR reader's eye is travelling toward. Ours
+   travels the other way, so the light goes where it lands here. CSS gradients
+   take physical coordinates and cannot be written logically, so these positions
+   are RTL values — the root is `dir="rtl"` and nothing on this site is not.
+
+   Layer order is top-first, so the bloom sits over the two deepening layers and
+   the peak is provably the bloom alone: the neutral-900 pool is at the opposite
+   corner and the floor is at the opposite edge, so neither can add to it. */
+.tm-plate {
+  background-image:
+    /* the bloom — top END corner, and the section's whole light source */
+    radial-gradient(
+      64% 56% at 4% -8%,
+      color-mix(in oklab, var(--color-lilac) 10%, transparent) 0%,
+      transparent 70%
+    ),
+    /* the deep START corner: the reference's near-black quarter, mirrored */
+    radial-gradient(
+      92% 80% at 102% 4%,
+      color-mix(in oklab, var(--color-neutral-900) 76%, transparent) 0%,
+      transparent 68%
+    ),
+    /* the floor, so the band settles into the white one below it rather than
+       ending on its brightest row */
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 54%,
+      color-mix(in oklab, var(--color-neutral-900) 58%, transparent) 100%
+    );
+}
+
+/* The site's own Najdi relief, inverted, in the plate's dark quarter — the
+   reference carries a faint glyph texture in its shadowed regions and this is
+   what that is here.
+
+   It is the hero plate's texture at the hero plate's opacity, and reusing it is
+   the point: the alternative was inventing a second decorative texture for one
+   section, which is how a page ends up with five. CLAUDE.md warns against
+   restamping it ONE SCREEN after the hero — that warning is about section 2,
+   where the repeat would read as a template tic. Six sections later, on a
+   different ground, in the opposite corner, it reads as the same plaster.
+
+   And it is emphatically not section 7's dot field: that one is a live canvas
+   that damps itself around the type it must keep legible. This is a static
+   4%-opacity relief masked into the corner furthest from any word. */
+.tm-najdi {
+  background-image: var(--najdi-tile);
+  background-size: 72px 62px;
+  background-repeat: repeat;
+  filter: invert(1);
+  /* Lower than the hero's 4.5%, because plum is a lighter plate than
+     neutral-900 and the same relief reads as a legible pattern on it rather
+     than as a grain. This is meant to be felt, not looked at. */
+  opacity: 0.028;
+  -webkit-mask-image: radial-gradient(84% 86% at 100% 80%, #000 0%, #000 18%, transparent 64%);
+  mask-image: radial-gradient(84% 86% at 100% 80%, #000 0%, #000 18%, transparent 64%);
+}
+
+/* ---------------------------------------------------------------------------
+   The deck
+   ---------------------------------------------------------------------------
+   Every card is rendered into ONE grid cell — `col-start-1 row-start-1` in
+   testimonial-deck.tsx — so the stack is as tall as its tallest quote and stays
+   that height as the reader pages through. `.deck-cards` already works this way
+   for «كيف تبدأ؟»; the difference is that this stack shows three sheets at once
+   instead of cross-fading one.
+
+   `--tm-swap` is `--deck-swap`'s 560ms, which is the site's one entrance/settle
+   duration. A fourth hand-typed near-identical timing is the drift the shared
+   `--ease-hero` was introduced to stop.
+   ------------------------------------------------------------------------- */
+.tm-deck {
+  --tm-swap: 560ms;
+  /* `touch-action: pan-y` and not `none`: the deck handles a horizontal swipe
+     itself, and taking the vertical gesture with it would trap the page scroll
+     under the reader's thumb — the stack is over 300px tall on a phone, so that
+     is most of the screen. */
+  touch-action: pan-y;
+}
+
+/* The sheet. A pale glass card, lit from the same corner the plate is: 0% of
+   the gradient is the top-END, so the card's bright edge faces the bloom.
+
+   IT TAKES A REAL DROP SHADOW, unlike anything on `ink` or `night`. The shadow
+   ramp in @theme is ink-tinted and therefore invisible on those two, which is
+   why section 7 seats its figure with a violet glow instead. Plum is a MID-dark
+   ground — neutral-900 under it is a genuine darkening — so shade works here and
+   is the honest way to hold a light card off a dark plate. It is bespoke rather
+   than `shadow-xl` because that token is plum-tinted, and a plum shadow on a
+   plum band is nothing at all.
+
+   The inset hairline is the light rim along the top edge, the thing that makes
+   a flat pale rectangle read as glass rather than as paper. */
+.tm-card {
+  border-radius: var(--radius-2xl);
+  background-image: linear-gradient(
+    142deg,
+    var(--color-background) 0%,
+    var(--color-background) 30%,
+    color-mix(in oklab, var(--color-lilac) 46%, var(--color-background)) 68%,
+    color-mix(in oklab, var(--color-lilac) 96%, var(--color-background)) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in oklab, white 80%, transparent),
+    0 26px 60px -28px color-mix(in oklab, var(--color-neutral-900) 92%, transparent);
+  /* Painted only for the three sheets the deck shows. Everything past the third
+     has no `data-depth` at all and is simply not drawn — it is still in the
+     grid cell, still holding the height, and `inert` in the markup keeps it out
+     of the tab order. */
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--tm-swap) var(--ease-hero),
+    rotate var(--tm-swap) var(--ease-hero);
+}
+
+/* The fan. Rotation and nothing else, in opposite directions — on a 672×360
+   card two degrees lifts a corner about 12px, so each sheet shows a sliver at
+   the TOP on one side and at the BOTTOM on the other, which is the peek the
+   reference has. Any more and the stack stops reading as one object seen
+   edge-on and starts reading as three cards thrown down.
+
+   NO `translate`, deliberately. Sliding the back sheets down instead pushed
+   their peek entirely below the front card and hid it above — the stack read as
+   a shadow rather than as a deck. And no `scale` below 1: shrinking a rotated
+   rectangle pulls its corners back in, which is exactly the peek being paid for.
+
+   `rotate` as its own property rather than inside a `transform`, so it is its
+   own transition channel and the arrows' `-translate-y-1/2` cannot collide with
+   it. Same discipline the challenges diagram keeps. */
+.tm-card[data-depth] {
+  opacity: 1;
+}
+.tm-card[data-depth="0"] {
+  z-index: 3;
+  pointer-events: auto;
+  rotate: 0deg;
+}
+.tm-card[data-depth="1"] {
+  z-index: 2;
+  opacity: 0.66;
+  rotate: -2.2deg;
+}
+.tm-card[data-depth="2"] {
+  z-index: 1;
+  opacity: 0.38;
+  rotate: 2.6deg;
+}
+
+/* The front card's contents cross-fade; the two behind are bare sheets. Quicker
+   than the fan for the same reason `.deck-card` fades quicker than it travels —
+   the cards share a cell, so a fade as long as the movement leaves two quotes
+   legible over each other for a third of a second. */
+.tm-card-body {
+  transition: opacity calc(var(--tm-swap) * 0.55) var(--ease-hero);
+}
+
+/* Light instead of shade, which is CLAUDE.md's rule for lifting anything off a
+   dark band. The lilac pool under the button is the same gesture `.ai-tile`
+   makes with violet in section 7, in this section's own colour. */
+.tm-cta {
+  box-shadow: 0 18px 40px -18px color-mix(in oklab, var(--color-lilac) 60%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The fan is a static pose, not a movement: the reader still gets three
+     sheets and still sees which is in front, the swap simply happens between
+     frames. */
+  .tm-card,
+  .tm-card-body {
+    transition: none !important;
+  }
+}
+
 /* --- قسم التحديات: the challenges diagram + list -------------------------
    Two overlapping sources — two people, and the interference where they meet.
    Each challenge drives the diagram to its own state via `data-state` on the

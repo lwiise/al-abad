@@ -160,6 +160,10 @@ export interface SiteSettingsRow extends Timestamps {
   testimonials_ribbon: string | null;
   testimonials_eyebrow: string | null;
   testimonials_heading: string | null;
+  testimonials_subhead: string | null;
+  testimonials_proof: string | null;
+  testimonials_cta_label: string | null;
+  testimonials_cta_url: string | null;
   faq_eyebrow: string | null;
   faq_heading: string | null;
   faq_help_text: string | null;
