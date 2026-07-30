@@ -131,8 +131,15 @@ export function AiAssistantPreview({ points }: { points: string[] }) {
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-[-55%] top-[8%] -z-10 h-[76%] rounded-[100%] bg-highlight/25 blur-3xl"
           />
-          <div className="rounded-[2rem] border border-border-strong bg-background p-2 shadow-xl">
-            <div className="rounded-[1.6rem] bg-surface px-4 pt-3 pb-8">
+          {/* SQUARE AT THE BOTTOM, rounded at the top. The drawing no longer ends
+              at the band's bottom edge, it runs THROUGH it — the section clips it
+              there (see `.ai-mock` in globals.css) — so the bottom corners are
+              never a corner of anything: rounded, they read as a phone that
+              happens to be sitting on the boundary; square, as one that carries on
+              below it. Same reason the border is only three-sided by consequence:
+              the bottom one is outside the band. */}
+          <div className="rounded-t-[2rem] border border-b-0 border-border-strong bg-background p-2 pb-0 shadow-xl">
+            <div className="rounded-t-[1.6rem] bg-surface px-4 pt-3 pb-8">
               <span className="mx-auto block h-1 w-14 rounded-full bg-border-strong" />
 
               <div className="mt-4 flex items-center gap-2.5">
