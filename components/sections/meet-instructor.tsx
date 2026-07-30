@@ -1,23 +1,10 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
-import { useScrollStep } from "@/components/motion/use-scroll-step";
-import {
-  INSTRUCTOR_STATES,
-  InstructorSignature,
-  type SignatureState,
-} from "./art/instructor-signature";
 
 const FALLBACK =
   "يجمع الأستاذ علي العباد في دوراته بين العمق العلمي والخبرة العملية، ليقدّم لك أدواتٍ واضحةً وقابلةً للتطبيق في حياتك الزوجية — منهجٌ يأخذ بيدك من فهم الذات إلى بناء علاقةٍ متوازنةٍ وسعيدة.";
@@ -45,26 +32,6 @@ const MARKERS = ["منهج علميّ", "أدوات عملية", "خبرة مي�
  */
 const PILLAR_NOTES = ["", "", ""];
 
-/** Desktop: how long a hovered مرتكز holds after the pointer leaves, before the
- *  scroll takes the art back. Shorter than --mi-move (620ms) on purpose — a
- *  quick sweep off a row and back must never hand the art over mid-transition. */
-const RELEASE_MS = 400;
-
-/**
- * What the art is showing, in Arabic, for people who cannot see it. Keyed
- * by state rather than by label so it survives an editor rewording the
- * مرتكزات in the CMS; the label itself is read out alongside it.
- */
-const SIGNATURE_DESCRIPTION: Record<SignatureState, string> = {
-  // Not "appears when selected" any more: the scroll presents all three in turn
-  // and selecting one only holds it. Copy, not a comment — a reader who is told
-  // selection is the mechanism has no reason to expect anything else happened.
-  idle: "لا رسم بعد — يُعرض رسمُ كلّ مرتكزٍ تِباعاً مع تقدّم الصفحة، ويثبت عند اختيار مرتكز.",
-  method: "كتابٌ مفتوح، تنطبق صفحاته على بعضها واحدةً تلو الأخرى.",
-  tools: "طقمُ أدواتٍ قائمٌ في حاملِه، تُسحب كلُّ أداةٍ إلى موضعها تباعاً.",
-  field: "أرضٌ مقطوعة، تُرصَف طبقاتُها من الأعمق صعوداً حتى السطح.",
-};
-
 // Layout effect on the client (runs before paint → no flash of the animated-in
 // state), plain effect on the server so SSR doesn't warn. Mirrors use-reveal.ts.
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -79,19 +46,42 @@ const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : use
  *
  * Ink (#3a363d) is the site's one dark ground — see the rhythm note in
  * section.tsx. This section used the retired elevation palette's near-black
- * (#1c1725) while that direction was being trialled.
+ * (#1c1725) while that direction was being trialled. On ink the eyebrow is
+ * lilac (9.50:1) and the body white/74 (7.30:1); plum is 1.26:1 and unusable.
  *
- * The art each مرتكز drives is in art/instructor-signature.tsx. It is drawn
- * FILLED — an open book, a racked set of implements, ground in section — and
- * nothing in this section strokes or draws a line any more. A scroll-drawn
- * ring used to sit behind the portrait with an ~80-line hook scrubbing its
- * dash; both went when the art did. On ink, lilac carries the forms (9.50:1) and coral
- * accents them (3.08:1); plum is 1.26:1 here and unusable.
+ * THE مرتكزات ARE TEXT, AND THAT IS THE DESIGN. Three claims on hairline-ruled
+ * rows: no illustration, no marker, no fill, no state, nothing focusable.
  *
- * No GSAP, and nothing is pinned or scrubbed. One IntersectionObserver drives
- * the entrance and one rAF-throttled scroll listener (useScrollStep) names the
- * مرتكز the page has reached; everything else is a CSS transition keyed off one
- * `data-state` attribute.
+ * They were all of those things until the owner asked for the animations that
+ * come with each point to be deleted and the text kept. What went, so that
+ * nobody rebuilds one piece of it assuming the rest is still there: a drawn
+ * artifact per مرتكز swapped by `data-state` (art/instructor-signature.tsx — an
+ * open book whose pages settled, a racked set of implements that rose, ground
+ * whose strata were laid down, on a lilac bloom); a spine that filled down the
+ * marker column as each row was reached; dot markers that lit and left a dimmer
+ * trail behind them; the scroll driver that named the current row
+ * (motion/use-scroll-step.ts — a nav-anchored band and a no-skip march); and
+ * the hover / tap / focus holds that let a visitor take the sequence over. With
+ * them went the whole `.mi-*` block in app/globals.css, the sr-only live region
+ * that narrated the art for people who could not see it, and the three `s3`
+ * graphics assertions in scripts/check-contrast.mjs. Two earlier passes of
+ * abstract stroked geometry, and a scroll-drawn ring behind the portrait with
+ * an ~80-line hook scrubbing its dash, had already been rejected before that.
+ * The whole line ends here.
+ *
+ * DO NOT GIVE THE ROWS ANYTHING BACK — not a marker, not a rule that fills, not
+ * a hover tint, and above all not an element. They are plain <li>s and they are
+ * not in the tab order, because the interaction is what a <button> was for and
+ * a <button> that does nothing is a defect rather than a leftover. If a row has
+ * to say more, it says it in PILLAR_NOTES above — which is the thing these rows
+ * have actually been missing the whole time.
+ *
+ * The rows do not take the entrance either, by the same instruction: a row
+ * sliding up on arrival is an animation that comes with the point. The eyebrow,
+ * the h2, the portrait, the body and the CTA still do.
+ *
+ * So what moves in this section is the entrance and nothing else. No GSAP,
+ * nothing pinned, nothing scrubbed, and no scroll listener anywhere in here.
  */
 export function MeetInstructor({
   aboutBody,
@@ -113,98 +103,6 @@ export function MeetInstructor({
   useSectionEnter(root);
 
   const markerList = markers && markers.length ? markers : MARKERS;
-
-  // --- Which مرتكز is driving the art -------------------------------------
-  // Same model as قسم التحديات (challenges-board.tsx): one index of state, a
-  // short grace period after the pointer leaves, and a single `data-state`
-  // string as the only thing crossing into CSS.
-  //
-  // The DIFFERENCE from section 2 is that the SCROLL drives the index here, so
-  // the three artifacts play in turn as the block comes up the screen; a pointer
-  // or the keyboard only takes over while it is on a row. Gating all three
-  // behind hover meant a phone never saw two of them and a desktop visitor who
-  // did not happen to sweep the list saw none.
-  //
-  // Section 2 is NOT the cheap case, and it is not settled either — it is
-  // deferred. Its diagram has six states with more motion in each than these
-  // three have (globals.css `.ch-*`), which is exactly why it cannot take this
-  // hook as-is: six steps in one band is ~100px of scroll each, and its stacked
-  // diagram is `sticky` where this art sits in normal flow, so the two need
-  // different band geometry. If it is ever done, do it as its own decision.
-  const [chosen, setChosen] = useState<number | null>(null);
-  const pillars = useRef<HTMLDivElement>(null);
-  // Bounded by the artifacts that exist, not by the row count: the CMS supplies
-  // the مرتكزات and `INSTRUCTOR_STATES` has three drawings. Stepping over four
-  // rows would play book → rack → ground → book, i.e. visibly rewind to the
-  // start one row before the end. Extra rows stay pointer/keyboard-only, where
-  // the wrap below is invisible because nobody sees two artifacts in sequence.
-  const stepped = useScrollStep(
-    pillars,
-    Math.min(markerList.length, INSTRUCTOR_STATES.length),
-  );
-  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearIdleTimer = () => {
-    if (idleTimer.current) {
-      clearTimeout(idleTimer.current);
-      idleTimer.current = null;
-    }
-  };
-
-  useEffect(() => clearIdleTimer, []);
-
-  const hold = useCallback((index: number) => {
-    clearIdleTimer();
-    setChosen(index);
-  }, []);
-
-  // Hands the art back to the scroll — which can mean playing an EARLIER
-  // artifact than the row just left, if the block has not travelled that far
-  // yet. That is deliberate: the art shows where the page is, and the rows
-  // follow the same index, so the two never disagree. It used to fade out to
-  // idle instead, which was terminal and neutral; there is no longer such a
-  // thing as neutral here, because the scroll always has an opinion.
-  const release = useCallback(() => {
-    clearIdleTimer();
-    idleTimer.current = setTimeout(() => setChosen(null), RELEASE_MS);
-  }, []);
-
-  // A scroll that names a new مرتكز outranks a stale hold. Two reasons, and both
-  // of them are the feature silently not working without this:
-  //
-  //   Touch has no release path at all. `onPointerLeave` is gated to a mouse and
-  //   a tap is never followed by one, so one tap used to latch one مرتكز for the
-  //   rest of the visit — on the device class where the art is largest.
-  //
-  //   Browsers do not recompute hover DURING a scroll gesture: Blink dispatches
-  //   a synthetic mousemove only once it settles, WebKit waits for a real one.
-  //   So a cursor left anywhere over the list — `cursor: pointer`, mid-column,
-  //   exactly where a reading pointer rests — pinned `chosen` for the whole pass
-  //   and the sequence never played for a visitor who did nothing.
-  //
-  // Keyboard focus is exempt: a keyboard visitor on a row means it, and onBlur
-  // owns that release. Everything else loses the hold the moment the page moves.
-  //
-  // `:focus-visible`, NOT `:focus`. Chromium focuses a <button> on TAP, so a
-  // plain focus check hands the latch straight back to the touch bug this effect
-  // exists to fix — measured, not assumed. focus-visible is precisely "the
-  // browser is treating this as keyboard focus", which is the only hold worth
-  // protecting from the scroll.
-  useEffect(() => {
-    if (pillars.current?.querySelector(":focus-visible")) return;
-    clearIdleTimer();
-    setChosen(null);
-  }, [stepped]);
-
-  // Nothing chosen → whatever the scroll is on. That is `null` until the block
-  // has finished arriving, then 0, 1, 2 in turn, holding the last one once it
-  // has passed.
-  const active = chosen ?? stepped;
-
-  // The CMS supplies the مرتكزات, so the count is not fixed at three — states
-  // cycle rather than fall off the end.
-  const state: SignatureState =
-    active === null ? "idle" : INSTRUCTOR_STATES[active % INSTRUCTOR_STATES.length];
 
   return (
     <section
@@ -321,160 +219,59 @@ export function MeetInstructor({
               {excerpt(aboutBody)}
             </p>
 
-            {/* The pillars are the credibility of the section, so they are rows
-                with hairline rules — not pills, which read as metadata. Rows
-                stay full-width stacked at every size; the 46ch cap is repeated
-                here because the copy wrapper is display:contents below 1080px
-                and so cannot constrain them.
+            {/* The مرتكزات are the credibility of the section, so they are rows
+                with hairline rules — not pills, which read as metadata. (The
+                course page's own instructor block does use pills; the two
+                differ on purpose.) Rows stay full-width stacked at every size.
 
-                Each row is a real <button>, so the keyboard gets the same
-                behaviour as the pointer for free and `aria-pressed` can do
-                double duty as the a11y state and the CSS hook. */}
-            {/* The art lives HERE, not behind the portrait.
+                46ch — the same measure the h2 and the body take. It was capped
+                at 25ch from 1080px up while a drawn artifact sat in the end-side
+                gutter and the row rules ran straight into it; with the art gone
+                the rules line up with the paragraph above them, which is what
+                they should have done all along.
 
-                It was in the figure at 56% of the column, and the coach simply
-                occupies that space — the form came out half-hidden behind his
-                shoulder and read as a rendering artifact rather than a drawn
-                object. Beside the list it has genuinely empty ink to sit on,
-                and it is next to the rows that drive it, which is where the
-                eye already is.
+                `order-5` and the cap are BOTH load-bearing on this element: the
+                copy wrapper is display:contents below 1080px, so this <ul> is a
+                direct child of the outer flex column there — it orders itself
+                around the portrait (eyebrow 1 · h2 2 · figure 3 · body 4 ·
+                list 5 · CTA 6), and a display:contents parent cannot constrain
+                its width.
 
-                Stacked it sits above the list; from 1080px it moves into the
-                empty end-side gutter the 46ch cap leaves. */}
-            {/* This block — art AND list — is what useScrollStep measures. The
-                band is tied to where the مرتكزات actually are, not to the
-                section, which is three times taller and would have flipped
-                through all three while the portrait was still the only thing on
-                screen. Stacked, the art is the top of this box, which is why
-                the band is centred on it rather than run to its bottom edge. */}
-            <div ref={pillars} className="relative order-5 mt-10">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none relative mx-auto mb-8 w-40 max-w-full aspect-square min-[1080px]:absolute min-[1080px]:end-0 min-[1080px]:top-1/2 min-[1080px]:mx-0 min-[1080px]:mb-0 min-[1080px]:w-44 min-[1080px]:-translate-y-1/2"
-              >
-                {/* A lilac bloom under the artifact. On a light band a shadow
-                    would do this job; on ink the whole ramp is invisible, so
-                    CLAUDE.md's rule is light instead of shade — same device as
-                    `.ai-tile`. Without it a pale drawing on a dark plate reads
-                    as a grey doodle in the gutter rather than as a lit object,
-                    which is most of why the section did not announce itself. */}
-                <span className="mi-bloom" />
-                <InstructorSignature state={state} className="size-full" />
-              </div>
+                No `data-enter` here, deliberately — see the header note.
 
-              {/* Capped narrower than the 46ch the copy uses: the row rules run
-                  the width of this list, and at 46ch they ran straight through
-                  the art in the gutter beside it. 25ch rather than 27 because
-                  the art grew into that gutter. */}
-              <ul className="max-w-[46ch] min-[1080px]:max-w-[25ch]">
-              {markerList.map((m, i) => {
-                const isActive = active === i;
-                return (
-                  <li
-                    key={m}
-                    data-enter=""
-                    // The spine: each row draws its own segment as the scroll
-                    // reaches it, so the list visibly fills in one by one. This
-                    // is the part that makes the section announce itself — the
-                    // artifact in the gutter changing was the whole signal
-                    // before, and a reader scrolling past did not catch it.
-                    // Cumulative, not just-the-current-one: three dots filling
-                    // down a line reads as progress, one dot moving reads as a
-                    // hover state that happens to follow you.
-                    data-reached={active !== null && i <= active}
-                    style={{ transitionDelay: `${240 + i * 80}ms` }}
-                    className="mi-step border-t border-white/10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
-                  >
-                    <button
-                      type="button"
-                      // `aria-pressed` was doing double duty as the ARIA state
-                      // and the CSS hook, and once the scroll started naming the
-                      // active row those two stopped being the same thing: a
-                      // toggle button reporting "pressed" because the viewport
-                      // moved is a state the visitor never set and cannot clear,
-                      // and browse-mode arrowing (which itself scrolls) would
-                      // read the same document differently twice.
-                      //
-                      // So they are split. `data-active` is what globals.css
-                      // styles, and `aria-current` is the honest ARIA — "the
-                      // item in this set being presented right now" — which is
-                      // true whoever named it. Section 2 keeps `aria-pressed`
-                      // and is still correct: nothing but the pointer and the
-                      // keyboard drives it there.
-                      //
-                      // Measured, so nobody has to re-derive it: Chromium's AX
-                      // tree lists no state property for these rows now (only
-                      // `focusable`, where `pressed` used to appear), so do not
-                      // expect aria-current to carry the whole load — NVDA and
-                      // JAWS do announce "current", but what actually gives a
-                      // screen-reader user feedback here is the live region
-                      // below, which turns `polite` exactly when they take a
-                      // hold and reads the artifact's description out.
-                      data-active={isActive}
-                      aria-current={isActive ? "true" : undefined}
-                      className="mi-row flex w-full items-center gap-4 py-4 text-start"
-                      // Pointer enter/leave are gated to a mouse: touch
-                      // synthesises both and would fight the tap.
-                      onPointerEnter={(e) => {
-                        if (e.pointerType === "mouse") hold(i);
-                      }}
-                      onPointerLeave={(e) => {
-                        if (e.pointerType === "mouse") release();
-                      }}
-                      onFocus={() => hold(i)}
-                      // Unlike section 2, focus does NOT latch here: tabbing
-                      // out of the list hands the art back to the scroll rather
-                      // than leaving the last-focused مرتكز showing.
-                      onBlur={() => release()}
-                      // A tap (or a click) holds the مرتكز until the scroll
-                      // names a different one — see the effect above, which is
-                      // the only hand-back touch gets.
-                      onClick={() => hold(i)}
-                    >
-                      {/* Fills when the row is the one driving the art. */}
-                      <span
-                        className="mi-marker mt-1 size-4 shrink-0 self-start rounded-full border-2"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0">
-                        <span className="mi-label block font-display text-[17px] font-bold text-white/90">
-                          {m}
-                        </span>
-                        {/* Renders only once PILLAR_NOTES is filled in — see
-                            the TODO at the top of this file. */}
-                        {PILLAR_NOTES[i] ? (
-                          <span className="mt-1 block text-[14px] leading-[1.7] text-white/55">
-                            {PILLAR_NOTES[i]}
-                          </span>
-                        ) : null}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-              </ul>
-            </div>
-
-            {/* Decorative SVG, so the description lives here instead. Live only
-                while a pointer or the keyboard is driving it: the scroll moves
-                this three times on the way past, and announcing art nobody
-                asked for is noise, not information. */}
-            <p
-              className="sr-only"
-              aria-live={chosen === null ? "off" : "polite"}
-              aria-atomic="true"
-            >
-              {active === null
-                ? SIGNATURE_DESCRIPTION.idle
-                : `${markerList[active]}: ${SIGNATURE_DESCRIPTION[state]}`}
-            </p>
+                `py-4` is the whole row metric. The row used to be a <button>
+                carrying `min-height: 3.5rem` in globals.css for a pointer
+                target; the label's line box measures ~24px, so 16 + 24 + 16
+                lands on the same 56px and the rows did not move when the button
+                went. */}
+            <ul className="order-5 mt-10 max-w-[46ch]">
+              {markerList.map((m, i) => (
+                <li key={m} className="border-t border-white/10 py-4">
+                  <span className="block font-display text-[17px] font-bold text-white/90">
+                    {m}
+                  </span>
+                  {/* Renders only once PILLAR_NOTES is filled in — see the
+                      TODO at the top of this file. */}
+                  {PILLAR_NOTES[i] ? (
+                    <span className="mt-1 block text-[14px] leading-[1.7] text-white/55">
+                      {PILLAR_NOTES[i]}
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
 
             {/* Ghost button. Secondary by construction — it must not compete
                 with the coral primary CTAs elsewhere on the page, so the accent
                 only appears on hover, in the border. */}
             <div
               data-enter=""
-              style={{ transitionDelay: "480ms" }}
+              // 240ms, one beat after the body. It was 480 — the tail of a
+              // five-beat stagger whose middle three beats were the مرتكزات,
+              // and with those out of the sequence the CTA sat 320ms after the
+              // last thing that moved, which reads as the entrance having
+              // finished and then started again.
+              style={{ transitionDelay: "240ms" }}
               className="order-6 mt-10 data-[enter=hidden]:translate-y-6 data-[enter=hidden]:opacity-0 data-[enter=shown]:transition-[opacity,transform] data-[enter=shown]:duration-[500ms] data-[enter=shown]:ease-[var(--ease-hero)]"
             >
               <Link
@@ -499,8 +296,9 @@ export function MeetInstructor({
 /**
  * Sequenced entrance for the whole section: one observer on the root flips
  * every [data-enter] descendant to "shown" at once, and each element carries
- * its own transition-delay so the order reads eyebrow → h2 → body → pillars →
- * CTA regardless of where each sits on screen.
+ * its own transition-delay so the order reads eyebrow → h2 → body → CTA
+ * regardless of where each sits on screen. The مرتكزات carry no [data-enter]
+ * and are therefore not in this sequence — see the header note.
  *
  * Content renders VISIBLE and is only hidden once JS has confirmed it can
  * reveal it again — no JS, no IntersectionObserver, or reduced motion all leave

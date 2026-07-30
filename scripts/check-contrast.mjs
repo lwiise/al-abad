@@ -228,24 +228,6 @@ pairs.push(["focus ring on night — lilac", T("lilac"), NIGHT, UI]);
 pairs.push(["focus ring on night over a guarded dot — lilac", T("lilac"), GUARDED, UI]);
 
 /**
- * Section 3's مرتكزات spine — the progress line and the trail of markers that
- * fill as the scroll presents each مرتكز (`.mi-step` / `.mi-marker` in
- * globals.css). All three are non-text graphics on ink, so the bar is 3:1, and
- * all three are DIMMED lilac: the point of the treatment is that the current
- * marker is the brightest thing in the column, which only works if the trail
- * behind it is quieter. That makes them worth asserting — dim them further and
- * the sequence stops being visible, which is the bug this treatment fixed.
- */
-pairs.push(["s3 spine — lilac/45 on ink", over(T("lilac"), T("ink"), 0.45), T("ink"), UI]);
-pairs.push([
-  "s3 marker, reached — lilac/52 on ink",
-  over(T("lilac"), T("ink"), 0.52),
-  T("ink"),
-  UI,
-]);
-pairs.push(["s3 marker, current — lilac on ink", T("lilac"), T("ink"), UI]);
-
-/**
  * DELIBERATELY NOT ASSERTED — and please don't add them back.
  *
  * Hairline card/divider borders (`border`, `border-strong`) and the heading
