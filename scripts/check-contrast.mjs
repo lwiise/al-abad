@@ -211,6 +211,63 @@ pairs.push(["s7 error glyph — accent on night", T("accent"), NIGHT, UI]);
 // The CTA is buttonClasses("primary", "md", light) — ink on lilac, asserted above.
 
 /**
+ * Section 8 (الآراء) — the `plum` band, lit by a lilac bloom.
+ *
+ * Two grounds again, and for the same reason section 7 needs two: the bare
+ * plate is the easy case, and the hard one is a glyph over the BRIGHTEST pixel
+ * the ground is allowed to reach. There the bound is not a live field but a
+ * gradient stop, so it is exact — `.tm-plate` paints a single lightening layer,
+ * lilac at `BLOOM_MAX`, and its two deepening layers sit UNDER it at the
+ * opposite corner and the opposite edge, so nothing can add to the peak.
+ *
+ * BLOOM_MAX is duplicated from globals.css, so change one and change both. It
+ * is set by this measurement rather than by eye: neutral-300 is the binding
+ * pair, because the subhead and the proof line are body-size and everything
+ * else on the band is either white or large. At 0.10 neutral-300 measures
+ * 4.73:1 as painted; at 0.16 — which is what the reference frame's glow looks
+ * like — it is 4.09 and the subhead fails AA.
+ *
+ * The row below prints 4.75 rather than 4.73 because `over` composites in float
+ * and a real ground quantises to 8 bits per channel. That is the audit erring
+ * two hundredths GENEROUS, which is the wrong direction, but the gap is far
+ * inside the margin every pair here carries and rounding it would change every
+ * composited row in this file. Noted rather than fixed. So the section takes its
+ * drama from the dark
+ * end instead, where the plate falls away toward neutral-900 and contrast only
+ * improves.
+ *
+ * NOT ASSERTED, BECAUSE THEY ARE BANNED HERE: coral is 2.45:1 on plum and
+ * violet 2.32:1 — both under the 3:1 graphics floor, so neither is usable on
+ * this band even as a fill. The section carries white, lilac and neutral-300
+ * and nothing else; see the note in components/sections/testimonials.tsx.
+ */
+const PLUM = T("primary");
+const BLOOM_MAX = 0.1; // .tm-plate in app/globals.css
+const BLOOM = over(T("lilac"), PLUM, BLOOM_MAX);
+
+pairs.push(["s8 headline — white on plum", WHITE, PLUM, AA]);
+pairs.push(["s8 headline tail + badge — lilac on plum", T("lilac"), PLUM, AA]);
+pairs.push(["s8 subhead + proof — neutral-300 on plum", T("neutral-300"), PLUM, AA]);
+pairs.push(["s8 headline over the bloom's peak", WHITE, BLOOM, AA]);
+pairs.push(["s8 tail + badge over the bloom's peak", T("lilac"), BLOOM, AA]);
+pairs.push(["s8 subhead + proof over the bloom's peak", T("neutral-300"), BLOOM, AA]);
+
+// The deck's cards: a white → lilac sheet, so both ends of the gradient carry
+// the quote. The lilac end is the binding one and is the same pair as
+// `foreground on surface-strong`, restated here because the card's fill is a
+// composite rather than the token itself.
+const SHEET = over(T("lilac"), WHITE, 0.92);
+pairs.push(["s8 quote — foreground on the card's lilac end", T("foreground"), SHEET, AA]);
+pairs.push(["s8 author title — foreground-muted on the card's lilac end", T("foreground-muted"), SHEET, AA]);
+pairs.push(["s8 read-more — primary on the card's lilac end", T("primary"), SHEET, AA]);
+// The arrows are lilac discs with a plum chevron — a graphic, so 3:1.
+pairs.push(["s8 arrow glyph — primary on lilac", T("primary"), T("lilac"), UI]);
+// And the ring around them, which is lilac and sits on the band, not the disc
+// (2px offset — see focusOnDark below).
+pairs.push(["s8 focus ring on plum — lilac", T("lilac"), PLUM, UI]);
+pairs.push(["s8 focus ring over the bloom's peak — lilac", T("lilac"), BLOOM, UI]);
+
+/**
  * The focus ring on DARK grounds (`focusOnDark` in components/ui/button.tsx).
  *
  * Buttons do not set `outline-none`, so the global outline in globals.css is

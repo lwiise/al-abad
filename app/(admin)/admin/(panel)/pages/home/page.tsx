@@ -101,8 +101,14 @@ export default async function HomePageSettings(props: {
         </Section>
 
         <Section title="قسم آراء المتدربين">
-          <TextField name="testimonials_eyebrow" label="السطر التمهيدي" defaultValue={str("testimonials_eyebrow")} />
-          <TextField name="testimonials_heading" label="العنوان" defaultValue={str("testimonials_heading")} />
+          <TextField name="testimonials_eyebrow" label="شارة القسم" defaultValue={str("testimonials_eyebrow")} help="النص داخل الحبيبة أعلى القسم" />
+          <TextField name="testimonials_heading" label="العنوان" defaultValue={str("testimonials_heading")} help="ضع «…» قبل الجزء الأخير ليُكتب بلون فاتح في سطرٍ مستقل" />
+          <AreaField name="testimonials_subhead" label="العنوان الفرعي" defaultValue={str("testimonials_subhead")} rows={2} />
+          <TextField name="testimonials_proof" label="سطر الثقة" defaultValue={str("testimonials_proof")} help="يظهر أسفل البطاقات قبل الزر" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField name="testimonials_cta_label" label="الزر — النص" defaultValue={str("testimonials_cta_label")} />
+            <TextField name="testimonials_cta_url" label="الزر — الرابط" defaultValue={str("testimonials_cta_url")} dir="ltr" />
+          </div>
         </Section>
 
         <Section title="قسم الأسئلة الشائعة">

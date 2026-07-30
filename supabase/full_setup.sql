@@ -344,7 +344,12 @@ alter table public.site_settings
   -- closing CTA card copy (0006)
   add column if not exists final_cta_eyebrow        text,
   add column if not exists final_cta_subhead        text,
-  add column if not exists final_cta_proof          text;
+  add column if not exists final_cta_proof          text,
+  -- الآراء, rebuilt as a full composition (0008)
+  add column if not exists testimonials_subhead     text,
+  add column if not exists testimonials_proof       text,
+  add column if not exists testimonials_cta_label   text,
+  add column if not exists testimonials_cta_url     text;
 
 update public.site_settings set
   hero_trust_badge      = coalesce(hero_trust_badge,      'موثوق من آلاف المتدربين'),
@@ -368,6 +373,16 @@ update public.site_settings set
   testimonials_ribbon   = coalesce(testimonials_ribbon,   'قصص نجاح حقيقية'),
   testimonials_eyebrow  = coalesce(testimonials_eyebrow,  'آراء المتدربين'),
   testimonials_heading  = coalesce(testimonials_heading,  'بعضٌ مما قاله الأحباب'),
+  testimonials_subhead  = coalesce(
+    testimonials_subhead,
+    'كلماتٌ من أزواجٍ وزوجاتٍ ساروا في الطريق نفسه، وكتبوا ما تغيّر في بيوتهم بعد التطبيق.'
+  ),
+  testimonials_proof    = coalesce(
+    testimonials_proof,
+    'انضم إلى آلاف المتدربين والمتدربات الذين بدأوا من حيث أنت الآن.'
+  ),
+  testimonials_cta_label = coalesce(testimonials_cta_label, 'ابدأ رحلتك'),
+  testimonials_cta_url   = coalesce(testimonials_cta_url,   '/الدورات'),
   faq_eyebrow           = coalesce(faq_eyebrow,           'الأسئلة الشائعة'),
   faq_heading           = coalesce(faq_heading,           'إجاباتٌ عن أكثر ما يُسأل'),
   faq_help_text         = coalesce(faq_help_text,         'لم تجد إجابتك؟'),

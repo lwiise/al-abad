@@ -91,6 +91,10 @@ export default async function HomePage() {
         testimonials={testimonials}
         eyebrow={settings?.testimonials_eyebrow}
         heading={settings?.testimonials_heading}
+        subhead={settings?.testimonials_subhead}
+        proof={settings?.testimonials_proof}
+        ctaLabel={settings?.testimonials_cta_label}
+        ctaUrl={settings?.testimonials_cta_url}
       />
       <Faq
         faqs={faqs}
