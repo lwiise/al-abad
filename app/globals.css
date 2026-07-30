@@ -1077,22 +1077,85 @@
     transition:
       background-color var(--mi-row-move) var(--mi-ease),
       border-color var(--mi-row-move) var(--mi-ease),
+      box-shadow var(--mi-row-move) var(--mi-ease),
       color var(--mi-row-move) var(--mi-ease),
       scale var(--mi-row-move) var(--mi-ease);
   }
   .mi-marker {
+    /* Ink, not transparent: the spine runs behind the markers and this is what
+       stops it showing through the hollow ones. The band is ink here, so the
+       fill is invisible as a fill — it only ever acts as a mask. */
+    background-color: var(--color-ink);
     border-color: color-mix(in oklab, var(--color-lilac) 34%, transparent);
   }
+
+  /* --- The spine ---------------------------------------------------------
+     One segment per row, each spanning its OWN row's full height, so
+     consecutive segments abut exactly whatever the rows measure — no shared
+     magic number, and it survives the pillar notes being filled in later
+     (which will make the rows taller). Sits at the markers' centre line: they
+     are `size-4` at the row's inline start, so 8px in, less half of its own
+     2px. Grows downward as each step is reached.
+
+     WHY THIS EXISTS. The scroll-driven artifact in the gutter was the entire
+     signal that this section does anything, and it is 176px of pale lilac off
+     to one side — the owner scrolled the page and did not notice it. Filling a
+     line down through the three مرتكزات is the part you cannot miss, and it
+     says the right thing: three things accumulating, in order. */
+  .mi-step {
+    position: relative;
+  }
+  .mi-step::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 7px;
+    width: 2px;
+    /* 45%, not 40: 40 measures 2.89:1 on ink and this is a non-text graphic, so
+       3:1 is the floor. `pnpm check-contrast` asserts it — keep the two in sync. */
+    background-color: color-mix(in oklab, var(--color-lilac) 45%, transparent);
+    transform-origin: top;
+    scale: 1 0;
+    transition: scale var(--mi-move) var(--mi-ease);
+  }
+  .mi-step[data-reached="true"]::before {
+    scale: 1 1;
+  }
+
+  /* Reached but no longer current: the marker stays filled, dimmer than the
+     one being presented. A trail, so the reader can see how far in they are. */
+  .mi-step[data-reached="true"] .mi-marker {
+    background-color: color-mix(in oklab, var(--color-lilac) 52%, var(--color-ink));
+    border-color: color-mix(in oklab, var(--color-lilac) 62%, transparent);
+  }
+
   /* `data-active`, not `aria-pressed` — the row the SCROLL is presenting is
      styled the same as one under the pointer, but only a pointer or the keyboard
-     is allowed to claim an ARIA state. See the header note. */
+     is allowed to claim an ARIA state. See the header note. Declared after the
+     reached rule, which it must beat at equal specificity. */
   .mi-row[data-active="true"] .mi-marker {
     background-color: var(--color-lilac);
     border-color: var(--color-lilac);
     scale: 1.15;
+    /* Light, not shade: the shadow ramp is ink-tinted and invisible on this
+       band, so the current مرتكز is marked with a lilac halo instead. */
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--color-lilac) 15%, transparent);
   }
   .mi-row[data-active="true"] .mi-label {
     color: var(--color-lilac);
+  }
+
+  /* The bloom behind the artifact — see the note at its markup. Sized past the
+     tile so the falloff, not an edge, is what you see. */
+  .mi-bloom {
+    position: absolute;
+    inset: -18%;
+    border-radius: 100%;
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      color-mix(in oklab, var(--color-lilac) 20%, transparent) 0%,
+      transparent 72%
+    );
   }
 }
 
@@ -1100,14 +1163,19 @@
   .mi-art,
   .mi-art *,
   .mi-marker,
-  .mi-label {
+  .mi-label,
+  .mi-step::before {
     transition: none !important;
   }
 
   /* No special-casing needed here, unlike section 2's تكرار الخلافات: only the
      transitions are stripped, the per-state declarations survive, and all
      three states differ from idle by which geometry is visible rather than by
-     where it is in a cycle. Each therefore still has a distinct static frame. */
+     where it is in a cycle. Each therefore still has a distinct static frame.
+
+     The spine follows the same rule: the hook resolves to the first مرتكز and
+     stays there, so the first segment is drawn and the other two are not — a
+     static frame, not a frozen animation. */
 }
 
 /* Radix accordion expand/collapse */
