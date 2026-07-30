@@ -1191,10 +1191,17 @@ html.lenis body {
    stage, so a 100svh stage put ~360px of empty surface between the hero and
    this section's heading on the way in and ~250px before the ink band on the
    way out: the centring air is inside the section rather than beside it.
-   So the stage is exactly the height of the board, the hold is an empty
-   sibling under it, and the board is centred by a sticky offset measured in JS
-   (`--ch-stick-top`) instead of by a screen-tall flexbox. The board now flows
+   So the stage is exactly as tall as what it holds, the hold is an empty
+   sibling under it, and it is centred by a sticky offset measured in JS
+   (`--ch-stick-top`) instead of by a screen-tall flexbox. The section now flows
    in behind the hero as it always did, rises, holds, and carries on.
+
+   WHAT the stage holds is not the same in both layouts, and that is what lets a
+   phone pin at all: wide it is the whole board, stacked it is the drawing and
+   the list with the heading left outside to scroll away above it — all three
+   stacked are ~840px, which fits no phone, and the pair is ~570px, which fits
+   most. The arrangement is chosen in challenges-board.tsx; this file only ever
+   sees one `.ch-stage`.
 
    The hold has to be a SIBLING and not padding on the track: a sticky element
    is bounded by its containing block's CONTENT box, so bottom padding buys it
