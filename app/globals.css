@@ -1174,6 +1174,16 @@ html.lenis body {
 @media (min-width: 1080px) {
   .ch-diagram { max-width: none; }
 }
+/* A short STACKED window is the one case where the drawing has to give way: at
+   844×390 — a phone turned on its side — the sticky plate ran 80→395px of a
+   390px window, so the list it is supposed to be answering was behind it, zero
+   rows visible at any scroll position. Capped here the plate ends at ~246px and
+   the reading line (measured, and pushed below the plate) clears it. Scoped to
+   stacked widths because at 1080px up the plate is not sticky and the drawing
+   is a column of the grid, where shrinking it would just leave a gap. */
+@media (max-width: 1079.98px) and (max-height: 560px) {
+  .ch-diagram { max-width: 11rem; }
+}
 
 /* --- The stage: the board holds still while the scroll walks the list -----
    Same idea as `.deck-*` — a track taller than its content by the hold of
