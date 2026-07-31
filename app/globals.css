@@ -1197,6 +1197,16 @@ html.lenis body {
 @media (min-width: 1080px) {
   .ch-diagram { max-width: none; }
 }
+/* A short STACKED window is the one case where the drawing has to give way: at
+   844×390 — a phone turned on its side — the sticky plate ran 80→395px of a
+   390px window, so the list it is supposed to be answering was behind it, zero
+   rows visible at any scroll position. Capped here the plate ends at ~246px and
+   the reading line (measured, and pushed below the plate) clears it. Scoped to
+   stacked widths because at 1080px up the plate is not sticky and the drawing
+   is a column of the grid, where shrinking it would just leave a gap. */
+@media (max-width: 1079.98px) and (max-height: 560px) {
+  .ch-diagram { max-width: 11rem; }
+}
 
 /* --- The stage: the board holds still while the scroll walks the list -----
    Same idea as `.deck-*` — a track taller than its content by the hold of
@@ -1214,10 +1224,17 @@ html.lenis body {
    stage, so a 100svh stage put ~360px of empty surface between the hero and
    this section's heading on the way in and ~250px before the ink band on the
    way out: the centring air is inside the section rather than beside it.
-   So the stage is exactly the height of the board, the hold is an empty
-   sibling under it, and the board is centred by a sticky offset measured in JS
-   (`--ch-stick-top`) instead of by a screen-tall flexbox. The board now flows
+   So the stage is exactly as tall as what it holds, the hold is an empty
+   sibling under it, and it is centred by a sticky offset measured in JS
+   (`--ch-stick-top`) instead of by a screen-tall flexbox. The section now flows
    in behind the hero as it always did, rises, holds, and carries on.
+
+   WHAT the stage holds is not the same in both layouts, and that is what lets a
+   phone pin at all: wide it is the whole board, stacked it is the drawing and
+   the list with the heading left outside to scroll away above it — all three
+   stacked are ~840px, which fits no phone, and the pair is ~570px, which fits
+   most. The arrangement is chosen in challenges-board.tsx; this file only ever
+   sees one `.ch-stage`.
 
    The hold has to be a SIBLING and not padding on the track: a sticky element
    is bounded by its containing block's CONTENT box, so bottom padding buys it

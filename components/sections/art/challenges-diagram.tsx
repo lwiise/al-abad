@@ -10,8 +10,10 @@ import { cn } from "@/lib/utils";
  * the tree at opacity 0 — that is what lets a state change animate FROM
  * whatever is currently on screen instead of mounting into place.
  *
- * Decorative: the section carries a visually-hidden live region that says what
- * this is doing, so the SVG itself is aria-hidden.
+ * Decorative: the section carries one standing visually-hidden sentence saying
+ * what this is, so the SVG itself is aria-hidden. It was a live region while a
+ * reader chose the state by pointing at a row; the scroll drives it now, and a
+ * change nobody asked for is not worth announcing.
  */
 
 export const CHALLENGE_STATES = [
